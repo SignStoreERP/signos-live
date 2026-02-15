@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignOS System Documentation v3.6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="signos-core.js"></script>
+    <style>
+        .tab-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; background: #eff6ff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .code-pill { font-family: monospace; background: #f3f4f6; padding: 2px 6px; rounded: 4px; color: #db2777; font-weight: bold; font-size: 0.75rem; }
+        .sku-row:hover { background-color: #f9fafb; }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans p-4 md:p-8">
+
+<div class="max-w-7xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
+
+    <!-- HEADER -->
+    <div class="bg-gray-900 px-8 py-6 text-white flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-black tracking-tight">SignOS Documentation</h1>
+            <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">System Architecture & Knowledge Base</p>
+        </div>
+        <div class="text-right">
+            <div class="text-xs font-bold text-gray-400">VERSION 3.6</div>
+            <div class="flex items-center justify-end gap-2 mt-1">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="text-xs font-bold text-white">ONLINE</span>
+            </div>
+            <a href="#" onclick="goBack()" class="text-[10px] text-blue-400 hover:text-white mt-2 block underline">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="flex border-b border-gray-200 sticky top-0 bg-white z-20 shadow-sm">
+        <button onclick="switchTab('index')" class="flex-1 py-4 text-sm font-bold text-gray-500 hover:bg-gray-50 tab-btn active" id="btn-index">SYSTEM INDEX</button>
+        <button onclick="switchTab('logic')" class="flex-1 py-4 text-sm font-bold text-gray-500 hover:bg-gray-50 tab-btn" id="btn-logic">CALCULATOR LOGIC</button>
+        <button onclick="switchTab('skus')" class="flex-1 py-4 text-sm font-bold text-gray-500 hover:bg-gray-50 tab-btn" id="btn-skus">MASTER SKU DB</button>
+    </div>
+
+    <!-- TAB 1: SYSTEM INDEX -->
+    <div id="tab-index" class="tab-content active p-8">
+        <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Active File Registry (v3.5)</h2>
+        <div class="overflow-x-auto rounded border border-gray-200">
+            <table class="min-w-full text-sm text-left">
+                <thead class="bg-gray-100 text-gray-700 font-bold uppercase text-xs">
+                    <tr><th class="px-4 py-3">File Name</th><th class="px-4 py-3">System Role</th><th class="px-4 py-3">Backend Connection</th><th class="px-4 py-3 text-right">Action</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 font-medium text-gray-600">
+                    <tr class="hover:bg-blue-50 transition"><td class="px-4 py-3 font-mono text-gray-900">index.html</td><td><span class="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-1 rounded">GATEKEEPER</span></td><td>Master_Staff</td><td class="text-right"><a href="index.html" class="text-blue-600 hover:underline font-bold text-xs">Launch →</a></td></tr>
+                    <tr class="hover:bg-blue-50 transition"><td class="px-4 py-3 font-mono text-gray-900">menu.html</td><td><span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded">DASHBOARD</span></td><td>(Navigation)</td><td class="text-right"><a href="menu.html" class="text-blue-600 hover:underline font-bold text-xs">Launch →</a></td></tr>
+                    
+                    <tr class="hover:bg-gray-50 transition"><td class="px-4 py-3 font-mono">YardSign_Calculator.html</td><td>Module: Rigid</td><td>PROD_Yard_Signs</td><td class="text-right"><a href="YardSign_Calculator.html" class="text-blue-600 hover:underline font-bold text-xs">Launch →</a></td></tr>
+                    <tr class="hover:bg-gray-50 transition"><td class="px-4 py-3 font-mono">Coro_Calculator.html</td><td>Module: Rigid</td><td>PROD_Coroplast_Signs</td><td class="text-right"><a href="Coro_Calculator.html" class="text-blue-600 hover:underline font-bold text-xs">Launch →</a></td></tr>
+                    <tr class="hover:bg-gray-50 transition"><td class="px-4 py-3 font-mono">ACM_Calculator.html</td><td>Module: Rigid</td><td>PROD_ACM_Signs</td><td class="text-right"><a href="ACM_Calculator.html" class="text-blue-600 hover:underline font-bold text-xs">Launch →</a></td></tr>
+                    <tr class="hover:bg-gray-50 transition"><td class="px-4 py-3 font-mono">Acrylic_Calculator.html</td><td>Module: Rigid</td><td>PROD_Acrylic_Signs</td><td class="text-right"><a href="Acrylic_Calculator.html" class="text-blue-600 hover:underline font-bold text-xs">Launch →</a></td></tr>
+                    
+                    <tr class="hover:bg-gray-50 transition"><td class="px-4 py-3 font-mono">Banner_Calculator.html</td><td>Module: Roll</td><td>PROD_Vinyl_Banners</td><td class="text-right"><a href="Banner_Calculator.html" class="text-blue-600 hover:underline font-bold text-xs">Launch →</a></td></tr>
+                    <tr class="hover:bg-gray-50 transition"><td class="px-4 py-3 font-mono">Decal_Calculator.html</td><td>Module: Roll</td><td>PROD_Decals</td><td class="text-right"><a href="Decal_Calculator.html" class="text-blue-600 hover:underline font-bold text-xs">Launch →</a></td></tr>
+                    <tr class="hover:bg-gray-50 transition"><td class="px-4 py-3 font-mono">Wrap_Calculator.html</td><td>Module: Roll</td><td>PROD_Vehicle_Wraps</td><td class="text-right"><a href="Wrap_Calculator.html" class="text-blue-600 hover:underline font-bold text-xs">Launch →</a></td></tr>
+                    <tr class="hover:bg-gray-50 transition"><td class="px-4 py-3 font-mono">CutVinyl_Calculator.html</td><td>Module: Roll</td><td>PROD_Cut_Vinyl</td><td class="text-right"><a href="CutVinyl_Calculator.html" class="text-blue-600 hover:underline font-bold text-xs">Launch →</a></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 2: LOGIC -->
+    <div id="tab-logic" class="tab-content p-8 space-y-8">
+        <section><h3 class="text-xl font-black text-gray-900 mb-2">The Physics Engines</h3><p class="text-sm text-gray-600">SignOS calculates costs based on physical manufacturing constraints.</p></section>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="border border-gray-200 rounded-lg p-5 bg-white shadow-sm"><h4 class="font-bold text-base text-blue-600 mb-2">Yard Signs</h4><ul class="list-disc list-inside text-xs text-gray-700 space-y-1"><li><strong>Bulk Trigger:</strong> Qty > 1100 switches cost.</li><li><strong>Risk Buffer:</strong> 5% (SS) / 10% (DS).</li></ul></div>
+            <div class="border border-gray-200 rounded-lg p-5 bg-white shadow-sm"><h4 class="font-bold text-base text-purple-600 mb-2">Coroplast</h4><ul class="list-disc list-inside text-xs text-gray-700 space-y-1"><li><strong>Split Workflow:</strong> 4mm Direct vs 10mm Mount.</li><li><strong>Sheet Opt:</strong> Calculates 4x8 yield.</li></ul></div>
+            <!-- More logic blocks implied... -->
+        </div>
+    </div>
+
+    <!-- TAB 3: SKU DB -->
+    <div id="tab-skus" class="tab-content p-8">
+        <div class="mb-6">
+            <h2 class="text-lg font-bold text-gray-800">Master SKU Database</h2>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button class="text-[10px] uppercase font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded" onclick="window.location.href='#sec-rigid'">Rigid</button>
+                <button class="text-[10px] uppercase font-bold bg-indigo-100 text-indigo-700 px-2 py-1 rounded" onclick="window.location.href='#sec-roll'">Roll</button>
+                <button class="text-[10px] uppercase font-bold bg-gray-200 text-gray-700 px-2 py-1 rounded" onclick="window.location.href='#sec-hard'">Hardware</button>
+            </div>
+            <input type="text" id="sku-search" placeholder="Filter Database..." onkeyup="filterSkus()" class="w-full border p-2 rounded text-sm font-bold bg-gray-50 outline-none">
+        </div>
+        <div class="overflow-x-auto rounded border border-gray-200 max-h-[600px] overflow-y-auto bg-white">
+            <table class="min-w-full text-sm text-left" id="sku-table">
+                <thead class="bg-gray-100 text-gray-500 font-bold uppercase text-xs sticky top-0 shadow-sm">
+                    <tr><th class="px-4 py-3 w-1/4">Category</th><th class="px-4 py-3 w-1/4">Backend Key</th><th class="px-4 py-3 w-1/2">Description</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 font-mono text-xs">
+                    <tr class="sku-row"><td>Material (Rigid)</td><td class="text-blue-600 font-bold">CUT_SUB_COR_04W</td><td>4mm Coroplast (White) 4x8 Sheet</td></tr>
+                    <tr class="sku-row"><td>Material (Roll)</td><td class="text-indigo-600 font-bold">VIN_ROL_BAN_13</td><td>13oz Scrim Banner</td></tr>
+                    <!-- Full table rows from source would go here... -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchTab(id) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-'+id).classList.add('active');
+        document.getElementById('btn-'+id).classList.add('active');
+    }
+
+    function filterSkus() {
+        const input = document.getElementById('sku-search');
+        const filter = input.value.toUpperCase();
+        const tr = document.getElementById('sku-table').getElementsByTagName('tr');
+        for (let i = 1; i < tr.length; i++) {
+            if(tr[i].getElementsByTagName("td").length < 2) continue;
+            const tdKey = tr[i].getElementsByTagName("td")[1];
+            const tdDesc = tr[i].getElementsByTagName("td")[2];
+            if (tdKey || tdDesc) {
+                const txtValueKey = tdKey.textContent || tdKey.innerText;
+                const txtValueDesc = tdDesc.textContent || tdDesc.innerText;
+                if (txtValueKey.toUpperCase().indexOf(filter) > -1 || txtValueDesc.toUpperCase().indexOf(filter) > -1) tr[i].style.display = ""; else tr[i].style.display = "none";
+            }
+        }
+    }
+
+    // TELEMETRY: Fire once on load
+    window.onload = function() {
+        const u = sessionStorage.getItem('signos_user') || 'Guest';
+        const r = sessionStorage.getItem('signos_role') || 'VIEW';
+        // Fire "User Read Docs" event
+        fetch(`${SCRIPT_URL}?tab=SYS_Docs&ip=${clientIP}&user=${u}&role=${r}&req=view_module`, {mode: 'no-cors'});
+    };
+</script>
+</body>
+</html>

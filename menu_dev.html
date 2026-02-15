@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignOS | DEV CONSOLE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="signos-core.js"></script>
+    <style>
+        .dev-stripe {
+            background: repeating-linear-gradient(
+                45deg,
+                #fff7ed,
+                #fff7ed 10px,
+                #ffedd5 10px,
+                #ffedd5 20px
+            );
+        }
+    </style>
+</head>
+<body class="bg-orange-50 min-h-screen font-sans">
+
+    <!-- DEV HEADER -->
+    <div class="bg-black text-orange-500 px-6 py-3 flex justify-between items-center text-xs border-b-4 border-orange-600">
+        <div class="flex gap-4">
+            <span class="tracking-wide text-white">USER: <span class="font-bold text-orange-400 uppercase" id="auth-user">---</span></span>
+            <span class="font-bold bg-orange-600 text-black px-2 py-0.5 rounded">DEVELOPMENT SANDBOX</span>
+        </div>
+        <div class="flex gap-3">
+            <a href="#" onclick="goBack()" class="text-gray-400 hover:text-white font-bold underline">Back to Menu</a>
+            <button onclick="logout()" class="font-bold text-red-500 hover:text-red-400 uppercase tracking-wider">Logout</button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-8">
+        
+        <!-- SYSTEM STATUS -->
+        <div class="mb-8 flex justify-between items-end bg-white p-6 rounded-xl shadow-lg border border-orange-200 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 dev-stripe opacity-20 transform rotate-12 -mr-10 -mt-10"></div>
+            <div>
+                <h1 class="text-3xl font-black text-gray-900 tracking-tight">SignOS Dev Console</h1>
+                <p class="text-xs text-gray-500 mt-1 uppercase tracking-widest">Version Control & Staging Environment</p>
+            </div>
+            <div class="text-right relative z-10">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+                    <span class="w-2 h-2 mr-2 bg-orange-500 rounded-full animate-pulse"></span>
+                    GitHub Branch: main
+                </span>
+            </div>
+        </div>
+
+        <!-- MODULE GRID -->
+        <div id="module-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Cards Injected by JS -->
+        </div>
+    </div>
+
+    <script>
+        // --- THE REGISTRY (Updated to Match Current Builds) ---
+        const modules = [
+            {
+                id: 'PROD_Yard',
+                name: 'Yard Signs',
+                file: 'YardSign_Calculator.html',
+                live: 'v21.7',
+                dev: 'v21.8',
+                status: 'active'
+            },
+            {
+                id: 'PROD_Coro',
+                name: 'Custom Coroplast',
+                file: 'Coro_Calculator.html',
+                live: 'v7.3',
+                dev: 'v7.4',
+                status: 'active'
+            },
+            {
+                id: 'PROD_ACM',
+                name: 'ACM Signs',
+                file: 'ACM_Calculator.html',
+                live: 'v5.9',
+                dev: 'v5.10',
+                status: 'active'
+            },
+            {
+                id: 'PROD_Acr',
+                name: 'Acrylic Signs',
+                file: 'Acrylic_Calculator.html',
+                live: 'v3.2',
+                dev: 'v3.3',
+                status: 'active'
+            },
+            {
+                id: 'PROD_Ban',
+                name: 'Vinyl Banners',
+                file: 'Banner_Calculator.html',
+                live: 'v9.2',
+                dev: 'v9.3',
+                status: 'active'
+            },
+            {
+                id: 'PROD_Dec',
+                name: 'Decals & Stickers',
+                file: 'Decal_Calculator.html',
+                live: 'v3.0',
+                dev: 'v3.1',
+                status: 'active'
+            },
+            {
+                id: 'PROD_Wrap',
+                name: 'Vehicle Wraps',
+                file: 'Wrap_Calculator.html',
+                live: 'v5.6',
+                dev: 'v5.7',
+                status: 'active'
+            },
+            {
+                id: 'PROD_Cut',
+                name: 'Cut Vinyl',
+                file: 'CutVinyl_Calculator.html',
+                live: 'v3.3',
+                dev: 'v3.4',
+                status: 'active'
+            },
+            {
+                id: 'PROD_3D',
+                name: '3D Designer',
+                file: 'YardSign_Order.html',
+                live: 'v3.4',
+                dev: 'v3.5-beta',
+                status: 'draft'
+            },
+            {
+                id: 'PROD_Cart',
+                name: 'Shopping Cart',
+                file: 'Cart_Viewer.html',
+                live: 'v2.0',
+                dev: 'v2.1',
+                status: 'draft'
+            }
+        ];
+
+        window.onload = function() {
+            // Auth Info from Core JS Session
+            const user = sessionStorage.getItem('signos_user') || 'DEV_GUEST';
+            document.getElementById('auth-user').innerText = user;
+            renderGrid();
+        };
+
+        function renderGrid() {
+            const grid = document.getElementById('module-grid');
+            grid.innerHTML = '';
+
+            modules.forEach(mod => {
+                // Card Container
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-orange-400 hover:shadow-md transition group relative flex flex-col";
+                
+                // Status Badge
+                const isDraft = mod.status === 'draft';
+                const badgeColor = isDraft ? 'bg-gray-100 text-gray-500' : 'bg-green-100 text-green-800';
+                const badgeText = mod.status.toUpperCase();
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-bold text-gray-900 text-lg group-hover:text-orange-600">${mod.name}</h3>
+                        <span class="text-[10px] font-bold ${badgeColor} px-2 py-0.5 rounded">${badgeText}</span>
+                    </div>
+                    
+                    <div class="space-y-2 mb-4 flex-1">
+                        <div class="flex justify-between items-center text-[10px] bg-gray-50 p-2 rounded border border-gray-100">
+                            <span class="text-gray-400 font-bold uppercase">Live</span>
+                            <span class="font-mono font-bold text-gray-600">${mod.live}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] bg-orange-50 p-2 rounded border border-orange-100">
+                            <span class="text-orange-600 font-bold uppercase">Dev</span>
+                            <span class="font-mono font-bold text-orange-700">${mod.dev}</span>
+                        </div>
+                    </div>
+
+                    <a href="${mod.file}?mode=dev" class="block w-full text-center bg-gray-900 text-white text-xs font-bold py-3 rounded hover:bg-orange-600 transition">
+                        TEST ${mod.dev}
+                    </a>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    </script>
+
+</body>
+</html>
