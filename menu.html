@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignOS Menu v5.2</title>
+    <title>SignOS Menu v5.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
 </head>
@@ -77,13 +77,15 @@
         document.getElementById('auth-user').innerText = user;
         document.getElementById('auth-role').innerText = role;
 
-        // Environment Badge
-        const envEl = document.getElementById('env-badge');
-        if (IS_DEV_ENV) {
-            envEl.innerHTML = `<span class="text-orange-600 font-bold">⚠️ DEVELOPMENT ENVIRONMENT</span> | <span class="text-gray-400">${clientIP}</span>`;
-        } else {
-            envEl.innerHTML = `<span class="text-green-600 font-bold">● LIVE SYSTEM</span> | <span class="text-gray-400">${clientIP}</span>`;
-        }
+   // Environment Badge
+    const envEl = document.getElementById('env-badge');
+    if (IS_DEV_ENV) {
+        // ADDED BACKTICKS BELOW
+        envEl.innerHTML = `<span class="text-orange-600 font-bold">⚠️ DEVELOPMENT ENVIRONMENT</span> | <span class="text-gray-400">${clientIP}</span>`;
+    } else {
+        // ADDED BACKTICKS BELOW
+        envEl.innerHTML = `<span class="text-green-600 font-bold">● LIVE SYSTEM</span> | <span class="text-gray-400">${clientIP}</span>`;
+    }
 
         // Super User Badge
         if (role === 'SUPER') {
