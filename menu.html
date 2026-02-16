@@ -130,65 +130,73 @@
                 // Filter modules for this category
                 const modules = data.filter(m => m.Category === cat);
 
-                modules.forEach(mod => {
-                    // --- SECURITY LOGIC FIX v5.2 ---
-                    // 1. Map 'SUPER' to 'ADMIN' for visibility checks (since Live_SUPER column doesn't exist)
-                    const checkRole = (role === 'SUPER') ? 'ADMIN' : role;
-                    
-                    // 2. Check Visibility
-                    // If the column Live_ADMIN (or SALES/PROD) is not "TRUE", it is hidden.
-                    const isVisible = String(val(mod, 'Live_' + checkRole)).toUpperCase() === 'TRUE';
-                    
-                    // 3. Super User Override: 
-                    // If I am SUPER, I see everything, even if isVisible is false.
-                    // If I am not SUPER, I strictly respect isVisible.
-                    if (!isVisible && role !== 'SUPER') return; 
+       modules.forEach(mod => {
+            // 1. ROLE NORMALIZATION
+            // Treat SUPER users as ADMINs for permission checks
+            const checkRole = (role === 'SUPER') ? 'ADMIN' : role;
 
-                    const displayName = val(mod, 'Display_Name');
-                    const fileLink = val(mod, 'File_Link');
-                    const iconColor = val(mod, 'Icon');
-                    const iconPath = val(mod, 'Icon_Path');
-                    
-                    // 4. Version Logic
-                    const devVer = val(mod, 'Dev_Ver');
-                    const liveVer = val(mod, 'Live_Ver');
-                    let targetVer = IS_DEV_ENV ? (devVer || 'v0.0') : (liveVer || 'v0.0');
+            // 2. TWIN-ENGINE VISIBILITY (The Fix)
+            // If we are in Dev Env, check 'Dev_ADMIN'. If Live, check 'Live_ADMIN'.
+            const envPrefix = IS_DEV_ENV ? 'Dev_' : 'Live_';
+            const permKey = envPrefix + checkRole; 
+            const isVisible = String(val(mod, permKey)).toUpperCase() === 'TRUE';
 
-                    // 5. Target Mode (Production vs Dev vs Sales)
-                    let targetMode = (role === 'PROD') ? 'production' : (role === 'ADMIN' || role === 'SUPER' ? 'dev' : 'sales');
+            // 3. SUPER USER OVERRIDE
+            // If not visible, kick out... UNLESS you are Super User.
+            if (!isVisible && role !== 'SUPER') return;
 
-                    const link = document.createElement('a');
-                    link.href = `${fileLink}?mode=${targetMode}`;
-                    link.className = "block bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition group relative";
-                    
-                    const colorClass = ICON_STYLES[(iconColor || 'blue').toLowerCase()] || ICON_STYLES['blue'];
-                    const verBg = IS_DEV_ENV ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500';
+            // 4. VERSION LOGIC & GHOST PROTOCOL
+            const devVer = val(mod, 'Dev_Ver');
+            const liveVer = val(mod, 'Live_Ver');
+            let targetVer = IS_DEV_ENV ? (devVer || 'v0.0') : (liveVer || 'v0.0');
 
-                    // Draft Badge: Show if hidden on Live but visible to Super
-                    const draftBadge = (!isVisible && role === 'SUPER') 
-                        ? `<div class="absolute top-2 right-2 text-[9px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded border border-purple-200">HIDDEN</div>` 
-                        : '';
+            // Ghost Protocol: If on LIVE and no version exists, hide it entirely.
+            // This prevents broken links for features that are only in Dev.
+            if (!IS_DEV_ENV && (!liveVer || liveVer === '')) return;
 
-                    const iconHtml = iconPath 
-                        ? `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="${iconPath}"></path></svg>`
-                        : `<span class="text-xl font-bold">●</span>`;
+            // 5. RENDER SETUP
+            const displayName = val(mod, 'Display_Name');
+            const fileLink = val(mod, 'File_Link');
+            const iconColor = val(mod, 'Icon');
+            const iconPath = val(mod, 'Icon_Path');
 
-                    link.innerHTML = `
-                        ${draftBadge}
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center transition ${colorClass}">
-                                ${iconHtml}
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">${displayName}</h3>
-                                <div class="mt-1 flex items-center gap-2">
-                                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${verBg}">${targetVer}</span>
-                                </div>
-                            </div>
+            // 6. TARGETING MODE
+            // Admins go to 'dev' mode on the App repo, 'sales' mode on the Live repo.
+            let targetMode = (role === 'PROD') ? 'production' : (role === 'ADMIN' || role === 'SUPER' ? 'dev' : 'sales');
+
+            // 7. BUILD CARD
+            const link = document.createElement('a');
+            link.href = `${fileLink}?mode=${targetMode}`;
+            link.className = "block bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition group relative";
+
+            const colorClass = ICON_STYLES[(iconColor || 'blue').toLowerCase()] || ICON_STYLES['blue'];
+            const verBg = IS_DEV_ENV ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500';
+
+            // Draft Badge: Show if hidden via permissions but visible to Super
+            const draftBadge = (!isVisible && role === 'SUPER') 
+                ? `<div class="absolute top-2 right-2 text-[9px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded border border-purple-200">HIDDEN</div>` 
+                : '';
+
+            const iconHtml = iconPath 
+                ? `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="${iconPath}"></path></svg>`
+                : `<span class="text-xl font-bold">●</span>`;
+
+            link.innerHTML = `
+                ${draftBadge}
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center transition ${colorClass}">
+                        ${iconHtml}
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">${displayName}</h3>
+                        <div class="mt-1 flex items-center gap-2">
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${verBg}">${targetVer}</span>
                         </div>
-                    `;
-                    grid.appendChild(link);
-                });
+                    </div>
+                </div>
+            `;
+            grid.appendChild(link);
+        });
 
                 if (grid.children.length > 0) {
                     section.appendChild(grid);
@@ -214,3 +222,5 @@
 
 </body>
 </html>
+
+
