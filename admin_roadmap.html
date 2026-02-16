@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dev Roadmap v3.0 | SignOS</title>
+    <title>Dev Roadmap v3.2 | SignOS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
     
@@ -36,7 +36,7 @@
         .chip-goal { @apply bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100; }
         .chip-goal.active { @apply bg-purple-600 border-purple-600 text-white shadow-md; }
         
-        /* New Target Chips */
+        /* Target Chips */
         .chip-app { @apply bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100; }
         .chip-app.active { @apply bg-orange-500 border-orange-500 text-white shadow-md; }
         .chip-live { @apply bg-green-50 border-green-200 text-green-600 hover:bg-green-100; }
@@ -78,7 +78,7 @@
         </div>
         
         <div class="flex items-center gap-6 overflow-x-auto pb-1 no-scrollbar">
-            <!-- TARGET FILTER (NEW) -->
+            <!-- TARGET FILTER -->
             <div class="flex items-center gap-2 shrink-0">
                 <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">TARGET</span>
                 <div class="flex gap-1">
@@ -94,7 +94,7 @@
                 <div class="flex gap-1">
                     <button class="filter-chip chip-feat" onclick="toggleFilter('cat', 'Feature', this)">Feature</button>
                     <button class="filter-chip chip-bug" onclick="toggleFilter('cat', 'Bug', this)">Bug</button>
-                    <button class="filter-chip chip-goal" onclick="toggleFilter('cat', 'Goal', this)">Goal</button>
+                    <button class="filter-chip chip-goal" onclick="toggleFilter('cat', 'Content', this)">Content</button>
                 </div>
             </div>
             
@@ -107,14 +107,17 @@
     <!-- KANBAN BOARD -->
     <div class="flex-1 overflow-x-auto overflow-y-hidden p-6 bg-gray-100">
         <div class="flex gap-6 h-full min-w-[1000px]">
+            <!-- PENDING (Triage) -->
             <div class="flex-1 flex flex-col bg-gray-200 rounded-xl border border-gray-300 shadow-sm" ondragover="allowDrop(event)" ondrop="drop(event, 'Pending')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
-                <div class="p-3 border-b border-gray-300 font-bold text-gray-600 text-xs uppercase tracking-wider flex justify-between shrink-0 bg-gray-200 rounded-t-xl z-10"><span>Backlog / Pending</span><span id="count-pending" class="bg-gray-300 px-2 rounded-full text-gray-700">0</span></div>
+                <div class="p-3 border-b border-gray-300 font-bold text-gray-600 text-xs uppercase tracking-wider flex justify-between shrink-0 bg-gray-200 rounded-t-xl z-10"><span>Triage / Pending</span><span id="count-pending" class="bg-gray-300 px-2 rounded-full text-gray-700">0</span></div>
                 <div id="col-pending" class="kanban-col p-3 space-y-3"></div>
             </div>
+            <!-- IN PROGRESS -->
             <div class="flex-1 flex flex-col bg-blue-50 rounded-xl border border-blue-200 shadow-sm" ondragover="allowDrop(event)" ondrop="drop(event, 'In Progress')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
                 <div class="p-3 border-b border-blue-200 font-bold text-blue-800 text-xs uppercase tracking-wider flex justify-between shrink-0 bg-blue-50 rounded-t-xl z-10"><span>In Development</span><span id="count-progress" class="bg-blue-200 px-2 rounded-full text-blue-800">0</span></div>
                 <div id="col-progress" class="kanban-col p-3 space-y-3"></div>
             </div>
+            <!-- COMPLETE -->
             <div class="flex-1 flex flex-col bg-green-50 rounded-xl border border-green-200 shadow-sm" ondragover="allowDrop(event)" ondrop="drop(event, 'Complete')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
                 <div class="p-3 border-b border-green-200 font-bold text-green-800 text-xs uppercase tracking-wider flex justify-between shrink-0 bg-green-50 rounded-t-xl z-10"><span>Completed / Live</span><span id="count-done" class="bg-green-200 px-2 rounded-full text-green-800">0</span></div>
                 <div id="col-done" class="kanban-col p-3 space-y-3"></div>
@@ -122,7 +125,7 @@
         </div>
     </div>
 
-    <!-- SIDE FORM (Existing Code) -->
+    <!-- SIDE FORM -->
     <div id="side-form" class="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl border-l border-gray-200 z-30 slide-panel closed flex flex-col">
         <div class="p-6 bg-gray-900 text-white flex justify-between items-center shrink-0"><h2 class="font-bold text-lg">Submit Request</h2><button onclick="toggleForm()" class="text-gray-400 hover:text-white text-xl">×</button></div>
         <div class="p-6 space-y-4 flex-1 overflow-y-auto">
@@ -132,7 +135,13 @@
                     <label class="cursor-pointer"><input type="radio" name="target" value="LIVE" class="peer sr-only"><div class="text-center text-xs border rounded p-2 peer-checked:bg-green-600 peer-checked:text-white hover:bg-gray-50 font-bold">🚀 SignOS Live</div></label>
                 </div>
             </div>
-            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Type</label><div class="grid grid-cols-3 gap-2"><label class="cursor-pointer"><input type="radio" name="cat" value="Feature" class="peer sr-only" checked><div class="text-center text-xs border rounded p-2 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-gray-50 font-bold">Feature</div></label><label class="cursor-pointer"><input type="radio" name="cat" value="Bug" class="peer sr-only"><div class="text-center text-xs border rounded p-2 peer-checked:bg-red-600 peer-checked:text-white hover:bg-gray-50 font-bold">Bug</div></label><label class="cursor-pointer"><input type="radio" name="cat" value="Goal" class="peer sr-only"><div class="text-center text-xs border rounded p-2 peer-checked:bg-purple-100 peer-checked:text-purple-800 hover:bg-gray-50 font-bold">Goal</div></label></div></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Type</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <label class="cursor-pointer"><input type="radio" name="cat" value="Feature" class="peer sr-only" checked><div class="text-center text-xs border rounded p-2 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-gray-50 font-bold">Feature</div></label>
+                    <label class="cursor-pointer"><input type="radio" name="cat" value="Bug" class="peer sr-only"><div class="text-center text-xs border rounded p-2 peer-checked:bg-red-600 peer-checked:text-white hover:bg-gray-50 font-bold">Bug</div></label>
+                    <label class="cursor-pointer"><input type="radio" name="cat" value="Content" class="peer sr-only"><div class="text-center text-xs border rounded p-2 peer-checked:bg-purple-600 peer-checked:text-white hover:bg-gray-50 font-bold">Content</div></label>
+                </div>
+            </div>
             <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Priority</label><select id="inp-prio" class="w-full border p-2 rounded text-sm bg-white"><option value="Low">Low</option><option value="Med" selected>Medium</option><option value="High">High</option></select></div>
             <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Title</label><input type="text" id="inp-title" class="w-full border p-2 rounded text-sm font-bold"></div>
             <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Description</label><textarea id="inp-desc" class="w-full border p-2 rounded text-sm h-32"></textarea></div>
@@ -140,16 +149,16 @@
         <div class="p-6 border-t border-gray-200 bg-gray-50 shrink-0"><button onclick="submitItem()" id="btn-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow transition">SUBMIT ITEM</button></div>
     </div>
 
-    <!-- TICKET MODAL (Existing Code) -->
+    <!-- TICKET MODAL -->
     <div id="ticket-modal" class="fixed inset-0 z-40 hidden flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
             <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-start shrink-0"><div><div class="flex items-center gap-2 mb-1"><span id="t-id" class="text-[9px] font-bold bg-gray-200 text-gray-600 px-1.5 rounded border border-gray-300 font-mono">ID</span><span id="t-cat" class="text-[9px] font-bold uppercase tracking-wide">CAT</span></div><h2 id="t-title" class="text-xl font-black text-gray-900 leading-tight">Ticket Title</h2></div><button onclick="closeTicket()" class="text-gray-400 hover:text-red-500 text-2xl font-bold leading-none">&times;</button></div>
             <div class="flex-1 overflow-y-auto p-6 space-y-6"><div><h4 class="text-xs font-bold text-gray-400 uppercase mb-1">Description</h4><p id="t-desc" class="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded border border-gray-100"></p></div><div><h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Activity History</h4><div id="t-history" class="space-y-3"></div></div></div>
-            <div class="bg-gray-100 px-6 py-4 border-t border-gray-200 shrink-0"><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Add Update / Change Status</label><div class="flex gap-2"><select id="t-new-status" class="bg-white border border-gray-300 text-xs font-bold rounded px-2 py-2 w-32"><option value="">No Change</option><option value="Pending">Move: Pending</option><option value="In Progress">Move: Doing</option><option value="Complete">Move: Done</option></select><input type="text" id="t-comment" placeholder="Add a note..." class="flex-1 border border-gray-300 rounded px-3 text-sm focus:border-blue-500 outline-none"><button onclick="postUpdate()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded text-xs">POST</button></div></div>
+            <div class="bg-gray-100 px-6 py-4 border-t border-gray-200 shrink-0"><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Add Update / Change Status</label><div class="flex gap-2"><select id="t-new-status" class="bg-white border border-gray-300 text-xs font-bold rounded px-2 py-2 w-32"><option value="">No Change</option><option value="Pending">Move: Triage</option><option value="In Progress">Move: Doing</option><option value="Complete">Move: Done</option></select><input type="text" id="t-comment" placeholder="Add a note..." class="flex-1 border border-gray-300 rounded px-3 text-sm focus:border-blue-500 outline-none"><button onclick="postUpdate()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded text-xs">POST</button></div></div>
         </div>
     </div>
 
-    <!-- CHANGELOG PANEL (Existing Code) -->
+    <!-- CHANGELOG PANEL -->
     <div id="changelog-panel" class="fixed inset-y-0 right-0 w-[500px] max-w-full bg-white shadow-2xl border-l border-gray-200 z-50 slide-panel closed flex flex-col font-sans transition-transform duration-300 ease-in-out">
         <div class="p-6 bg-gray-900 text-white flex justify-between items-center shrink-0 shadow-md">
             <div><h2 class="font-bold text-lg">System Changelog</h2><p class="text-[10px] text-gray-400 uppercase tracking-wider">Live Sync: GitHub Repository</p></div>
@@ -160,9 +169,10 @@
 
 <script>
     const user = sessionStorage.getItem('signos_user') || 'Guest';
+    const role = sessionStorage.getItem('signos_role'); // Check Role for security lock
+    
     let currentTicketId = null;
     let allRoadmapData = [];
-    // NEW: Added 'targets' array to activeFilters
     let activeFilters = { users: [], cats: [], prios: [], targets: [] };
 
     window.onload = function() { loadData(); };
@@ -195,15 +205,8 @@
     }
 
     function toggleFilter(type, value, btnElement) {
-        // Logic to select correct filter array based on type
-        const map = {
-            'cat': activeFilters.cats,
-            'prio': activeFilters.prios,
-            'users': activeFilters.users,
-            'target': activeFilters.targets // NEW
-        };
+        const map = { 'cat': activeFilters.cats, 'prio': activeFilters.prios, 'users': activeFilters.users, 'target': activeFilters.targets };
         const arr = map[type];
-        
         const idx = arr.indexOf(value);
         if(idx === -1) { arr.push(value); btnElement.classList.add('active'); }
         else { arr.splice(idx, 1); btnElement.classList.remove('active'); }
@@ -228,8 +231,6 @@
             if(activeFilters.cats.length > 0 && !activeFilters.cats.includes(val(item,'Category'))) return false;
             if(activeFilters.prios.length > 0 && !activeFilters.prios.includes(val(item,'Priority'))) return false;
             
-            // NEW TARGET FILTER LOGIC
-            // Default to 'APP' if column is empty
             const itemTarget = val(item, 'Target_Env') || 'APP';
             if(activeFilters.targets.length > 0 && !activeFilters.targets.includes(itemTarget)) return false;
 
@@ -239,6 +240,9 @@
     }
 
     function renderBoard(data) {
+        // SECURITY LOCK: Only SUPER users can move cards
+        const isSuper = (role === 'SUPER');
+
         const cols = { pending: document.getElementById('col-pending'), progress: document.getElementById('col-progress'), done: document.getElementById('col-done') };
         Object.values(cols).forEach(el => el.innerHTML = "");
         let counts = { pending:0, progress:0, done:0 };
@@ -247,24 +251,42 @@
             const id = val(item, 'ID');
             if(!id) return;
             const card = document.createElement('div');
-            const prio = val(item, 'Priority'); const cat = val(item, 'Category');
-            let borderClass = prio === 'High' ? 'card-high' : (prio === 'Low' ? 'card-low' : 'card-med');
-            let catColor = cat === 'Bug' ? "bg-red-100 text-red-800" : (cat === 'Goal' ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800");
             
+            // Priority Styling
+            const prio = val(item, 'Priority');
+            let borderClass = prio === 'High' ? 'card-high' : (prio === 'Low' ? 'card-low' : 'card-med');
+            
+            // Category Styling (Updated)
+            const cat = val(item, 'Category');
+            let catColor = cat === 'Bug' ? "bg-red-100 text-red-800" : (cat === 'Content' ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800");
+            
+            // Context Badge (New)
+            const context = val(item, 'Context') || 'General';
+            const ctxBadge = `<span class="text-[8px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded border border-gray-200 truncate max-w-[80px]" title="${context}">${context}</span>`;
+
+            // Environment Badge
             const target = val(item, 'Target_Env') || 'APP';
             const targetBadge = target === 'LIVE' 
                 ? '<span class="text-[8px] bg-green-100 text-green-800 px-1 rounded border border-green-200">LIVE</span>' 
                 : '<span class="text-[8px] bg-orange-100 text-orange-800 px-1 rounded border border-orange-200">APP</span>';
 
-            card.className = `draggable-card bg-white p-4 rounded shadow-sm hover:shadow-md transition cursor-grab ${borderClass} border-l-4 group relative`;
-            card.draggable = true; card.id = `card-${id}`;
-            card.ondragstart = (e) => drag(e, id);
+            // Drag Lock Logic
+            if (isSuper) {
+                card.className = `draggable-card bg-white p-4 rounded shadow-sm hover:shadow-md transition cursor-grab ${borderClass} border-l-4 group relative mb-3`;
+                card.draggable = true;
+                card.ondragstart = (e) => drag(e, id);
+            } else {
+                card.className = `bg-white p-4 rounded shadow-sm transition border-l-4 ${borderClass} group relative mb-3 opacity-90 cursor-default`;
+            }
+            
+            card.id = `card-${id}`;
             card.onclick = (e) => { if(!card.classList.contains('dragging')) openTicket(id); };
 
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-2">
-                    <div class="flex gap-1">
+                    <div class="flex gap-1 items-center">
                         <span class="text-[9px] font-bold uppercase ${catColor} px-1.5 py-0.5 rounded">${cat}</span>
+                        ${ctxBadge}
                         ${targetBadge}
                     </div>
                     <span class="text-[9px] text-gray-400 group-hover:text-blue-500">View →</span>
@@ -281,23 +303,26 @@
             else if(status.includes('complete') || status.includes('done')) { cols.done.appendChild(card); counts.done++; }
             else { cols.pending.appendChild(card); counts.pending++; }
         });
+        
         document.getElementById('count-pending').innerText = counts.pending;
         document.getElementById('count-progress').innerText = counts.progress;
         document.getElementById('count-done').innerText = counts.done;
     }
 
-    // Existing Drag/Drop and Form logic preserved below
     function drag(ev, id) { ev.dataTransfer.setData("text", id); ev.target.classList.add('dragging'); }
     function allowDrop(ev) { ev.preventDefault(); }
     function dragEnter(ev) { ev.preventDefault(); ev.currentTarget.classList.add('drop-active'); }
     function dragLeave(ev) { ev.currentTarget.classList.remove('drop-active'); }
+    
     async function drop(ev, newStatusLabel) {
         ev.preventDefault(); ev.currentTarget.classList.remove('drop-active');
         const cardId = ev.dataTransfer.getData("text");
         const cardEl = document.getElementById(`card-${cardId}`);
         if (!cardEl) return;
+        
         cardEl.classList.remove('dragging');
         ev.currentTarget.querySelector('.kanban-col').prepend(cardEl);
+        
         try {
             const comment = `Status changed to ${newStatusLabel} (Drag & Drop)`;
             await fetch(`${SCRIPT_URL}?req=add_action&id=${cardId}&user=${user}&type=Status Update&msg=${encodeURIComponent(comment)}&new_status=${newStatusLabel}`);
@@ -361,7 +386,8 @@
         
         if(!title) { alert("Title Required"); return; } btn.disabled = true;
         try {
-            const res = await fetch(`${SCRIPT_URL}?req=add_roadmap&user=${user}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}&prio=${prio}&cat=${cat}&target=${target}`);
+            // Updated to default Source to 'Internal' and Context to 'Roadmap_Tool'
+            const res = await fetch(`${SCRIPT_URL}?req=add_roadmap&user=${user}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}&prio=${prio}&cat=${cat}&target=${target}&source=Internal&context=Roadmap_Tool`);
             const data = await res.json();
             if(data.status === 'success') { toggleForm(); document.getElementById('inp-title').value = ""; document.getElementById('inp-desc').value = ""; loadData(); }
         } catch(e) { alert("Error"); } finally { btn.disabled = false; }
