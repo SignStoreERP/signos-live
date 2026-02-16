@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Backup v1.1 | SignOS Admin</title>
+    <title>Log Backup v1.4 | SignOS Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
 </head>
@@ -119,7 +119,8 @@
 
         try {
             // Call API
-            const url = `${SCRIPT_URL}?req=manual_archive&pin=${pin}&ip=${clientIP}`;
+            // ADDED BACKTICKS (` `) around the string
+const url = `${SCRIPT_URL}?req=manual_archive&pin=${pin}&ip=${clientIP}`;
             const response = await fetch(url);
             const data = await response.json();
 
