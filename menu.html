@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignOS Menu v5.1</title>
+    <title>SignOS Menu v5.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans flex flex-col">
 
-    <!-- 1. HEADER -->
     <div class="bg-gray-800 text-white px-6 py-2 flex justify-between items-center text-xs shadow-md shrink-0">
         <div class="flex gap-4">
             <span class="tracking-wide">USER: <span class="font-bold text-gray-200 uppercase" id="auth-user">---</span></span>
@@ -20,210 +19,198 @@
 
     <div class="max-w-6xl mx-auto p-8 flex-1 w-full">
         
-        <!-- 2. TITLE BAR -->
-        <div class="mb-8 flex justify-between items-end bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+        <div class="mb-8 flex justify-between items-end">
             <div>
-                <h1 class="text-3xl font-black text-gray-800 tracking-tight">SignOS <span class="text-blue-500">Core</span></h1>
-                <p class="text-gray-400 text-sm font-medium mt-1">Production Management System</p>
+                <h1 class="text-3xl font-bold text-gray-800 tracking-tight">SignOS Dashboard</h1>
+                <p class="text-gray-500 text-sm mt-1" id="env-badge">Loading Environment...</p>
             </div>
-            <div class="text-right">
-                <span id="sys-badge" class="bg-gray-100 text-gray-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-gray-200">Loading Environment...</span>
+            
+            <div id="super-badge" class="hidden bg-purple-600 text-white px-3 py-1 rounded text-[10px] font-bold tracking-widest shadow-lg animate-pulse">
+                SUPER USER ACTIVE
             </div>
         </div>
 
-        <!-- 3. MAIN APP GRID (Dynamic) -->
-        <div id="loader" class="text-center py-20 text-gray-400 animate-pulse">Loading Modules...</div>
-        <div id="app-container" class="hidden space-y-8 min-h-[400px]"></div>
-
-        <!-- 4. ADMIN CONSOLE (Bottom Footer) -->
-        <div id="admin-workflow" class="hidden mt-12 pt-8 border-t-2 border-dashed border-gray-300">
-            <div class="flex justify-between items-end mb-4">
-                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">ADMINISTRATION & LOGS</h3>
-                <span id="super-badge" class="hidden bg-purple-600 text-white text-[9px] font-bold px-2 py-0.5 rounded">SUPER USER ACTIVE</span>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <a href="admin_roadmap.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-orange-500 cursor-pointer">
-                    <div class="flex justify-between items-start">
-                        <div><h3 class="font-bold text-white text-sm">Roadmap</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-orange-300">Feature Requests & Bugs</p></div>
-                        <span class="text-lg">🚧</span>
-                    </div>
-                </a>
-
-                <a href="admin_viewer.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-blue-500 cursor-pointer">
-                    <div class="flex justify-between items-start">
-                        <div><h3 class="font-bold text-white text-sm">System Logs</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-blue-300">View Access History</p></div>
-                        <span class="text-lg">⚙️</span>
-                    </div>
-                </a>
-
-                <!-- Backup: Visible to ADMIN and SUPER -->
-                <a href="admin_backup.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-green-500 cursor-pointer">
-                    <div class="flex justify-between items-start">
-                        <div><h3 class="font-bold text-white text-sm">Backup</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-green-300">Manual Data Export</p></div>
-                        <span class="text-lg">💾</span>
-                    </div>
-                </a>
-
-                <a href="admin_changelog.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-purple-500 cursor-pointer">
-                    <div class="flex justify-between items-start">
-                        <div><h3 class="font-bold text-white text-sm">Changelog</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-purple-300">Commit History</p></div>
-                        <span class="text-lg">📜</span>
-                    </div>
-                </a>
+        <div id="menu-container" class="space-y-8">
+            <div class="text-center py-20 text-gray-400 animate-pulse tracking-widest text-xs font-bold">
+                CONNECTING TO BACKEND...
             </div>
         </div>
 
     </div>
 
+    <div class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
+            <p class="text-[10px] text-gray-400">SignOS v5.2 | &copy; 2026 SignStoreERP</p>
+            <div class="flex gap-4 opacity-50 grayscale hover:grayscale-0 transition duration-300">
+                <a href="admin_roadmap.html" class="text-xl hover:scale-110 transition" title="Roadmap">🚧</a>
+                <a href="admin_viewer.html" class="text-xl hover:scale-110 transition" title="System Logs">⚙️</a>
+                <a href="admin_backup.html" class="text-xl hover:scale-110 transition" title="Backup Data">💾</a>
+                <a href="docs.html" class="text-xl hover:scale-110 transition" title="Documentation">📜</a>
+            </div>
+        </div>
+    </div>
+
 <script>
-// 1. SAFETY VALVE
-function val(obj, key) {
-    if (!obj) return "";
-    return obj[key] || obj[key.toUpperCase()] || obj[key.toLowerCase()] || "";
-}
+    // --- CONFIG ---
+    // Icons for standard modules (Tailwind colors)
+    const ICON_STYLES = {
+        blue: "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white",
+        green: "bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white",
+        purple: "bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white",
+        red: "bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white",
+        orange: "bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white",
+        slate: "bg-slate-50 text-slate-600 group-hover:bg-slate-600 group-hover:text-white",
+        teal: "bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white",
+        indigo: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white",
+        pink: "bg-pink-50 text-pink-600 group-hover:bg-pink-600 group-hover:text-white",
+        yellow: "bg-yellow-50 text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white",
+        gray: "bg-gray-100 text-gray-600 group-hover:bg-gray-600 group-hover:text-white"
+    };
 
-// 2. STYLE MAP
-const ICON_STYLES = {
-    blue: "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white",
-    green: "bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white",
-    purple: "bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white",
-    red: "bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white",
-    orange: "bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white",
-    slate: "bg-slate-50 text-slate-600 group-hover:bg-slate-600 group-hover:text-white",
-    teal: "bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white",
-    indigo: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white",
-    pink: "bg-pink-50 text-pink-600 group-hover:bg-pink-600 group-hover:text-white",
-    yellow: "bg-yellow-50 text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white",
-    gray: "bg-gray-100 text-gray-600 group-hover:bg-gray-600 group-hover:text-white"
-};
+    window.onload = async function() {
+        const user = sessionStorage.getItem('signos_user');
+        const role = sessionStorage.getItem('signos_role');
+        const permsRaw = sessionStorage.getItem('signos_perms');
 
-window.onload = async function() {
-    const user = sessionStorage.getItem('signos_user');
-    const role = sessionStorage.getItem('signos_role'); // SALES, PROD, ADMIN, SUPER
+        if (!user) { window.location.href = 'index.html'; return; }
 
-    document.getElementById('auth-user').innerText = user || 'GUEST';
-    document.getElementById('auth-role').innerText = role || 'VIEW';
+        document.getElementById('auth-user').innerText = user;
+        document.getElementById('auth-role').innerText = role;
 
-    // Environment Badge
-    const badge = document.getElementById('sys-badge');
-    if (IS_DEV_ENV) {
-        badge.className = "bg-orange-100 text-orange-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-orange-200";
-        badge.innerText = "DEV ENVIRONMENT";
-    } else {
-        badge.className = "bg-green-100 text-green-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-green-200";
-        badge.innerText = "PRODUCTION ONLINE";
-    }
+        // Environment Badge
+        const envEl = document.getElementById('env-badge');
+        if (IS_DEV_ENV) {
+            envEl.innerHTML = `<span class="text-orange-600 font-bold">⚠️ DEVELOPMENT ENVIRONMENT</span> | <span class="text-gray-400">${clientIP}</span>`;
+        } else {
+            envEl.innerHTML = `<span class="text-green-600 font-bold">● LIVE SYSTEM</span> | <span class="text-gray-400">${clientIP}</span>`;
+        }
 
-    // Admin Console Visibility
-    if (role === 'ADMIN' || role === 'SUPER') {
-        document.getElementById('admin-workflow').classList.remove('hidden');
-        if (role === 'SUPER') document.getElementById('super-badge').classList.remove('hidden');
-    }
+        // Super User Badge
+        if (role === 'SUPER') {
+            document.getElementById('super-badge').classList.remove('hidden');
+        }
 
-    try {
-        const response = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Modules&ip=${clientIP}`);
-        const data = await response.json();
+        // Log Telemetry
+        fetch(`${SCRIPT_URL}?tab=SYS_Modules&req=table&action=menu_load&user=${user}&role=${role}&ip=${clientIP}`, {mode: 'no-cors'});
+
+        // Load Modules
+        await loadModules(role);
+    };
+
+    async function loadModules(role) {
+        const container = document.getElementById('menu-container');
         
-        document.getElementById('loader').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
-        
-        renderMenu(data, role);
+        try {
+            const response = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Modules`);
+            const data = await response.json();
 
-    } catch (e) {
-        document.getElementById('loader').innerHTML = `<div class="p-4 text-red-500 font-bold">Error: ${e.message}</div>`;
-    }
-};
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="text-center text-red-500 font-bold">ERROR: Could not load modules.</div>`;
+                return;
+            }
 
-function renderMenu(modules, role) {
-    const container = document.getElementById('app-container');
-    container.innerHTML = "";
-
-    const categories = {};
-    modules.forEach(mod => {
-        const cat = val(mod, 'Category') || 'Uncategorized';
-        if (!categories[cat]) categories[cat] = [];
-        categories[cat].push(mod);
-    });
-
-    for (const [catName, mods] of Object.entries(categories)) {
-        const section = document.createElement('section');
-        section.innerHTML = `<h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-200 pb-2">${catName}</h2>`;
-        
-        const grid = document.createElement('div');
-        grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8";
-
-        mods.forEach(mod => {
-            const id = val(mod, 'Module_ID');
+            container.innerHTML = ""; // Clear loader
             
-            // 1. DEDUPLICATION: Hide bottom-bar tools from main grid
-            if (id === 'SYS_Roadmap' || id === 'SYS_Changelog' || id === 'SYS_Log_Analyzer' || id === 'SYS_Log_Backup') return;
+            // Get unique categories
+            const categories = [...new Set(data.map(item => item.Category))].filter(Boolean);
 
-            // 2. GHOST PROTOCOL (NEW): Check if the file actually exists in this environment
-            const devVer = val(mod, 'Dev_Ver');
-            const liveVer = val(mod, 'Live_Ver');
-            const targetVer = IS_DEV_ENV ? devVer : liveVer;
+            // Render Sections
+            categories.forEach(cat => {
+                const section = document.createElement('div');
+                section.className = "bg-white rounded-2xl shadow-sm border border-gray-200 p-6";
+                
+                const title = document.createElement('h2');
+                title.className = "text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2";
+                title.innerText = cat;
+                section.appendChild(title);
 
-            // If we are on LIVE and there is no Live Version, SKIP IT entirely.
-            // This prevents 404 links for features that are only in testing.
-            if (!IS_DEV_ENV && (!liveVer || liveVer === '')) return;
+                const grid = document.createElement('div');
+                grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
 
-            // 3. MATRIX PERMISSION LOGIC (The "Twin-Engine" Switch)
-            const checkRole = (role === 'SUPER') ? 'ADMIN' : role;
-            const envPrefix = IS_DEV_ENV ? 'Dev_' : 'Live_';
-            const permKey = envPrefix + checkRole; // e.g. "Live_SALES"
+                // Filter modules for this category
+                const modules = data.filter(m => m.Category === cat);
 
-            // Get the permission value from the row (Boolean)
-            const isAllowed = String(val(mod, permKey)).toUpperCase() === 'TRUE';
+                modules.forEach(mod => {
+                    // --- SECURITY LOGIC FIX v5.2 ---
+                    // 1. Map 'SUPER' to 'ADMIN' for visibility checks (since Live_SUPER column doesn't exist)
+                    const checkRole = (role === 'SUPER') ? 'ADMIN' : role;
+                    
+                    // 2. Check Visibility
+                    // If the column Live_ADMIN (or SALES/PROD) is not "TRUE", it is hidden.
+                    const isVisible = String(val(mod, 'Live_' + checkRole)).toUpperCase() === 'TRUE';
+                    
+                    // 3. Super User Override: 
+                    // If I am SUPER, I see everything, even if isVisible is false.
+                    // If I am not SUPER, I strictly respect isVisible.
+                    if (!isVisible && role !== 'SUPER') return; 
 
-            // SUPER OVERRIDE: Super Users see everything allowed by the version check
-            if (!isAllowed && role !== 'SUPER') return;
+                    const displayName = val(mod, 'Display_Name');
+                    const fileLink = val(mod, 'File_Link');
+                    const iconColor = val(mod, 'Icon');
+                    const iconPath = val(mod, 'Icon_Path');
+                    
+                    // 4. Version Logic
+                    const devVer = val(mod, 'Dev_Ver');
+                    const liveVer = val(mod, 'Live_Ver');
+                    let targetVer = IS_DEV_ENV ? (devVer || 'v0.0') : (liveVer || 'v0.0');
 
-            const displayName = val(mod, 'Display_Name');
-            const fileLink = val(mod, 'File_Link');
-            const iconColor = val(mod, 'Icon');
-            const iconPath = val(mod, 'Icon_Path'); 
+                    // 5. Target Mode (Production vs Dev vs Sales)
+                    let targetMode = (role === 'PROD') ? 'production' : (role === 'ADMIN' || role === 'SUPER' ? 'dev' : 'sales');
 
-            let targetMode = (role === 'PROD') ? 'production' : (role === 'ADMIN' || role === 'SUPER' ? 'dev' : 'sales');
-            
-            const link = document.createElement('a');
-            link.href = `${fileLink}?mode=${targetMode}`;
-            link.className = "block bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition group relative";
+                    const link = document.createElement('a');
+                    link.href = `${fileLink}?mode=${targetMode}`;
+                    link.className = "block bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition group relative";
+                    
+                    const colorClass = ICON_STYLES[(iconColor || 'blue').toLowerCase()] || ICON_STYLES['blue'];
+                    const verBg = IS_DEV_ENV ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500';
 
-            const colorClass = ICON_STYLES[(iconColor || 'blue').toLowerCase()] || ICON_STYLES['blue'];
-            const verBg = IS_DEV_ENV ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500';
-            
-            // Draft Badge: Show if we are in Dev Env OR if the item is hidden on Live but we are viewing it anyway (Super)
-            const isHiddenOnLive = String(val(mod, 'Live_' + checkRole)).toUpperCase() !== 'TRUE';
-            const draftBadge = (isHiddenOnLive && role === 'SUPER') ? `<div class="absolute top-2 right-2 text-[9px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded border border-purple-200">HIDDEN</div>` : '';
+                    // Draft Badge: Show if hidden on Live but visible to Super
+                    const draftBadge = (!isVisible && role === 'SUPER') 
+                        ? `<div class="absolute top-2 right-2 text-[9px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded border border-purple-200">HIDDEN</div>` 
+                        : '';
 
-            const iconHtml = iconPath 
-                ? `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="${iconPath}"></path></svg>`
-                : `<span class="text-xl font-bold">●</span>`;
+                    const iconHtml = iconPath 
+                        ? `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="${iconPath}"></path></svg>`
+                        : `<span class="text-xl font-bold">●</span>`;
 
-            link.innerHTML = `
-                ${draftBadge}
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center transition ${colorClass}">
-                        ${iconHtml}
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">${displayName}</h3>
-                        <div class="mt-1 flex items-center gap-2">
-                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${verBg}">${targetVer || 'v0.0'}</span>
+                    link.innerHTML = `
+                        ${draftBadge}
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center transition ${colorClass}">
+                                ${iconHtml}
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">${displayName}</h3>
+                                <div class="mt-1 flex items-center gap-2">
+                                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${verBg}">${targetVer}</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            `;
-            grid.appendChild(link);
-        });
+                    `;
+                    grid.appendChild(link);
+                });
 
-        if (grid.children.length > 0) {
-            section.appendChild(grid);
-            container.appendChild(section);
+                if (grid.children.length > 0) {
+                    section.appendChild(grid);
+                    container.appendChild(section);
+                }
+            });
+
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = `<div class="text-center text-red-500 font-bold p-10">
+                Connection Failed.<br>
+                <span class="text-xs font-normal text-gray-500">${e.message}</span>
+            </div>`;
         }
     }
-}
+
+    // Helper to safely get value from object keys (case-insensitive)
+    function val(obj, key) {
+        if (!obj) return "";
+        return obj[key] || obj[key.toUpperCase()] || obj[key.toLowerCase()] || "";
+    }
 </script>
+
 </body>
 </html>
