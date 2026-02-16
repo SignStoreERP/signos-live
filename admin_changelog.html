@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Activity v1.1 | SignOS</title>
+    <title>System Activity v1.4 | SignOS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
     <style>
@@ -67,6 +67,12 @@
 
     function goBack() { window.history.back(); }
 
+    // SAFETY VALVE
+    function val(obj, key) {
+        if (!obj) return "";
+        return obj[key] || obj[key.toUpperCase()] || obj[key.toLowerCase()] || "";
+    }
+
     async function loadHistory() {
         try {
             const response = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Changelog&ip=${clientIP}`);
@@ -79,22 +85,22 @@
 
             // Stats Logic
             document.getElementById('stat-total').innerText = data.length;
-            const authors = [...new Set(data.map(i => i.Author))].join(", ");
+            const authors = [...new Set(data.map(i => val(i, 'Author')))].join(", ");
             document.getElementById('stat-authors').innerText = authors;
             
             // Sort: Newest First
-            data.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+            data.sort((a, b) => new Date(val(b, 'Timestamp')) - new Date(val(a, 'Timestamp')));
             
-            // --- FIX START ---
-            // We use data because 'data' is the whole list
+            // Fix "Invalid Date": Use first item in array
             const latest = data; 
-            if (latest && latest.Timestamp) {
-                const d = new Date(latest.Timestamp);
-                // Shows: "2/20/2026, 2:30 PM"
-                const niceDate = d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                document.getElementById('stat-last').innerText = niceDate;
+            if (latest) {
+                const ts = val(latest, 'Timestamp');
+                if (ts) {
+                    const d = new Date(ts);
+                    const niceDate = d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    document.getElementById('stat-last').innerText = niceDate;
+                }
             }
-            // --- FIX END ---
 
             renderTimeline(data);
 
@@ -108,12 +114,26 @@
         container.innerHTML = "";
 
         rows.forEach(row => {
-            const d = new Date(row.Timestamp);
+            // SAFE DATA EXTRACTION
+            const ts = val(row, 'Timestamp');
+            const author = val(row, 'Author');
+            const msg = val(row, 'Message');
+            const hash = val(row, 'Commit Hash');
+            const link = val(row, 'GitHub Link');
+            const env = val(row, 'Environment') || "DEV";
+
+            const d = new Date(ts);
             const dateStr = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
             const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
+            // Twin-Engine Badge Logic
+            const isLive = env === 'LIVE';
+            const badgeColor = isLive ? "bg-green-100 text-green-800 border-green-200" : "bg-orange-100 text-orange-800 border-orange-200";
+            const icon = isLive ? "🚀" : "🛠️";
+            const borderColor = isLive ? "border-green-500 shadow-green-100" : "border-blue-100";
+
             // Highlight Ticket IDs (e.g., RMP_OPS_01)
-            const msg = row.Message.replace(/(RMP_[A-Za-z0-9_]+)/g, '<span class="bg-yellow-100 text-yellow-800 px-1 rounded font-bold border border-yellow-200 text-[10px] ml-1">$1</span>');
+            const fmtMsg = msg.replace(/(RMP_[A-Za-z0-9_]+)/g, '<span class="bg-yellow-100 text-yellow-800 px-1 rounded font-bold border border-yellow-200 text-[10px] ml-1">$1</span>');
 
             const item = document.createElement('div');
             item.className = "timeline-item relative pl-12 py-2";
@@ -122,29 +142,31 @@
                 <!-- Vertical Line -->
                 <div class="timeline-line"></div>
                 
-                <!-- Icon -->
+                <!-- Icon Badge -->
                 <div class="absolute left-0 top-3 w-12 flex justify-center z-10">
-                    <div class="w-10 h-10 bg-white border-2 border-blue-100 rounded-full flex items-center justify-center shadow-sm">
-                        <span class="text-lg">🛠️</span>
+                    <div class="w-10 h-10 bg-white border-2 ${borderColor} rounded-full flex items-center justify-center shadow-sm">
+                        <span class="text-lg">${icon}</span>
                     </div>
                 </div>
 
                 <!-- Content Card -->
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition group">
                     <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <span class="text-xs font-black text-gray-900 uppercase tracking-wide mr-2">${row.Author}</span>
-                            <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">${dateStr} • ${timeStr}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-black text-gray-900 uppercase tracking-wide">${author}</span>
+                            <span class="text-[9px] font-bold px-2 py-0.5 rounded border ${badgeColor}">${env}</span>
                         </div>
-                        <a href="${row['GitHub Link']}" target="_blank" class="text-[10px] font-mono text-blue-300 hover:text-blue-600 hover:underline">#${row['Commit Hash']} ↗</a>
+                        <div class="text-right">
+                             <span class="text-[10px] font-bold text-gray-400 block">${dateStr} • ${timeStr}</span>
+                        </div>
                     </div>
                     
-                    <p class="text-sm text-gray-700 font-medium leading-relaxed">${msg}</p>
+                    <p class="text-sm text-gray-700 font-medium leading-relaxed">${fmtMsg}</p>
                     
-                    ${row.Files_Changed ? `<div class="mt-3 pt-3 border-t border-gray-50 flex items-center gap-2">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase">Impact:</span>
-                        <span class="text-[10px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">${row.Files_Changed} Files Modified</span>
-                    </div>` : ''}
+                    <div class="mt-3 flex justify-between items-center border-t border-gray-50 pt-2">
+                        <span class="text-[9px] font-mono text-gray-400 bg-gray-50 px-1 rounded">#${hash}</span>
+                        <a href="${link}" target="_blank" class="text-[9px] font-bold text-blue-400 hover:text-blue-600 uppercase hover:underline">View Code ↗</a>
+                    </div>
                 </div>
             `;
             container.appendChild(item);
@@ -153,5 +175,3 @@
 </script>
 </body>
 </html>
-
-
