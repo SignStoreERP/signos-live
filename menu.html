@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignOS Menu v5.0</title>
+    <title>SignOS Menu v5.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
 </head>
@@ -159,31 +159,33 @@ function renderMenu(modules, role) {
             // 1. DEDUPLICATION: Hide bottom-bar tools from main grid
             if (id === 'SYS_Roadmap' || id === 'SYS_Changelog' || id === 'SYS_Log_Analyzer' || id === 'SYS_Log_Backup') return;
 
-            // 2. MATRIX PERMISSION LOGIC (The "Twin-Engine" Switch)
-            // Construct the key: e.g., "Live_SALES" or "Dev_ADMIN"
-            // SUPER users implicitly act as ADMIN for this check
-            
+            // 2. GHOST PROTOCOL (NEW): Check if the file actually exists in this environment
+            const devVer = val(mod, 'Dev_Ver');
+            const liveVer = val(mod, 'Live_Ver');
+            const targetVer = IS_DEV_ENV ? devVer : liveVer;
+
+            // If we are on LIVE and there is no Live Version, SKIP IT entirely.
+            // This prevents 404 links for features that are only in testing.
+            if (!IS_DEV_ENV && (!liveVer || liveVer === '')) return;
+
+            // 3. MATRIX PERMISSION LOGIC (The "Twin-Engine" Switch)
             const checkRole = (role === 'SUPER') ? 'ADMIN' : role;
             const envPrefix = IS_DEV_ENV ? 'Dev_' : 'Live_';
             const permKey = envPrefix + checkRole; // e.g. "Live_SALES"
 
             // Get the permission value from the row (Boolean)
-            // We use String() comparison to handle "TRUE" (text) vs true (bool)
             const isAllowed = String(val(mod, permKey)).toUpperCase() === 'TRUE';
 
-            // SUPER OVERRIDE: Super Users see everything, everywhere.
+            // SUPER OVERRIDE: Super Users see everything allowed by the version check
             if (!isAllowed && role !== 'SUPER') return;
 
             const displayName = val(mod, 'Display_Name');
             const fileLink = val(mod, 'File_Link');
-            const devVer = val(mod, 'Dev_Ver');
-            const liveVer = val(mod, 'Live_Ver');
             const iconColor = val(mod, 'Icon');
             const iconPath = val(mod, 'Icon_Path'); 
 
             let targetMode = (role === 'PROD') ? 'production' : (role === 'ADMIN' || role === 'SUPER' ? 'dev' : 'sales');
-            let targetVer = IS_DEV_ENV ? (devVer || 'v0.0') : (liveVer || 'v0.0');
-
+            
             const link = document.createElement('a');
             link.href = `${fileLink}?mode=${targetMode}`;
             link.className = "block bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition group relative";
@@ -208,7 +210,7 @@ function renderMenu(modules, role) {
                     <div>
                         <h3 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">${displayName}</h3>
                         <div class="mt-1 flex items-center gap-2">
-                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${verBg}">${targetVer}</span>
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${verBg}">${targetVer || 'v0.0'}</span>
                         </div>
                     </div>
                 </div>
