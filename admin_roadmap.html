@@ -3,60 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dev Roadmap v2.7 | SignOS</title>
+    <title>Dev Roadmap v3.0 | SignOS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
     
-    <!-- 1. STANDARD CSS (Immediate Load) -->
     <style>
         .kanban-col { height: 100%; overflow-y: auto; padding-right: 4px; }
         .kanban-col::-webkit-scrollbar { width: 6px; }
         .kanban-col::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .kanban-col::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .kanban-col::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Drag Visuals */
         .card-high { border-left: 4px solid #ef4444; }
         .card-med { border-left: 4px solid #f59e0b; }
         .card-low { border-left: 4px solid #3b82f6; }
         .drop-active { background-color: #e0f2fe !important; border: 2px dashed #3b82f6 !important; }
-        
         .slide-panel { transition: transform 0.3s ease-in-out; }
         .slide-panel.closed { transform: translateX(100%); }
         .modal { transition: opacity 0.25s ease; }
         body.modal-active { overflow: hidden; }
-        
-        /* Timeline Line */
         .timeline-line::before { content: ''; position: absolute; left: 19px; top: 30px; bottom: -10px; width: 2px; background: #e5e7eb; z-index: 0; }
         .timeline-item:last-child .timeline-line::before { display: none; }
     </style>
 
-    <!-- 2. TAILWIND COMPONENT CSS (Processed by Script) -->
     <style type="text/tailwindcss">
-        .filter-chip { 
-            @apply px-3 py-1 rounded-full text-[10px] font-bold border transition-all duration-200 uppercase tracking-wide cursor-pointer select-none flex items-center justify-center; 
-        }
-        
+        .filter-chip { @apply px-3 py-1 rounded-full text-[10px] font-bold border transition-all duration-200 uppercase tracking-wide cursor-pointer select-none flex items-center justify-center; }
         .chip-user { @apply bg-white border-gray-300 text-gray-500 hover:bg-gray-50 hover:border-gray-400; }
         .chip-user.active { @apply bg-gray-800 border-gray-800 text-white shadow-md transform scale-105; }
-
+        
         .chip-feat { @apply bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100; }
         .chip-feat.active { @apply bg-blue-600 border-blue-600 text-white shadow-md; }
-
         .chip-bug { @apply bg-red-50 border-red-200 text-red-600 hover:bg-red-100; }
         .chip-bug.active { @apply bg-red-600 border-red-600 text-white shadow-md; }
-
         .chip-goal { @apply bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100; }
         .chip-goal.active { @apply bg-purple-600 border-purple-600 text-white shadow-md; }
-
-        .chip-high { @apply bg-red-50 border-red-200 text-red-600 hover:bg-red-100; }
-        .chip-high.active { @apply bg-red-500 border-red-500 text-white shadow-md; }
-
-        .chip-med { @apply bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100; }
-        .chip-med.active { @apply bg-orange-500 border-orange-500 text-white shadow-md; }
-
-        .chip-low { @apply bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100; }
-        .chip-low.active { @apply bg-blue-400 border-blue-400 text-white shadow-md; }
+        
+        /* New Target Chips */
+        .chip-app { @apply bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100; }
+        .chip-app.active { @apply bg-orange-500 border-orange-500 text-white shadow-md; }
+        .chip-live { @apply bg-green-50 border-green-200 text-green-600 hover:bg-green-100; }
+        .chip-live.active { @apply bg-green-600 border-green-600 text-white shadow-md; }
 
         .draggable-card { @apply cursor-grab; }
         .draggable-card:active { @apply cursor-grabbing; }
@@ -72,7 +56,6 @@
             <span class="bg-purple-600 text-[10px] font-bold px-2 py-0.5 rounded text-white">LIVE TRACKER</span>
         </div>
         <div class="flex gap-4 text-xs font-bold items-center">
-            <!-- NEW: History Button -->
             <button onclick="toggleChangelog()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded transition flex items-center gap-1 border border-gray-500 shadow-lg">
                 <span>📜 System History</span>
             </button>
@@ -87,22 +70,25 @@
     <div class="bg-white border-b border-gray-200 px-4 py-3 shadow-sm z-20 shrink-0 flex flex-col gap-3">
         <div class="flex items-center gap-4">
             <div class="relative flex-1 max-w-md">
-                <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" id="filter-search" placeholder="Search by title, description, or ID..." class="w-full border border-gray-300 pl-9 pr-3 py-1.5 rounded-lg text-sm bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition" onkeyup="applyFilters()">
-            </div>
-            <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1 rounded-lg">
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Timeframe</span>
-                <input type="date" id="date-start" class="bg-transparent text-xs font-bold text-gray-700 outline-none cursor-pointer" onchange="applyFilters()">
-                <span class="text-gray-300">→</span>
-                <input type="date" id="date-end" class="bg-transparent text-xs font-bold text-gray-700 outline-none cursor-pointer" onchange="applyFilters()">
+                <input type="text" id="filter-search" placeholder="Search..." class="w-full border border-gray-300 pl-3 pr-3 py-1.5 rounded-lg text-sm bg-gray-50 outline-none" onkeyup="applyFilters()">
             </div>
             <div class="flex-1 text-right">
-                <button onclick="resetFilters()" class="text-[10px] text-gray-400 hover:text-red-500 font-bold uppercase tracking-wide transition">Reset All Filters ✕</button>
+                <button onclick="resetFilters()" class="text-[10px] text-gray-400 hover:text-red-500 font-bold uppercase transition">Reset All Filters ✕</button>
             </div>
         </div>
+        
         <div class="flex items-center gap-6 overflow-x-auto pb-1 no-scrollbar">
-            <div class="flex items-center gap-2 shrink-0"><span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">TEAM</span><div id="filter-users" class="flex gap-1"><span class="text-xs text-gray-400 italic px-2">Loading...</span></div></div>
+            <!-- TARGET FILTER (NEW) -->
+            <div class="flex items-center gap-2 shrink-0">
+                <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">TARGET</span>
+                <div class="flex gap-1">
+                    <button class="filter-chip chip-app" onclick="toggleFilter('target', 'APP', this)">App (Dev)</button>
+                    <button class="filter-chip chip-live" onclick="toggleFilter('target', 'LIVE', this)">Live</button>
+                </div>
+            </div>
+            
             <div class="w-px h-6 bg-gray-200 shrink-0"></div>
+
             <div class="flex items-center gap-2 shrink-0">
                 <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">TYPE</span>
                 <div class="flex gap-1">
@@ -111,15 +97,10 @@
                     <button class="filter-chip chip-goal" onclick="toggleFilter('cat', 'Goal', this)">Goal</button>
                 </div>
             </div>
+            
             <div class="w-px h-6 bg-gray-200 shrink-0"></div>
-            <div class="flex items-center gap-2 shrink-0">
-                <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">PRIO</span>
-                <div class="flex gap-1">
-                    <button class="filter-chip chip-high" onclick="toggleFilter('prio', 'High', this)">High</button>
-                    <button class="filter-chip chip-med" onclick="toggleFilter('prio', 'Med', this)">Med</button>
-                    <button class="filter-chip chip-low" onclick="toggleFilter('prio', 'Low', this)">Low</button>
-                </div>
-            </div>
+            
+            <div class="flex items-center gap-2 shrink-0"><span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">TEAM</span><div id="filter-users" class="flex gap-1"><span class="text-xs text-gray-400 italic px-2">Loading...</span></div></div>
         </div>
     </div>
 
@@ -141,10 +122,16 @@
         </div>
     </div>
 
-    <!-- SIDE FORM -->
+    <!-- SIDE FORM (Existing Code) -->
     <div id="side-form" class="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl border-l border-gray-200 z-30 slide-panel closed flex flex-col">
         <div class="p-6 bg-gray-900 text-white flex justify-between items-center shrink-0"><h2 class="font-bold text-lg">Submit Request</h2><button onclick="toggleForm()" class="text-gray-400 hover:text-white text-xl">×</button></div>
         <div class="p-6 space-y-4 flex-1 overflow-y-auto">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Target Environment</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="cursor-pointer"><input type="radio" name="target" value="APP" class="peer sr-only" checked><div class="text-center text-xs border rounded p-2 peer-checked:bg-orange-500 peer-checked:text-white hover:bg-gray-50 font-bold">🛠️ SignOS App</div></label>
+                    <label class="cursor-pointer"><input type="radio" name="target" value="LIVE" class="peer sr-only"><div class="text-center text-xs border rounded p-2 peer-checked:bg-green-600 peer-checked:text-white hover:bg-gray-50 font-bold">🚀 SignOS Live</div></label>
+                </div>
+            </div>
             <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Type</label><div class="grid grid-cols-3 gap-2"><label class="cursor-pointer"><input type="radio" name="cat" value="Feature" class="peer sr-only" checked><div class="text-center text-xs border rounded p-2 peer-checked:bg-blue-600 peer-checked:text-white hover:bg-gray-50 font-bold">Feature</div></label><label class="cursor-pointer"><input type="radio" name="cat" value="Bug" class="peer sr-only"><div class="text-center text-xs border rounded p-2 peer-checked:bg-red-600 peer-checked:text-white hover:bg-gray-50 font-bold">Bug</div></label><label class="cursor-pointer"><input type="radio" name="cat" value="Goal" class="peer sr-only"><div class="text-center text-xs border rounded p-2 peer-checked:bg-purple-100 peer-checked:text-purple-800 hover:bg-gray-50 font-bold">Goal</div></label></div></div>
             <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Priority</label><select id="inp-prio" class="w-full border p-2 rounded text-sm bg-white"><option value="Low">Low</option><option value="Med" selected>Medium</option><option value="High">High</option></select></div>
             <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Title</label><input type="text" id="inp-title" class="w-full border p-2 rounded text-sm font-bold"></div>
@@ -153,7 +140,7 @@
         <div class="p-6 border-t border-gray-200 bg-gray-50 shrink-0"><button onclick="submitItem()" id="btn-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow transition">SUBMIT ITEM</button></div>
     </div>
 
-    <!-- TICKET MODAL -->
+    <!-- TICKET MODAL (Existing Code) -->
     <div id="ticket-modal" class="fixed inset-0 z-40 hidden flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
             <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-start shrink-0"><div><div class="flex items-center gap-2 mb-1"><span id="t-id" class="text-[9px] font-bold bg-gray-200 text-gray-600 px-1.5 rounded border border-gray-300 font-mono">ID</span><span id="t-cat" class="text-[9px] font-bold uppercase tracking-wide">CAT</span></div><h2 id="t-title" class="text-xl font-black text-gray-900 leading-tight">Ticket Title</h2></div><button onclick="closeTicket()" class="text-gray-400 hover:text-red-500 text-2xl font-bold leading-none">&times;</button></div>
@@ -162,32 +149,23 @@
         </div>
     </div>
 
-    <!-- NEW: CHANGELOG PANEL -->
+    <!-- CHANGELOG PANEL (Existing Code) -->
     <div id="changelog-panel" class="fixed inset-y-0 right-0 w-[500px] max-w-full bg-white shadow-2xl border-l border-gray-200 z-50 slide-panel closed flex flex-col font-sans transition-transform duration-300 ease-in-out">
         <div class="p-6 bg-gray-900 text-white flex justify-between items-center shrink-0 shadow-md">
-            <div>
-                <h2 class="font-bold text-lg">System Changelog</h2>
-                <p class="text-[10px] text-gray-400 uppercase tracking-wider">Live Sync: GitHub Repository</p>
-            </div>
+            <div><h2 class="font-bold text-lg">System Changelog</h2><p class="text-[10px] text-gray-400 uppercase tracking-wider">Live Sync: GitHub Repository</p></div>
             <button onclick="toggleChangelog()" class="text-gray-400 hover:text-white text-xl">×</button>
         </div>
-        
-        <div id="changelog-list" class="flex-1 overflow-y-auto bg-gray-100 p-4 space-y-4 custom-scroll">
-            <div class="text-center p-10 text-gray-400 italic text-xs">Loading history...</div>
-        </div>
+        <div id="changelog-list" class="flex-1 overflow-y-auto bg-gray-100 p-4 space-y-4 custom-scroll"><div class="text-center p-10 text-gray-400 italic text-xs">Loading history...</div></div>
     </div>
 
 <script>
     const user = sessionStorage.getItem('signos_user') || 'Guest';
     let currentTicketId = null;
     let allRoadmapData = [];
-    let activeFilters = { users: [], cats: [], prios: [] };
+    // NEW: Added 'targets' array to activeFilters
+    let activeFilters = { users: [], cats: [], prios: [], targets: [] };
 
-    window.onload = function() {
-        if(sessionStorage.getItem('signos_role') === 'VIEW') { /* Viewer lock */ }
-        loadData();
-    };
-
+    window.onload = function() { loadData(); };
     function toggleForm() { document.getElementById('side-form').classList.toggle('closed'); }
     function goBack() { window.history.back(); }
     function val(obj, key) { if(!obj) return ""; return obj[key] || obj[key.toUpperCase()] || obj[key.toLowerCase()] || ""; }
@@ -217,7 +195,15 @@
     }
 
     function toggleFilter(type, value, btnElement) {
-        const arr = activeFilters[type === 'cat' ? 'cats' : (type === 'prio' ? 'prios' : 'users')];
+        // Logic to select correct filter array based on type
+        const map = {
+            'cat': activeFilters.cats,
+            'prio': activeFilters.prios,
+            'users': activeFilters.users,
+            'target': activeFilters.targets // NEW
+        };
+        const arr = map[type];
+        
         const idx = arr.indexOf(value);
         if(idx === -1) { arr.push(value); btnElement.classList.add('active'); }
         else { arr.splice(idx, 1); btnElement.classList.remove('active'); }
@@ -225,30 +211,28 @@
     }
 
     function resetFilters() {
-        activeFilters = { users: [], cats: [], prios: [] };
+        activeFilters = { users: [], cats: [], prios: [], targets: [] };
         document.getElementById('filter-search').value = "";
-        document.getElementById('date-start').value = "";
-        document.getElementById('date-end').value = "";
         document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
         applyFilters();
     }
 
     function applyFilters() {
         const search = document.getElementById('filter-search').value.toLowerCase();
-        const dStart = document.getElementById('date-start').valueAsDate;
-        const dEnd = document.getElementById('date-end').valueAsDate;
-
+        
         const filtered = allRoadmapData.filter(item => {
             const txt = (val(item,'Title') + " " + val(item,'Description') + " " + val(item,'ID')).toLowerCase();
+            
             if(search && !txt.includes(search)) return false;
             if(activeFilters.users.length > 0 && !activeFilters.users.includes(val(item,'User'))) return false;
             if(activeFilters.cats.length > 0 && !activeFilters.cats.includes(val(item,'Category'))) return false;
             if(activeFilters.prios.length > 0 && !activeFilters.prios.includes(val(item,'Priority'))) return false;
-            if(dStart || dEnd) {
-                const itemDate = new Date(val(item, 'Timestamp'));
-                if(dStart && itemDate < dStart) return false;
-                if(dEnd) { const endLimit = new Date(dEnd); endLimit.setHours(23,59,59); if(itemDate > endLimit) return false; }
-            }
+            
+            // NEW TARGET FILTER LOGIC
+            // Default to 'APP' if column is empty
+            const itemTarget = val(item, 'Target_Env') || 'APP';
+            if(activeFilters.targets.length > 0 && !activeFilters.targets.includes(itemTarget)) return false;
+
             return true;
         });
         renderBoard(filtered);
@@ -267,6 +251,11 @@
             let borderClass = prio === 'High' ? 'card-high' : (prio === 'Low' ? 'card-low' : 'card-med');
             let catColor = cat === 'Bug' ? "bg-red-100 text-red-800" : (cat === 'Goal' ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800");
             
+            const target = val(item, 'Target_Env') || 'APP';
+            const targetBadge = target === 'LIVE' 
+                ? '<span class="text-[8px] bg-green-100 text-green-800 px-1 rounded border border-green-200">LIVE</span>' 
+                : '<span class="text-[8px] bg-orange-100 text-orange-800 px-1 rounded border border-orange-200">APP</span>';
+
             card.className = `draggable-card bg-white p-4 rounded shadow-sm hover:shadow-md transition cursor-grab ${borderClass} border-l-4 group relative`;
             card.draggable = true; card.id = `card-${id}`;
             card.ondragstart = (e) => drag(e, id);
@@ -274,7 +263,10 @@
 
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-[9px] font-bold uppercase ${catColor} px-1.5 py-0.5 rounded">${cat}</span>
+                    <div class="flex gap-1">
+                        <span class="text-[9px] font-bold uppercase ${catColor} px-1.5 py-0.5 rounded">${cat}</span>
+                        ${targetBadge}
+                    </div>
                     <span class="text-[9px] text-gray-400 group-hover:text-blue-500">View →</span>
                 </div>
                 <h3 class="font-bold text-sm text-gray-900 leading-tight mb-1 pointer-events-none">${val(item, 'Title')}</h3>
@@ -294,6 +286,7 @@
         document.getElementById('count-done').innerText = counts.done;
     }
 
+    // Existing Drag/Drop and Form logic preserved below
     function drag(ev, id) { ev.dataTransfer.setData("text", id); ev.target.classList.add('dragging'); }
     function allowDrop(ev) { ev.preventDefault(); }
     function dragEnter(ev) { ev.preventDefault(); ev.currentTarget.classList.add('drop-active'); }
@@ -343,6 +336,7 @@
         } catch(e) { alert("Error: " + e.message); closeTicket(); }
     }
     function closeTicket() { document.getElementById('ticket-modal').classList.add('hidden'); document.body.classList.remove('modal-active'); }
+    
     async function postUpdate() {
         const msg = document.getElementById('t-comment').value;
         const newStatus = document.getElementById('t-new-status').value;
@@ -356,72 +350,53 @@
             if(newStatus) { const item = allRoadmapData.find(i => val(i,'ID') === currentTicketId); if(item) item.Status = newStatus; applyFilters(); }
         } catch(e) { alert("Post failed"); }
     }
+    
     async function submitItem() {
-        const title = document.getElementById('inp-title').value; const desc = document.getElementById('inp-desc').value; const prio = document.getElementById('inp-prio').value; const cat = document.querySelector('input[name="cat"]:checked').value; const btn = document.getElementById('btn-submit');
+        const title = document.getElementById('inp-title').value; 
+        const desc = document.getElementById('inp-desc').value; 
+        const prio = document.getElementById('inp-prio').value; 
+        const cat = document.querySelector('input[name="cat"]:checked').value; 
+        const target = document.querySelector('input[name="target"]:checked').value;
+        const btn = document.getElementById('btn-submit');
+        
         if(!title) { alert("Title Required"); return; } btn.disabled = true;
         try {
-            const res = await fetch(`${SCRIPT_URL}?req=add_roadmap&user=${user}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}&prio=${prio}&cat=${cat}`);
+            const res = await fetch(`${SCRIPT_URL}?req=add_roadmap&user=${user}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}&prio=${prio}&cat=${cat}&target=${target}`);
             const data = await res.json();
             if(data.status === 'success') { toggleForm(); document.getElementById('inp-title').value = ""; document.getElementById('inp-desc').value = ""; loadData(); }
         } catch(e) { alert("Error"); } finally { btn.disabled = false; }
     }
 
-    // --- NEW: CHANGELOG LOGIC ---
     async function toggleChangelog() {
         const panel = document.getElementById('changelog-panel');
         panel.classList.toggle('closed');
-        
         if (!panel.classList.contains('closed')) {
             const list = document.getElementById('changelog-list');
             try {
-                // Fetch the SYS_Changelog tab
                 const response = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Changelog&ip=${clientIP}&user=${user}`);
                 const data = await response.json();
-                
-                if(!data || data.length === 0) {
-                    list.innerHTML = '<div class="text-center p-10 text-gray-400 italic text-xs">No history found.</div>';
-                    return;
-                }
-
-                // Sort by Date Descending (Newest Top)
+                if(!data || data.length === 0) { list.innerHTML = '<div class="text-center p-10 text-gray-400 italic text-xs">No history found.</div>'; return; }
                 data.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
-
                 list.innerHTML = data.map((row, index) => {
                     const d = new Date(row.Timestamp);
                     const dateStr = d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                    
-                    // Highlight Ticket IDs (e.g. RMP_OPS_01)
                     const msg = row.Message.replace(/(RMP_[A-Za-z0-9_]+)/g, '<span class="bg-yellow-100 text-yellow-800 px-1 rounded font-bold border border-yellow-200">$1</span>');
-                    
                     return `
                         <div class="timeline-item relative pl-8 pb-6">
-                            <!-- Timeline Line -->
-                            <div class="timeline-line absolute left-0 top-0 bottom-0 w-8 flex justify-center">
-                                <div class="w-2.5 h-2.5 rounded-full bg-blue-400 border-2 border-white shadow mt-3 z-10"></div>
-                            </div>
-                            
+                            <div class="timeline-line absolute left-0 top-0 bottom-0 w-8 flex justify-center"><div class="w-2.5 h-2.5 rounded-full bg-blue-400 border-2 border-white shadow mt-3 z-10"></div></div>
                             <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 transition group relative">
                                 <div class="flex justify-between items-start mb-2">
-                                    <div class="flex flex-col">
-                                        <span class="text-[10px] font-black text-gray-900 uppercase">${row.Author}</span>
-                                        <span class="text-[9px] font-mono text-gray-400">${dateStr}</span>
-                                    </div>
+                                    <div class="flex flex-col"><span class="text-[10px] font-black text-gray-900 uppercase">${row.Author}</span><span class="text-[9px] font-mono text-gray-400">${dateStr}</span></div>
                                     <span class="text-[9px] font-mono text-gray-400 bg-gray-100 px-1.5 rounded border border-gray-200">#${row['Commit Hash']}</span>
                                 </div>
                                 <p class="text-xs text-gray-700 font-medium leading-relaxed">${msg}</p>
                                 <div class="mt-3 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <a href="${row['GitHub Link']}" target="_blank" class="text-[10px] font-bold text-blue-500 hover:text-blue-700 uppercase flex items-center gap-1">
-                                        View Changes <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                    </a>
+                                    <a href="${row['GitHub Link']}" target="_blank" class="text-[10px] font-bold text-blue-500 hover:text-blue-700 uppercase flex items-center gap-1">View Code ↗</a>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 }).join('');
-                
-            } catch (e) {
-                list.innerHTML = `<div class="p-4 text-red-500 text-xs text-center border border-red-200 bg-red-50 rounded">Error loading history: ${e.message}</div>`;
-            }
+            } catch (e) { list.innerHTML = `<div class="p-4 text-red-500 text-xs text-center border border-red-200 bg-red-50 rounded">Error: ${e.message}</div>`; }
         }
     }
 </script>
