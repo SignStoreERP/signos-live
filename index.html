@@ -70,45 +70,50 @@
         msg.className = "text-center text-[10px] font-bold text-gray-400 h-4 uppercase tracking-wide";
     }
 
-    async function submitPin() {
-        if (currentPin.length < 6) return;
-        const msg = document.getElementById("status-msg");
-        const btn = document.getElementById("btn-go");
-        
-        msg.innerText = "AUTHENTICATING...";
-        msg.className = "text-center text-[10px] font-bold text-blue-500 h-4 uppercase tracking-wide animate-pulse";
-        btn.disabled = true;
+async function submitPin() {
+    if (currentPin.length < 6) return;
+    const msg = document.getElementById("status-msg");
+    const btn = document.getElementById("btn-go");
 
-        try {
-            // Uses SCRIPT_URL and clientIP from signos-core.js
-            const userAgent = encodeURIComponent(navigator.userAgent);
-            const response = await fetch(`${SCRIPT_URL}?req=auth&pin=${currentPin}&ip=${clientIP}&meta=${userAgent}`);
-            const data = await response.json();
+    msg.innerText = "AUTHENTICATING...";
+    msg.className = "text-center text-[10px] font-bold text-blue-500 h-4 uppercase tracking-wide animate-pulse";
+    btn.disabled = true;
 
-            if (data.status === "success") {
-                msg.innerText = `WELCOME, ${data.name.toUpperCase()}`;
-                msg.className = "text-center text-[10px] font-bold text-green-600 h-4 uppercase tracking-wide";
-                
-                sessionStorage.setItem("signos_user", data.name);
-                sessionStorage.setItem("signos_role", data.role);
-                
-                let mode = (data.role === "PROD") ? 'production' : (data.role === "ADMIN" ? 'admin' : 'sales');
-                sessionStorage.setItem("signos_mode", mode); // Store mode for Core JS to use
+    try {
+        const userAgent = encodeURIComponent(navigator.userAgent);
+        const response = await fetch(`${SCRIPT_URL}?req=auth&pin=${currentPin}&ip=${clientIP}&meta=${userAgent}`);
+        const data = await response.json();
 
-                setTimeout(() => { window.location.href = `menu.html?mode=${mode}`; }, 500); 
-            } else {
-                throw new Error(data.message || "Invalid PIN");
-            }
-        } catch (e) {
-            msg.innerText = e.message.toUpperCase();
-            msg.className = "text-center text-[10px] font-bold text-red-500 h-4 uppercase tracking-wide";
-            document.getElementById("login-card").classList.add("shake");
-            setTimeout(() => document.getElementById("login-card").classList.remove("shake"), 500);
-            currentPin = "";
-            updateDisplay();
-            btn.disabled = false;
+        if (data.status === "success") {
+            msg.innerText = `WELCOME, ${data.name.toUpperCase()}`;
+            msg.className = "text-center text-[10px] font-bold text-green-600 h-4 uppercase tracking-wide";
+            
+            sessionStorage.setItem("signos_user", data.name);
+            sessionStorage.setItem("signos_role", data.role);
+            
+            // NEW: SAVE PERMISSIONS OBJECT
+            const perms = data.permissions || { roadmap: "None", backup: "None" };
+            sessionStorage.setItem("signos_perms", JSON.stringify(perms));
+
+            let mode = (data.role === "PROD") ? 'production' : (data.role === "ADMIN" ? 'admin' : 'sales');
+            sessionStorage.setItem("signos_mode", mode); 
+
+            setTimeout(() => { window.location.href = `menu.html?mode=${mode}`; }, 500);
+        } else {
+            throw new Error(data.message || "Invalid PIN");
         }
+    } catch (e) {
+        // ... (Error handling remains the same) ...
+        msg.innerText = e.message.toUpperCase();
+        msg.className = "text-center text-[10px] font-bold text-red-500 h-4 uppercase tracking-wide";
+        document.getElementById("login-card").classList.add("shake");
+        setTimeout(() => document.getElementById("login-card").classList.remove("shake"), 500);
+        currentPin = "";
+        updateDisplay();
+        btn.disabled = false;
     }
+}
+
 </script>
 </body>
 </html>
