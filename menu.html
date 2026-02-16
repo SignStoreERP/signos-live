@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignOS Menu v4.8</title>
+    <title>SignOS Menu v5.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans">
+<body class="bg-gray-100 min-h-screen font-sans flex flex-col">
 
-    <div class="bg-gray-800 text-white px-6 py-2 flex justify-between items-center text-xs shadow-md">
+    <!-- 1. HEADER -->
+    <div class="bg-gray-800 text-white px-6 py-2 flex justify-between items-center text-xs shadow-md shrink-0">
         <div class="flex gap-4">
             <span class="tracking-wide">USER: <span class="font-bold text-gray-200 uppercase" id="auth-user">---</span></span>
             <span class="tracking-wide">ROLE: <span class="font-bold text-blue-400 uppercase" id="auth-role">---</span></span>
@@ -17,59 +18,61 @@
         <button onclick="logout()" class="font-bold text-red-400 hover:text-white uppercase tracking-wider text-[10px] border border-red-900/50 hover:bg-red-900/50 px-2 py-1 rounded transition">Logout</button>
     </div>
 
-    <div class="max-w-6xl mx-auto p-8">
+    <div class="max-w-6xl mx-auto p-8 flex-1 w-full">
         
+        <!-- 2. TITLE BAR -->
         <div class="mb-8 flex justify-between items-end bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
             <div>
                 <h1 class="text-3xl font-black text-gray-800 tracking-tight">SignOS <span class="text-blue-500">Core</span></h1>
-                <p class="text-gray-400 text-sm font-medium mt-1">Production Management System v4.6</p>
+                <p class="text-gray-400 text-sm font-medium mt-1">Production Management System</p>
             </div>
             <div class="text-right">
-                <span id="sys-badge" class="bg-gray-100 text-gray-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-gray-200">Production Environment</span>
+                <span id="sys-badge" class="bg-gray-100 text-gray-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-gray-200">Loading Environment...</span>
             </div>
         </div>
 
-        <div id="admin-workflow" class="hidden mb-8 grid grid-cols-4 gap-4">
-            <a href="admin_roadmap.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-orange-500 cursor-pointer">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="font-bold text-white text-sm">Roadmap</h3>
-                        <p class="text-slate-400 text-[10px] mt-1 group-hover:text-orange-300">Feature Requests & Bugs</p>
-                    </div>
-                    <span class="text-lg">🚧</span>
-                </div>
-            </a>
-            <a href="admin_viewer.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-blue-500 cursor-pointer">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="font-bold text-white text-sm">System Logs</h3>
-                        <p class="text-slate-400 text-[10px] mt-1 group-hover:text-blue-300">View Access History</p>
-                    </div>
-                    <span class="text-lg">terminal</span>
-                </div>
-            </a>
-            <a href="admin_backup.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-green-500 cursor-pointer">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="font-bold text-white text-sm">Backup</h3>
-                        <p class="text-slate-400 text-[10px] mt-1 group-hover:text-green-300">Manual Data Export</p>
-                    </div>
-                    <span class="text-lg">save</span>
-                </div>
-            </a>
-            <a href="admin_changelog.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-purple-500 cursor-pointer">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="font-bold text-white text-sm">Changelog</h3>
-                        <p class="text-slate-400 text-[10px] mt-1 group-hover:text-purple-300">Commit History</p>
-                    </div>
-                    <span class="text-lg">history</span>
-                </div>
-            </a>
-        </div>
-
+        <!-- 3. MAIN APP GRID (Dynamic) -->
         <div id="loader" class="text-center py-20 text-gray-400 animate-pulse">Loading Modules...</div>
-        <div id="app-container" class="hidden space-y-8"></div>
+        <div id="app-container" class="hidden space-y-8 min-h-[400px]"></div>
+
+        <!-- 4. ADMIN CONSOLE (Bottom Footer) -->
+        <div id="admin-workflow" class="hidden mt-12 pt-8 border-t-2 border-dashed border-gray-300">
+            <div class="flex justify-between items-end mb-4">
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">ADMINISTRATION & LOGS</h3>
+                <span id="super-badge" class="hidden bg-purple-600 text-white text-[9px] font-bold px-2 py-0.5 rounded">SUPER USER ACTIVE</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <a href="admin_roadmap.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-orange-500 cursor-pointer">
+                    <div class="flex justify-between items-start">
+                        <div><h3 class="font-bold text-white text-sm">Roadmap</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-orange-300">Feature Requests & Bugs</p></div>
+                        <span class="text-lg">🚧</span>
+                    </div>
+                </a>
+
+                <a href="admin_viewer.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-blue-500 cursor-pointer">
+                    <div class="flex justify-between items-start">
+                        <div><h3 class="font-bold text-white text-sm">System Logs</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-blue-300">View Access History</p></div>
+                        <span class="text-lg">⚙️</span>
+                    </div>
+                </a>
+
+                <!-- Backup: Visible to ADMIN and SUPER -->
+                <a href="admin_backup.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-green-500 cursor-pointer">
+                    <div class="flex justify-between items-start">
+                        <div><h3 class="font-bold text-white text-sm">Backup</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-green-300">Manual Data Export</p></div>
+                        <span class="text-lg">💾</span>
+                    </div>
+                </a>
+
+                <a href="admin_changelog.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-purple-500 cursor-pointer">
+                    <div class="flex justify-between items-start">
+                        <div><h3 class="font-bold text-white text-sm">Changelog</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-purple-300">Commit History</p></div>
+                        <span class="text-lg">📜</span>
+                    </div>
+                </a>
+            </div>
+        </div>
 
     </div>
 
@@ -97,7 +100,7 @@ const ICON_STYLES = {
 
 window.onload = async function() {
     const user = sessionStorage.getItem('signos_user');
-    const role = sessionStorage.getItem('signos_role');
+    const role = sessionStorage.getItem('signos_role'); // SALES, PROD, ADMIN, SUPER
 
     document.getElementById('auth-user').innerText = user || 'GUEST';
     document.getElementById('auth-role').innerText = role || 'VIEW';
@@ -112,8 +115,10 @@ window.onload = async function() {
         badge.innerText = "PRODUCTION ONLINE";
     }
 
-    if (role === 'ADMIN') {
+    // Admin Console Visibility
+    if (role === 'ADMIN' || role === 'SUPER') {
         document.getElementById('admin-workflow').classList.remove('hidden');
+        if (role === 'SUPER') document.getElementById('super-badge').classList.remove('hidden');
     }
 
     try {
@@ -151,13 +156,23 @@ function renderMenu(modules, role) {
         mods.forEach(mod => {
             const id = val(mod, 'Module_ID');
             
-            // 1. SECURITY FILTER: Hide Admin Tools from Main Grid for Non-Admins
-            if ((id === 'SYS_Roadmap' || id === 'SYS_Changelog' || id === 'SYS_Log_Analyzer' || id === 'SYS_Log_Backup') && role !== 'ADMIN') return;
+            // 1. DEDUPLICATION: Hide bottom-bar tools from main grid
+            if (id === 'SYS_Roadmap' || id === 'SYS_Changelog' || id === 'SYS_Log_Analyzer' || id === 'SYS_Log_Backup') return;
 
-            const isLive = (val(mod, 'Is_Live') === true || String(val(mod, 'Is_Live')).toUpperCase() === 'TRUE');
+            // 2. MATRIX PERMISSION LOGIC (The "Twin-Engine" Switch)
+            // Construct the key: e.g., "Live_SALES" or "Dev_ADMIN"
+            // SUPER users implicitly act as ADMIN for this check
             
-            // 2. DRAFT FILTER: Hide non-live items for non-admins
-            if (!isLive && role !== 'ADMIN') return;
+            const checkRole = (role === 'SUPER') ? 'ADMIN' : role;
+            const envPrefix = IS_DEV_ENV ? 'Dev_' : 'Live_';
+            const permKey = envPrefix + checkRole; // e.g. "Live_SALES"
+
+            // Get the permission value from the row (Boolean)
+            // We use String() comparison to handle "TRUE" (text) vs true (bool)
+            const isAllowed = String(val(mod, permKey)).toUpperCase() === 'TRUE';
+
+            // SUPER OVERRIDE: Super Users see everything, everywhere.
+            if (!isAllowed && role !== 'SUPER') return;
 
             const displayName = val(mod, 'Display_Name');
             const fileLink = val(mod, 'File_Link');
@@ -166,10 +181,7 @@ function renderMenu(modules, role) {
             const iconColor = val(mod, 'Icon');
             const iconPath = val(mod, 'Icon_Path'); 
 
-            // 3. TARGETING LOGIC (The Fix)
-            let targetMode = (role === 'PROD') ? 'production' : (role === 'ADMIN' ? 'dev' : 'sales');
-            
-            // VERSION LOGIC: If we are in Dev Env, show Dev Ver. If Live Env, show Live Ver.
+            let targetMode = (role === 'PROD') ? 'production' : (role === 'ADMIN' || role === 'SUPER' ? 'dev' : 'sales');
             let targetVer = IS_DEV_ENV ? (devVer || 'v0.0') : (liveVer || 'v0.0');
 
             const link = document.createElement('a');
@@ -178,9 +190,11 @@ function renderMenu(modules, role) {
 
             const colorClass = ICON_STYLES[(iconColor || 'blue').toLowerCase()] || ICON_STYLES['blue'];
             const verBg = IS_DEV_ENV ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500';
-            const draftBadge = (!isLive && role === 'ADMIN') ? `<div class="absolute top-2 right-2 text-[9px] font-bold bg-gray-100 text-gray-400 px-2 py-0.5 rounded border border-gray-200">DRAFT</div>` : '';
+            
+            // Draft Badge: Show if we are in Dev Env OR if the item is hidden on Live but we are viewing it anyway (Super)
+            const isHiddenOnLive = String(val(mod, 'Live_' + checkRole)).toUpperCase() !== 'TRUE';
+            const draftBadge = (isHiddenOnLive && role === 'SUPER') ? `<div class="absolute top-2 right-2 text-[9px] font-bold bg-purple-100 text-purple-600 px-2 py-0.5 rounded border border-purple-200">HIDDEN</div>` : '';
 
-            // Icon Render
             const iconHtml = iconPath 
                 ? `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="${iconPath}"></path></svg>`
                 : `<span class="text-xl font-bold">●</span>`;
@@ -209,7 +223,5 @@ function renderMenu(modules, role) {
     }
 }
 </script>
-
 </body>
 </html>
-
