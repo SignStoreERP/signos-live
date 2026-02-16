@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignOS Menu v4.8</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="signos-core.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+    <div class="bg-gray-800 text-white px-6 py-2 flex justify-between items-center text-xs shadow-md">
+        <div class="flex gap-4">
+            <span class="tracking-wide">USER: <span class="font-bold text-gray-200 uppercase" id="auth-user">---</span></span>
+            <span class="tracking-wide">ROLE: <span class="font-bold text-blue-400 uppercase" id="auth-role">---</span></span>
+        </div>
+        <button onclick="logout()" class="font-bold text-red-400 hover:text-white uppercase tracking-wider text-[10px] border border-red-900/50 hover:bg-red-900/50 px-2 py-1 rounded transition">Logout</button>
+    </div>
+
+    <div class="max-w-6xl mx-auto p-8">
+        
+        <div class="mb-8 flex justify-between items-end bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+            <div>
+                <h1 class="text-3xl font-black text-gray-800 tracking-tight">SignOS <span class="text-blue-500">Core</span></h1>
+                <p class="text-gray-400 text-sm font-medium mt-1">Production Management System v4.6</p>
+            </div>
+            <div class="text-right">
+                <span id="sys-badge" class="bg-gray-100 text-gray-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-gray-200">Production Environment</span>
+            </div>
+        </div>
+
+        <div id="admin-workflow" class="hidden mb-8 grid grid-cols-4 gap-4">
+            <a href="admin_roadmap.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-orange-500 cursor-pointer">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-bold text-white text-sm">Roadmap</h3>
+                        <p class="text-slate-400 text-[10px] mt-1 group-hover:text-orange-300">Feature Requests & Bugs</p>
+                    </div>
+                    <span class="text-lg">🚧</span>
+                </div>
+            </a>
+            <a href="admin_viewer.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-blue-500 cursor-pointer">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-bold text-white text-sm">System Logs</h3>
+                        <p class="text-slate-400 text-[10px] mt-1 group-hover:text-blue-300">View Access History</p>
+                    </div>
+                    <span class="text-lg">terminal</span>
+                </div>
+            </a>
+            <a href="admin_backup.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-green-500 cursor-pointer">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-bold text-white text-sm">Backup</h3>
+                        <p class="text-slate-400 text-[10px] mt-1 group-hover:text-green-300">Manual Data Export</p>
+                    </div>
+                    <span class="text-lg">save</span>
+                </div>
+            </a>
+            <a href="admin_changelog.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-purple-500 cursor-pointer">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-bold text-white text-sm">Changelog</h3>
+                        <p class="text-slate-400 text-[10px] mt-1 group-hover:text-purple-300">Commit History</p>
+                    </div>
+                    <span class="text-lg">history</span>
+                </div>
+            </a>
+        </div>
+
+        <div id="loader" class="text-center py-20 text-gray-400 animate-pulse">Loading Modules...</div>
+        <div id="app-container" class="hidden space-y-8"></div>
+
+    </div>
+
+<script>
+// 1. SAFETY VALVE
+function val(obj, key) {
+    if (!obj) return "";
+    return obj[key] || obj[key.toUpperCase()] || obj[key.toLowerCase()] || "";
+}
+
+// 2. STYLE MAP
+const ICON_STYLES = {
+    blue: "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white",
+    green: "bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white",
+    purple: "bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white",
+    red: "bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white",
+    orange: "bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white",
+    slate: "bg-slate-50 text-slate-600 group-hover:bg-slate-600 group-hover:text-white",
+    teal: "bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white",
+    indigo: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white",
+    pink: "bg-pink-50 text-pink-600 group-hover:bg-pink-600 group-hover:text-white",
+    yellow: "bg-yellow-50 text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white",
+    gray: "bg-gray-100 text-gray-600 group-hover:bg-gray-600 group-hover:text-white"
+};
+
+window.onload = async function() {
+    const user = sessionStorage.getItem('signos_user');
+    const role = sessionStorage.getItem('signos_role');
+
+    document.getElementById('auth-user').innerText = user || 'GUEST';
+    document.getElementById('auth-role').innerText = role || 'VIEW';
+
+    // Environment Badge
+    const badge = document.getElementById('sys-badge');
+    if (IS_DEV_ENV) {
+        badge.className = "bg-orange-100 text-orange-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-orange-200";
+        badge.innerText = "DEV ENVIRONMENT";
+    } else {
+        badge.className = "bg-green-100 text-green-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-green-200";
+        badge.innerText = "PRODUCTION ONLINE";
+    }
+
+    if (role === 'ADMIN') {
+        document.getElementById('admin-workflow').classList.remove('hidden');
+    }
+
+    try {
+        const response = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Modules&ip=${clientIP}`);
+        const data = await response.json();
+        
+        document.getElementById('loader').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+        
+        renderMenu(data, role);
+
+    } catch (e) {
+        document.getElementById('loader').innerHTML = `<div class="p-4 text-red-500 font-bold">Error: ${e.message}</div>`;
+    }
+};
+
+function renderMenu(modules, role) {
+    const container = document.getElementById('app-container');
+    container.innerHTML = "";
+
+    const categories = {};
+    modules.forEach(mod => {
+        const cat = val(mod, 'Category') || 'Uncategorized';
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push(mod);
+    });
+
+    for (const [catName, mods] of Object.entries(categories)) {
+        const section = document.createElement('section');
+        section.innerHTML = `<h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-200 pb-2">${catName}</h2>`;
+        
+        const grid = document.createElement('div');
+        grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8";
+
+        mods.forEach(mod => {
+            const id = val(mod, 'Module_ID');
+            
+            // 1. SECURITY FILTER: Hide Admin Tools from Main Grid for Non-Admins
+            if ((id === 'SYS_Roadmap' || id === 'SYS_Changelog' || id === 'SYS_Log_Analyzer' || id === 'SYS_Log_Backup') && role !== 'ADMIN') return;
+
+            const isLive = (val(mod, 'Is_Live') === true || String(val(mod, 'Is_Live')).toUpperCase() === 'TRUE');
+            
+            // 2. DRAFT FILTER: Hide non-live items for non-admins
+            if (!isLive && role !== 'ADMIN') return;
+
+            const displayName = val(mod, 'Display_Name');
+            const fileLink = val(mod, 'File_Link');
+            const devVer = val(mod, 'Dev_Ver');
+            const liveVer = val(mod, 'Live_Ver');
+            const iconColor = val(mod, 'Icon');
+            const iconPath = val(mod, 'Icon_Path'); 
+
+            // 3. TARGETING LOGIC (The Fix)
+            let targetMode = (role === 'PROD') ? 'production' : (role === 'ADMIN' ? 'dev' : 'sales');
+            
+            // VERSION LOGIC: If we are in Dev Env, show Dev Ver. If Live Env, show Live Ver.
+            let targetVer = IS_DEV_ENV ? (devVer || 'v0.0') : (liveVer || 'v0.0');
+
+            const link = document.createElement('a');
+            link.href = `${fileLink}?mode=${targetMode}`;
+            link.className = "block bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition group relative";
+
+            const colorClass = ICON_STYLES[(iconColor || 'blue').toLowerCase()] || ICON_STYLES['blue'];
+            const verBg = IS_DEV_ENV ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500';
+            const draftBadge = (!isLive && role === 'ADMIN') ? `<div class="absolute top-2 right-2 text-[9px] font-bold bg-gray-100 text-gray-400 px-2 py-0.5 rounded border border-gray-200">DRAFT</div>` : '';
+
+            // Icon Render
+            const iconHtml = iconPath 
+                ? `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="${iconPath}"></path></svg>`
+                : `<span class="text-xl font-bold">●</span>`;
+
+            link.innerHTML = `
+                ${draftBadge}
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center transition ${colorClass}">
+                        ${iconHtml}
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">${displayName}</h3>
+                        <div class="mt-1 flex items-center gap-2">
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${verBg}">${targetVer}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(link);
+        });
+
+        if (grid.children.length > 0) {
+            section.appendChild(grid);
+            container.appendChild(section);
+        }
+    }
+}
+</script>
+
+</body>
+</html>
+
