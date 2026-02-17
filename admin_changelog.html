@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Activity v1.4 | SignOS</title>
+    <title>System Activity v1.7 | SignOS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
     <style>
@@ -12,6 +12,18 @@
         .custom-scroll::-webkit-scrollbar { width: 8px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Active State Styles for Buttons */
+        .btn-filter.active-all { background-color: #1f2937; color: white; border-color: #1f2937; }
+        .btn-filter.active-live { background-color: #16a34a; color: white; border-color: #16a34a; }
+        .btn-filter.active-dev { background-color: #f97316; color: white; border-color: #f97316; }
+
+        /* Graph Bar Animation */
+        .graph-bar { transition: height 0.5s ease-out; }
+        .graph-bar:hover { opacity: 0.8; }
+        
+        /* Tooltip */
+        .graph-bar:hover .tooltip { display: block; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans flex flex-col">
@@ -20,8 +32,8 @@
     <div class="bg-gray-900 text-white px-6 py-4 flex justify-between items-center shadow-md z-30 sticky top-0">
         <div class="flex items-center gap-3">
             <h1 class="text-xl font-black tracking-tight">System Activity Log</h1>
-            <span class="bg-blue-600 text-[10px] font-bold px-2 py-0.5 rounded text-white uppercase">Live Feed</span>
         </div>
+
         <div class="flex gap-4 text-xs font-bold items-center">
             <span class="text-gray-400">USER: <span class="text-white uppercase" id="auth-user">---</span></span>
             <span class="text-gray-600">|</span>
@@ -31,34 +43,77 @@
 
     <!-- MAIN FEED -->
     <div class="max-w-4xl mx-auto w-full p-8 flex-1">
-        
-        <!-- SUMMARY STATS -->
-        <div class="grid grid-cols-3 gap-4 mb-8">
+
+        <!-- DASHBOARD GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            
+            <!-- Card 1: Total -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <div class="text-xs font-bold text-gray-400 uppercase">Total Commits</div>
                 <div class="text-2xl font-black text-gray-800" id="stat-total">0</div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                <div class="text-xs font-bold text-gray-400 uppercase">Last Update</div>
-                <div class="text-sm font-bold text-blue-600 mt-1" id="stat-last">---</div>
+
+            <!-- Card 2: VISUALIZATION (New Feature) -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 col-span-2 relative group cursor-pointer" onclick="toggleCalendar()">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="text-xs font-bold text-gray-400 uppercase">Activity (Last 7 Days)</div>
+                    <div class="text-[9px] text-blue-500 font-bold opacity-0 group-hover:opacity-100 transition">Click to Expand Calendar 📅</div>
+                </div>
+                <!-- Mini Bar Graph Container -->
+                <div id="mini-graph" class="flex items-end justify-between h-12 gap-1 px-2 pb-1 border-b border-gray-100"></div>
+                
+                <!-- Calendar Overlay (Hidden by default) -->
+                <div id="calendar-view" class="absolute top-0 left-0 w-full bg-white z-20 rounded-xl shadow-xl border border-blue-200 p-4 hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-800 text-sm">Commit Calendar</h3>
+                        <button class="text-gray-400 hover:text-red-500 font-bold" onclick="event.stopPropagation(); toggleCalendar()">✕</button>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center"></div>
+                </div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                <div class="text-xs font-bold text-gray-400 uppercase">Active Contributors</div>
-                <div class="text-lg font-bold text-gray-800" id="stat-authors">---</div>
+
+            <!-- Card 3: FILTER CONTROLS -->
+            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-center">
+                <div class="text-[10px] font-bold text-gray-400 uppercase mb-2 text-center">Filter Environment</div>
+                <div class="flex gap-2">
+                    <button onclick="setFilter('ALL')" id="btn-all" class="btn-filter active-all flex-1 text-[10px] font-bold py-2 rounded border border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 transition uppercase">All</button>
+                    <button onclick="setFilter('LIVE')" id="btn-live" class="btn-filter flex-1 text-[10px] font-bold py-2 rounded border border-gray-200 bg-gray-50 text-gray-500 hover:bg-green-50 hover:text-green-600 transition uppercase">Live</button>
+                    <button onclick="setFilter('DEV')" id="btn-dev" class="btn-filter flex-1 text-[10px] font-bold py-2 rounded border border-gray-200 bg-gray-50 text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition uppercase">Dev</button>
+                </div>
             </div>
+
         </div>
 
-        <!-- TIMELINE CONTAINER -->
-        <div id="feed-container" class="space-y-0 pb-10">
+        <!-- FILTER STATUS BAR -->
+        <div id="date-filter-status" class="hidden mb-4 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg flex justify-between items-center">
+            <span class="text-xs font-bold">📅 Viewing Activity for: <span id="active-date-label">---</span></span>
+            <button onclick="clearDateFilter()" class="text-[10px] font-bold uppercase hover:text-blue-900 underline">Clear Filter</button>
+        </div>
+
+        <!-- TIMELINE -->
+        <div id="feed-container" class="space-y-0 pb-6">
             <div class="text-center py-12">
                 <div class="inline-block w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-2"></div>
                 <p class="text-gray-400 text-xs font-bold uppercase">Syncing with GitHub...</p>
             </div>
         </div>
 
+        <!-- LOAD MORE (Pagination) -->
+        <div class="text-center pb-10">
+            <button id="btn-load-more" onclick="loadMore()" class="hidden bg-white border border-gray-300 text-gray-500 hover:text-gray-800 hover:border-gray-400 px-6 py-2 rounded-full text-xs font-bold shadow-sm transition">
+                Load Older Items ↓
+            </button>
+        </div>
+
     </div>
 
 <script>
+    let allData = [];
+    let currentFilter = 'ALL';
+    let filterDate = null; // YYYY-MM-DD
+    let visibleCount = 20; // Initial Load Limit
+    const LOAD_INCREMENT = 20;
+
     window.onload = function() {
         const u = sessionStorage.getItem('signos_user') || 'Guest';
         document.getElementById('auth-user').innerText = u;
@@ -67,89 +122,228 @@
 
     function goBack() { window.history.back(); }
 
-    // SAFETY VALVE
     function val(obj, key) {
         if (!obj) return "";
         return obj[key] || obj[key.toUpperCase()] || obj[key.toLowerCase()] || "";
     }
 
+    // --- LOGIC: FILTERS ---
+
+    function setFilter(mode) {
+        currentFilter = mode;
+        
+        // Reset Buttons
+        document.querySelectorAll('.btn-filter').forEach(b => {
+            b.className = "btn-filter flex-1 text-[10px] font-bold py-2 rounded border border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 transition uppercase";
+        });
+
+        const btn = document.getElementById('btn-' + mode.toLowerCase());
+        if(mode === 'ALL') btn.classList.add('active-all');
+        if(mode === 'LIVE') btn.classList.add('active-live');
+        if(mode === 'DEV') btn.classList.add('active-dev');
+
+        visibleCount = LOAD_INCREMENT; // Reset pagination on filter change
+        renderTimeline();
+    }
+
+    function clearDateFilter() {
+        filterDate = null;
+        document.getElementById('date-filter-status').classList.add('hidden');
+        visibleCount = LOAD_INCREMENT;
+        renderTimeline();
+    }
+
+    function loadMore() {
+        visibleCount += LOAD_INCREMENT;
+        renderTimeline();
+    }
+
+    // --- LOGIC: DATA FETCHING ---
+
     async function loadHistory() {
         try {
             const response = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Changelog&ip=${clientIP}`);
             const data = await response.json();
-
+            
             if (!data || data.length === 0) {
                 document.getElementById('feed-container').innerHTML = '<div class="text-center text-gray-400">No records found.</div>';
                 return;
             }
 
-            // Stats Logic
-            document.getElementById('stat-total').innerText = data.length;
-            const authors = [...new Set(data.map(i => val(i, 'Author')))].join(", ");
-            document.getElementById('stat-authors').innerText = authors;
-            
             // Sort: Newest First
             data.sort((a, b) => new Date(val(b, 'Timestamp')) - new Date(val(a, 'Timestamp')));
             
-            // Fix "Invalid Date": Use first item in array
-            const latest = data; 
-            if (latest) {
-                const ts = val(latest, 'Timestamp');
-                if (ts) {
-                    const d = new Date(ts);
-                    const niceDate = d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    document.getElementById('stat-last').innerText = niceDate;
-                }
-            }
+            allData = data;
+            document.getElementById('stat-total').innerText = data.length;
 
-            renderTimeline(data);
+            generateGraphData(data);
+            renderTimeline();
 
         } catch (e) {
             document.getElementById('feed-container').innerHTML = `<div class="bg-red-50 text-red-500 p-4 rounded text-center text-xs font-bold">Error: ${e.message}</div>`;
         }
     }
 
-    function renderTimeline(rows) {
+    // --- LOGIC: VISUALIZATION ---
+
+    function generateGraphData(data) {
+        // Create Map: "2026-02-15" => count
+        const counts = {};
+        data.forEach(d => {
+            const dateObj = new Date(val(d, 'Timestamp'));
+            const key = dateObj.toISOString().split('T');
+            counts[key] = (counts[key] || 0) + 1;
+        });
+
+        renderMiniGraph(counts);
+        renderCalendar(counts);
+    }
+
+    function renderMiniGraph(counts) {
+        const container = document.getElementById('mini-graph');
+        container.innerHTML = "";
+        
+        // Last 7 Days
+        const dates = [];
+        for (let i=6; i>=0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            dates.push(d.toISOString().split('T'));
+        }
+
+        // Find max for scaling
+        const maxVal = Math.max(...Object.values(counts)) || 1;
+
+        dates.forEach(date => {
+            const count = counts[date] || 0;
+            const heightPct = Math.max((count / maxVal) * 100, 10); // Min 10% height
+            const dayName = new Date(date).toLocaleDateString('en-US', {weekday:'narrow'});
+            const colorClass = count > 0 ? "bg-blue-500" : "bg-gray-200";
+
+            container.innerHTML += `
+                <div class="flex-1 flex flex-col justify-end items-center h-full relative group">
+                    <div class="tooltip absolute bottom-full mb-1 hidden bg-black text-white text-[9px] px-2 py-1 rounded whitespace-nowrap z-30">
+                        ${count} Commits<br>${date}
+                    </div>
+                    <div class="w-2 rounded-t ${colorClass} graph-bar" style="height: ${heightPct}%"></div>
+                    <div class="text-[8px] text-gray-400 mt-1">${dayName}</div>
+                </div>
+            `;
+        });
+    }
+
+    function renderCalendar(counts) {
+        const grid = document.getElementById('calendar-grid');
+        grid.innerHTML = "";
+        
+        // Simple Current Month View
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Headers
+        ['S','M','T','W','T','F','S'].forEach(d => grid.innerHTML += `<div class="text-[9px] font-bold text-gray-400">${d}</div>`);
+
+        // Empty Slots
+        for(let i=0; i<firstDay; i++) { grid.innerHTML += `<div></div>`; }
+
+        // Days
+        for(let d=1; d<=daysInMonth; d++) {
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const count = counts[dateStr] || 0;
+            
+            let bgClass = "hover:bg-gray-100 text-gray-600";
+            if(count > 0) bgClass = "bg-blue-100 text-blue-800 font-bold hover:bg-blue-200";
+            if(count > 5) bgClass = "bg-blue-300 text-blue-900 font-bold hover:bg-blue-400";
+            if(count > 10) bgClass = "bg-blue-600 text-white font-bold hover:bg-blue-700";
+
+            // Click Handler for Filtering
+            const clickAction = count > 0 ? `onclick="filterByDate('${dateStr}')"` : "";
+
+            grid.innerHTML += `<div class="p-1"><div ${clickAction} class="w-6 h-6 mx-auto flex items-center justify-center rounded-full text-[10px] cursor-pointer transition ${bgClass}" title="${count} commits">${d}</div></div>`;
+        }
+    }
+
+    function toggleCalendar() {
+        document.getElementById('calendar-view').classList.toggle('hidden');
+    }
+
+    function filterByDate(dateStr) {
+        filterDate = dateStr;
+        document.getElementById('active-date-label').innerText = dateStr;
+        document.getElementById('date-filter-status').classList.remove('hidden');
+        document.getElementById('calendar-view').classList.add('hidden'); // Close calendar
+        visibleCount = LOAD_INCREMENT;
+        renderTimeline();
+    }
+
+    // --- LOGIC: RENDER TIMELINE ---
+
+    function renderTimeline() {
         const container = document.getElementById('feed-container');
+        const loadBtn = document.getElementById('btn-load-more');
+        
         container.innerHTML = "";
 
-        rows.forEach(row => {
-            // SAFE DATA EXTRACTION
+        // Filter Data
+        const filtered = allData.filter(row => {
+            const env = val(row, 'Environment') || "DEV";
+            
+            // Env Filter
+            if (currentFilter !== 'ALL' && env !== currentFilter) return false;
+            
+            // Date Filter
+            if (filterDate) {
+                const rowDate = new Date(val(row, 'Timestamp')).toISOString().split('T');
+                if (rowDate !== filterDate) return false;
+            }
+
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="text-center py-10 text-gray-400 text-xs uppercase">No matching commits found.</div>';
+            loadBtn.classList.add('hidden');
+            return;
+        }
+
+        // Pagination Slicing
+        const slicedData = filtered.slice(0, visibleCount);
+        
+        // Show/Hide Load More Button
+        if (visibleCount >= filtered.length) loadBtn.classList.add('hidden');
+        else loadBtn.classList.remove('hidden');
+
+        slicedData.forEach(row => {
             const ts = val(row, 'Timestamp');
             const author = val(row, 'Author');
             const msg = val(row, 'Message');
             const hash = val(row, 'Commit Hash');
             const link = val(row, 'GitHub Link');
-            const env = val(row, 'Environment') || "DEV";
+            const env = val(row, 'Environment') || "DEV"; 
 
             const d = new Date(ts);
             const dateStr = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
             const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            // Twin-Engine Badge Logic
+
             const isLive = env === 'LIVE';
             const badgeColor = isLive ? "bg-green-100 text-green-800 border-green-200" : "bg-orange-100 text-orange-800 border-orange-200";
             const icon = isLive ? "🚀" : "🛠️";
             const borderColor = isLive ? "border-green-500 shadow-green-100" : "border-blue-100";
 
-            // Highlight Ticket IDs (e.g., RMP_OPS_01)
             const fmtMsg = msg.replace(/(RMP_[A-Za-z0-9_]+)/g, '<span class="bg-yellow-100 text-yellow-800 px-1 rounded font-bold border border-yellow-200 text-[10px] ml-1">$1</span>');
 
             const item = document.createElement('div');
             item.className = "timeline-item relative pl-12 py-2";
-            
             item.innerHTML = `
-                <!-- Vertical Line -->
                 <div class="timeline-line"></div>
-                
-                <!-- Icon Badge -->
                 <div class="absolute left-0 top-3 w-12 flex justify-center z-10">
                     <div class="w-10 h-10 bg-white border-2 ${borderColor} rounded-full flex items-center justify-center shadow-sm">
                         <span class="text-lg">${icon}</span>
                     </div>
                 </div>
-
-                <!-- Content Card -->
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition group">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex items-center gap-2">
@@ -157,12 +351,10 @@
                             <span class="text-[9px] font-bold px-2 py-0.5 rounded border ${badgeColor}">${env}</span>
                         </div>
                         <div class="text-right">
-                             <span class="text-[10px] font-bold text-gray-400 block">${dateStr} • ${timeStr}</span>
+                            <span class="text-[10px] font-bold text-gray-400 block">${dateStr} • ${timeStr}</span>
                         </div>
                     </div>
-                    
                     <p class="text-sm text-gray-700 font-medium leading-relaxed">${fmtMsg}</p>
-                    
                     <div class="mt-3 flex justify-between items-center border-t border-gray-50 pt-2">
                         <span class="text-[9px] font-mono text-gray-400 bg-gray-50 px-1 rounded">#${hash}</span>
                         <a href="${link}" target="_blank" class="text-[9px] font-bold text-blue-400 hover:text-blue-600 uppercase hover:underline">View Code ↗</a>
