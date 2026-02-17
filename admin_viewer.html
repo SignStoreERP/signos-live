@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Viewer v2.12 | SignOS Admin</title>
+    <title>Log Viewer v2.15 | SignOS Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Core Link Required -->
     <script src="signos-core.js"></script>
-    
-    <!-- 1. STANDARD CSS (Immediate Load) -->
+
     <style>
         .custom-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -29,10 +27,9 @@
         body.modal-active { overflow: hidden; }
     </style>
 
-    <!-- 2. TAILWIND COMPONENT CSS (Processed by Script) -->
     <style type="text/tailwindcss">
         .filter-chip { @apply px-2 py-1 rounded-md text-[10px] font-bold border transition-all duration-200 uppercase tracking-wide cursor-pointer select-none whitespace-nowrap; }
-        
+
         .chip-user { @apply bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100; }
         .chip-user.active { @apply bg-slate-600 border-slate-600 text-white shadow-md transform scale-105; }
 
@@ -51,7 +48,6 @@
 </head>
 <body class="bg-gray-100 min-h-screen font-sans flex flex-col h-screen overflow-hidden">
 
-    <!-- HEADER -->
     <div class="bg-gray-900 text-white px-6 py-3 flex justify-between items-center shadow-lg shrink-0 z-20">
         <div class="flex items-center gap-4">
             <h1 class="text-lg font-black tracking-tight">SignOS Analyzer</h1>
@@ -64,10 +60,8 @@
         </div>
     </div>
 
-    <!-- MAIN LAYOUT -->
     <div class="flex flex-1 overflow-hidden">
-        
-        <!-- SIDEBAR -->
+
         <div class="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0 z-10 shadow-lg">
             <div class="p-4 border-b border-gray-100 bg-gray-50">
                 <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Archive History</h2>
@@ -84,16 +78,14 @@
             </div>
         </div>
 
-        <!-- CONTENT -->
         <div class="flex-1 flex flex-col bg-gray-100 min-w-0">
-            <!-- FILTER BAR -->
             <div class="bg-white border-b border-gray-200 shadow-sm shrink-0 flex flex-col z-10">
                 <div class="px-4 py-3 flex justify-between items-center border-b border-gray-100">
                     <div class="flex items-center gap-2 w-1/3 relative">
                         <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         <input type="text" id="filter-search" placeholder="Deep Search Logs..." class="w-full text-sm border bg-gray-50 rounded pl-9 p-2 font-medium text-gray-700 outline-none focus:bg-white focus:border-blue-400 transition" onkeyup="applyFilters()">
                     </div>
-                    
+
                     <div class="flex items-center gap-4">
                         <div class="text-right hidden sm:block">
                             <p class="text-[10px] font-bold text-gray-400 uppercase">Loaded File</p>
@@ -107,21 +99,37 @@
                         </div>
                     </div>
                 </div>
-                <!-- SMART CHIPS -->
-                <div class="px-4 py-2 bg-gray-50 flex items-center gap-4 overflow-x-auto no-scrollbar whitespace-nowrap">
-                    <div class="flex items-center gap-2 shrink-0"><span class="text-[9px] font-black text-gray-400 uppercase">USER</span><div id="filter-users" class="flex gap-1"></div></div>
-                    <div class="w-px h-6 bg-gray-300 shrink-0"></div>
-                    <div class="flex items-center gap-2 shrink-0"><span class="text-[9px] font-black text-blue-300 uppercase">ROLE</span><div id="filter-roles" class="flex gap-1"></div></div>
-                    <div class="w-px h-6 bg-gray-300 shrink-0"></div>
-                    <div class="flex items-center gap-2 shrink-0"><span class="text-[9px] font-black text-purple-300 uppercase">ACTION</span><div id="filter-actions" class="flex gap-1"></div></div>
-                    <div class="w-px h-6 bg-gray-300 shrink-0"></div>
-                    <div class="flex items-center gap-2 shrink-0"><span class="text-[9px] font-black text-teal-300 uppercase">TARGET</span><div id="filter-targets" class="flex gap-1"></div></div>
-                    <div class="w-px h-6 bg-gray-300 shrink-0"></div>
-                    <div class="flex items-center gap-2 shrink-0"><span class="text-[9px] font-black text-orange-300 uppercase">IP ADDR</span><div id="filter-ips" class="flex gap-1"></div></div>
+                
+                <div class="px-4 py-3 bg-gray-50 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-gray-200">
+                    
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] font-black text-gray-400 uppercase">USER</span>
+                        <div id="filter-users" class="flex flex-wrap gap-1"></div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] font-black text-blue-300 uppercase">ROLE</span>
+                        <div id="filter-roles" class="flex flex-wrap gap-1"></div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] font-black text-purple-300 uppercase">ACTION</span>
+                        <div id="filter-actions" class="flex flex-wrap gap-1"></div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] font-black text-teal-300 uppercase">TARGET</span>
+                        <div id="filter-targets" class="flex flex-wrap gap-1"></div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] font-black text-orange-300 uppercase">IP ADDR</span>
+                        <div id="filter-ips" class="flex flex-wrap gap-1"></div>
+                    </div>
+
                 </div>
             </div>
 
-            <!-- TABLE -->
             <div class="flex-1 overflow-auto p-4 custom-scroll">
                 <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden inline-block min-w-full align-middle">
                     <table class="min-w-full text-left border-collapse">
@@ -145,7 +153,6 @@
         </div>
     </div>
 
-    <!-- DETAIL MODAL -->
     <div id="detail-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
             <div class="bg-gray-900 px-6 py-4 border-b border-gray-800 flex justify-between items-center text-white shrink-0">
@@ -174,7 +181,6 @@
         </div>
     </div>
 
-    <!-- LOADING -->
     <div id="loader" class="fixed inset-0 bg-white/80 z-50 hidden flex items-center justify-center backdrop-blur-sm">
         <div class="text-center">
             <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"></div>
@@ -182,245 +188,245 @@
         </div>
     </div>
 
-<script>
-    let rawData = [];
-    let displayData = [];
-    let currentSort = { key: 'time', dir: 'desc' };
-    let activeFilters = { users: [], roles: [], actions: [], targets: [], ips: [] };
+    <script>
+        let rawData = [];
+        let displayData = [];
+        let currentSort = { key: 'time', dir: 'desc' };
+        let activeFilters = { users: [], roles: [], actions: [], targets: [], ips: [] };
 
-    window.onload = function() {
-        const u = sessionStorage.getItem('signos_user');
-        const r = sessionStorage.getItem('signos_role');
-        document.getElementById('auth-user').innerText = u || "GUEST";
-        loadArchiveList();
-    };
+        window.onload = function() {
+            const u = sessionStorage.getItem('signos_user');
+            const r = sessionStorage.getItem('signos_role');
+            document.getElementById('auth-user').innerText = u || "GUEST";
+            loadArchiveList();
+        };
 
-    function goBack() { window.history.back(); }
+        function goBack() { window.history.back(); }
 
-    async function loadArchiveList() {
-        const list = document.getElementById('archive-list');
-        list.innerHTML = '<div class="text-center py-4"><div class="w-4 h-4 border-2 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto"></div></div>';
-        try {
-            const response = await fetch(`${SCRIPT_URL}?req=get_archive_index`);
-            const data = await response.json();
-            list.innerHTML = "";
-            if (!data || data.length === 0) { list.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">No Archives Found</div>'; return; }
-            data.forEach(file => {
-                const item = document.createElement('div');
-                item.className = "archive-item p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition";
-                const d = new Date(file.date);
-                const dateStr = d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const typeBadge = file.type === 'MANUAL_EXPORT' ? '<span class="text-[9px] text-orange-500 font-bold ml-1">MANUAL</span>' : '';
-                item.innerHTML = `<div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-gray-500">${dateStr}</span>${typeBadge}</div><div class="text-xs font-bold text-gray-800 truncate" title="${file.name}">${file.name}</div><div class="text-[9px] text-gray-400 mt-0.5">${file.count} events</div>`;
-                item.onclick = () => loadCloudFile(file.file_id, file.name, item);
-                list.appendChild(item);
-            });
-        } catch (e) { list.innerHTML = `<div class="text-red-500 text-xs p-2">Error: ${e.message}</div>`; }
-    }
-
-    async function loadCloudFile(fileId, fileName, domElement) {
-        // Highlight active file
-        document.querySelectorAll('.archive-item').forEach(el => el.classList.remove('active'));
-        if(domElement) domElement.classList.add('active');
-        
-        const nameEl = document.getElementById('current-file-name');
-        if(nameEl) nameEl.innerText = fileName;
-        
-        document.getElementById('loader').classList.remove('hidden');
-        try {
-            const response = await fetch(`${SCRIPT_URL}?req=get_log_content&file_id=${fileId}`);
-            const data = await response.json();
-            if(data.status === 'success') parseLogs(data.content);
-            else alert("Error reading file: " + data.message);
-        } catch(e) { alert("Network Error: " + e.message); }
-        finally { document.getElementById('loader').classList.add('hidden'); }
-    }
-
-    function parseLogs(text) {
-        const lines = text.split('\n');
-        rawData = [];
-        
-        // --- 1. DETECT HEADER & SKIP ---
-        // The .txt file has a header line and a separator line "======".
-        // We check line 0. If it starts with "Timestamp", we skip to line 2.
-        let startIdx = 0;
-        if (lines.length > 0 && lines[0].startsWith("Timestamp")) startIdx = 2;
-
-        for (let i = startIdx; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
-
-            // --- 2. SPLIT BY PIPE (|) NOT COMMA ---
-            const cols = line.split('|').map(c => c.trim());
-
-            // Ensure we have enough columns (Timestamp | IP | User | Role | Action | Target | Meta)
-            if (cols.length >= 6) {
-                // Determine format of Action for display (e.g., 'auth' -> 'AUTH')
-                const actionDisplay = cols[4] ? cols[4].toUpperCase() : "---";
-
-                // Re-join the meta column in case the JSON itself contained a pipe
-                const metaRaw = cols.slice(6).join('|') || "{}";
-
-                rawData.push({
-                    time: cols[0],   // 1st Column
-                    ip: cols[1],     // 2nd Column
-                    user: cols[2],   // 3rd Column
-                    role: cols[3],   // 4th Column
-                    action: actionDisplay, // 5th Column (Cleaned)
-                    target: cols[5], // 6th Column
-                    meta: metaRaw,   // Rest of the line
-                    raw: line.toLowerCase()
+        async function loadArchiveList() {
+            const list = document.getElementById('archive-list');
+            list.innerHTML = '<div class="text-center py-4"><div class="w-4 h-4 border-2 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto"></div></div>';
+            try {
+                const response = await fetch(`${SCRIPT_URL}?req=get_archive_index`);
+                const data = await response.json();
+                list.innerHTML = "";
+                if (!data || data.length === 0) { list.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">No Archives Found</div>'; return; }
+                data.forEach(file => {
+                    const item = document.createElement('div');
+                    item.className = "archive-item p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition";
+                    const d = new Date(file.date);
+                    const dateStr = d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    const typeBadge = file.type === 'MANUAL_EXPORT' ? '<span class="text-[9px] text-orange-500 font-bold ml-1">MANUAL</span>' : '';
+                    item.innerHTML = `<div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-gray-500">${dateStr}</span>${typeBadge}</div><div class="text-xs font-bold text-gray-800 truncate" title="${file.name}">${file.name}</div><div class="text-[9px] text-gray-400 mt-0.5">${file.count} events</div>`;
+                    item.onclick = () => loadCloudFile(file.file_id, file.name, item);
+                    list.appendChild(item);
                 });
+            } catch (e) { list.innerHTML = `<div class="text-red-500 text-xs p-2">Error: ${e.message}</div>`; }
+        }
+
+        async function loadCloudFile(fileId, fileName, domElement) {
+            // Highlight active file
+            document.querySelectorAll('.archive-item').forEach(el => el.classList.remove('active'));
+            if(domElement) domElement.classList.add('active');
+
+            const nameEl = document.getElementById('current-file-name');
+            if(nameEl) nameEl.innerText = fileName;
+
+            document.getElementById('loader').classList.remove('hidden');
+            try {
+                const response = await fetch(`${SCRIPT_URL}?req=get_log_content&file_id=${fileId}`);
+                const data = await response.json();
+                if(data.status === 'success') parseLogs(data.content);
+                else alert("Error reading file: " + data.message);
+            } catch(e) { alert("Network Error: " + e.message); }
+            finally { document.getElementById('loader').classList.add('hidden'); }
+        }
+
+        function parseLogs(text) {
+            const lines = text.split('\n');
+            rawData = [];
+
+            // --- 1. DETECT HEADER & SKIP ---
+            // The .txt file has a header line and a separator line "======".
+            // We check line 0. If it starts with "Timestamp", we skip to line 2.
+            let startIdx = 0;
+            if (lines.length > 0 && lines[0].startsWith("Timestamp")) startIdx = 2;
+
+            for (let i = startIdx; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                // --- 2. SPLIT BY PIPE (|) NOT COMMA ---
+                const cols = line.split('|').map(c => c.trim());
+
+                // Ensure we have enough columns (Timestamp | IP | User | Role | Action | Target | Meta)
+                if (cols.length >= 6) {
+                    // Determine format of Action for display (e.g., 'auth' -> 'AUTH')
+                    const actionDisplay = cols[4] ? cols[4].toUpperCase() : "---";
+                    
+                    // Re-join the meta column in case the JSON itself contained a pipe
+                    const metaRaw = cols.slice(6).join('|') || "{}";
+
+                    rawData.push({
+                        time: cols[0],   // 1st Column
+                        ip: cols[1],     // 2nd Column
+                        user: cols[2],   // 3rd Column
+                        role: cols[3],   // 4th Column
+                        action: actionDisplay, // 5th Column (Cleaned)
+                        target: cols[5], // 6th Column
+                        meta: metaRaw,   // Rest of the line
+                        raw: line.toLowerCase()
+                    });
+                }
             }
-        }
-        
-        if(rawData.length === 0) alert("File parsed but no valid log rows were found.");
-        populateFilters(rawData);
-        resetFilters(false);
-    }
 
-    function populateFilters(data) {
-        const extract = (key) => [...new Set(data.map(i => i[key]).filter(x => x && x !== 'N/A' && x !== ''))].sort();
-        renderChips('filter-users', extract('user'), 'users', 'chip-user');
-        renderChips('filter-roles', extract('role'), 'roles', 'chip-role');
-        renderChips('filter-actions', extract('action'), 'actions', 'chip-action');
-        renderChips('filter-targets', extract('target'), 'targets', 'chip-target');
-        renderChips('filter-ips', extract('ip'), 'ips', 'chip-ip');
-    }
-
-    function renderChips(containerId, items, filterType, cssClass) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = "";
-        items.forEach(val => {
-            const btn = document.createElement('button');
-            btn.className = `filter-chip ${cssClass}`;
-            btn.innerText = val;
-            btn.onclick = function() { toggleFilter(filterType, val, this); };
-            container.appendChild(btn);
-        });
-    }
-
-    function toggleFilter(type, value, btn) {
-        const arr = activeFilters[type];
-        const idx = arr.indexOf(value);
-        if(idx === -1) { arr.push(value); btn.classList.add('active'); }
-        else { arr.splice(idx, 1); btn.classList.remove('active'); }
-        applyFilters();
-    }
-
-    function resetFilters(shouldRender = true) {
-        activeFilters = { users: [], roles: [], actions: [], targets: [], ips: [] };
-        document.getElementById('filter-search').value = "";
-        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-        if(shouldRender) applyFilters();
-        else applyFilters(); 
-    }
-
-    function applyFilters() {
-        const search = document.getElementById('filter-search').value.toLowerCase();
-        displayData = rawData.filter(item => {
-            if (search && !item.raw.includes(search)) return false;
-            if (activeFilters.users.length > 0 && !activeFilters.users.includes(item.user)) return false;
-            if (activeFilters.roles.length > 0 && !activeFilters.roles.includes(item.role)) return false;
-            if (activeFilters.actions.length > 0 && !activeFilters.actions.includes(item.action)) return false;
-            if (activeFilters.targets.length > 0 && !activeFilters.targets.includes(item.target)) return false;
-            if (activeFilters.ips.length > 0 && !activeFilters.ips.includes(item.ip)) return false;
-            return true;
-        });
-        sortData(currentSort.key);
-    }
-
-    function sortData(key) {
-        if (currentSort.key === key) currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
-        else { currentSort.key = key; currentSort.dir = 'asc'; if(key === 'time') currentSort.dir = 'desc'; }
-        
-        document.querySelectorAll('.sort-header span').forEach(el => el.innerText = '');
-        document.getElementById('sort-'+key).innerText = currentSort.dir === 'asc' ? '▲' : '▼';
-        
-        displayData.sort((a, b) => {
-            let valA = String(a[key] || "").toLowerCase();
-            let valB = String(b[key] || "").toLowerCase();
-            if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
-            if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
-            return 0;
-        });
-        renderTable();
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById('log-body');
-        tbody.innerHTML = '';
-        document.getElementById('stat-count').innerText = displayData.length;
-        
-        if (displayData.length === 0) { 
-            tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400">No matching logs found.</td></tr>'; 
-            return; 
+            if(rawData.length === 0) alert("File parsed but no valid log rows were found.");
+            populateFilters(rawData);
+            resetFilters(false);
         }
 
-        displayData.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.className = "log-row border-b border-gray-50";
-            tr.onclick = () => openModal(row);
+        function populateFilters(data) {
+            const extract = (key) => [...new Set(data.map(i => i[key]).filter(x => x && x !== 'N/A' && x !== ''))].sort();
+            renderChips('filter-users', extract('user'), 'users', 'chip-user');
+            renderChips('filter-roles', extract('role'), 'roles', 'chip-role');
+            renderChips('filter-actions', extract('action'), 'actions', 'chip-action');
+            renderChips('filter-targets', extract('target'), 'targets', 'chip-target');
+            renderChips('filter-ips', extract('ip'), 'ips', 'chip-ip');
+        }
 
-            // --- 3. IMPROVED STYLING LOGIC ---
-            if (row.action.includes('ORDER')) tr.classList.add('log-checkout');
-            if (row.user === 'GUEST' && row.action.includes('AUTH')) tr.classList.add('log-error');
-            if (row.action.includes('AUTH') && row.role !== 'N/A') tr.classList.add('log-auth');
+        function renderChips(containerId, items, filterType, cssClass) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = "";
+            items.forEach(val => {
+                const btn = document.createElement('button');
+                btn.className = `filter-chip ${cssClass}`;
+                btn.innerText = val;
+                btn.onclick = function() { toggleFilter(filterType, val, this); };
+                container.appendChild(btn);
+            });
+        }
 
-            const cell = (val) => `<span class="hover:text-blue-600 font-medium">${val}</span>`;
+        function toggleFilter(type, value, btn) {
+            const arr = activeFilters[type];
+            const idx = arr.indexOf(value);
+            if(idx === -1) { arr.push(value); btn.classList.add('active'); }
+            else { arr.splice(idx, 1); btn.classList.remove('active'); }
+            applyFilters();
+        }
+
+        function resetFilters(shouldRender = true) {
+            activeFilters = { users: [], roles: [], actions: [], targets: [], ips: [] };
+            document.getElementById('filter-search').value = "";
+            document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+            if(shouldRender) applyFilters();
+            else applyFilters();
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('filter-search').value.toLowerCase();
+            displayData = rawData.filter(item => {
+                if (search && !item.raw.includes(search)) return false;
+                if (activeFilters.users.length > 0 && !activeFilters.users.includes(item.user)) return false;
+                if (activeFilters.roles.length > 0 && !activeFilters.roles.includes(item.role)) return false;
+                if (activeFilters.actions.length > 0 && !activeFilters.actions.includes(item.action)) return false;
+                if (activeFilters.targets.length > 0 && !activeFilters.targets.includes(item.target)) return false;
+                if (activeFilters.ips.length > 0 && !activeFilters.ips.includes(item.ip)) return false;
+                return true;
+            });
+            sortData(currentSort.key);
+        }
+
+        function sortData(key) {
+            if (currentSort.key === key) currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+            else { currentSort.key = key; currentSort.dir = 'asc'; if(key === 'time') currentSort.dir = 'desc'; }
             
-            // Clean up Meta for Table (Shorten it)
-            let metaShort = row.meta;
-            if(metaShort.length > 50) metaShort = metaShort.substring(0, 47) + "...";
+            document.querySelectorAll('.sort-header span').forEach(el => el.innerText = '');
+            document.getElementById('sort-'+key).innerText = currentSort.dir === 'asc' ? '▲' : '▼';
 
-            tr.innerHTML = `
-                <td class="p-3 whitespace-nowrap text-gray-500 font-mono text-[10px]">${row.time}</td>
-                <td class="p-3 font-bold text-gray-800 text-xs whitespace-nowrap">${cell(row.user)}</td>
-                <td class="p-3 text-xs whitespace-nowrap"><span class="bg-gray-100 px-1.5 py-0.5 rounded font-bold text-gray-600">${row.role}</span></td>
-                <td class="p-3 font-bold text-xs whitespace-nowrap"><span class="text-blue-600">${row.action}</span></td>
-                <td class="p-3 text-gray-500 text-xs whitespace-nowrap">${cell(row.target)}</td>
-                <td class="p-3 text-gray-400 font-mono text-[10px] whitespace-nowrap">${cell(row.ip)}</td>
-                <td class="p-3 text-gray-400 font-mono text-[9px] truncate max-w-xs hover:text-gray-600 transition" title='${row.meta}'>${metaShort}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function openModal(row) {
-        document.getElementById('m-time').innerText = row.time;
-        document.getElementById('m-ip').innerText = row.ip;
-        document.getElementById('m-user').innerText = row.user;
-        document.getElementById('m-role').innerText = row.role;
-        document.getElementById('m-action').innerText = row.action;
-        document.getElementById('m-target').innerText = row.target;
-        
-        // Pretty Print JSON in Modal
-        try { 
-            const metaObj = JSON.parse(row.meta); 
-            document.getElementById('m-meta').innerText = JSON.stringify(metaObj, null, 2); 
-        } catch(e) { 
-            document.getElementById('m-meta').innerText = row.meta; 
+            displayData.sort((a, b) => {
+                let valA = String(a[key] || "").toLowerCase();
+                let valB = String(b[key] || "").toLowerCase();
+                if (valA < valB) return currentSort.dir === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSort.dir === 'asc' ? 1 : -1;
+                return 0;
+            });
+            renderTable();
         }
-        
-        document.getElementById('detail-modal').classList.remove('hidden');
-        document.body.classList.add('modal-active');
-    }
-    
-    function closeModal() { 
-        document.getElementById('detail-modal').classList.add('hidden'); 
-        document.body.classList.remove('modal-active'); 
-    }
-    
-    // Local File Loader
-    document.getElementById('file-input').addEventListener('change', function(e) { 
-        const file = e.target.files; if (!file) return; 
-        const nameEl = document.getElementById('current-file-name');
-        if(nameEl) nameEl.innerText = "Local: " + file.name;
-        const reader = new FileReader(); 
-        reader.onload = (e) => parseLogs(e.target.result); 
-        reader.readAsText(file); 
-    });
-</script>
+
+        function renderTable() {
+            const tbody = document.getElementById('log-body');
+            tbody.innerHTML = '';
+            document.getElementById('stat-count').innerText = displayData.length;
+
+            if (displayData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400">No matching logs found.</td></tr>';
+                return;
+            }
+
+            displayData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "log-row border-b border-gray-50";
+                tr.onclick = () => openModal(row);
+
+                // --- 3. IMPROVED STYLING LOGIC ---
+                if (row.action.includes('ORDER')) tr.classList.add('log-checkout');
+                if (row.user === 'GUEST' && row.action.includes('AUTH')) tr.classList.add('log-error');
+                if (row.action.includes('AUTH') && row.role !== 'N/A') tr.classList.add('log-auth');
+
+                const cell = (val) => `<span class="hover:text-blue-600 font-medium">${val}</span>`;
+                
+                // Clean up Meta for Table (Shorten it)
+                let metaShort = row.meta;
+                if(metaShort.length > 50) metaShort = metaShort.substring(0, 47) + "...";
+
+                tr.innerHTML = `
+                    <td class="p-3 whitespace-nowrap text-gray-500 font-mono text-[10px]">${row.time}</td>
+                    <td class="p-3 font-bold text-gray-800 text-xs whitespace-nowrap">${cell(row.user)}</td>
+                    <td class="p-3 text-xs whitespace-nowrap"><span class="bg-gray-100 px-1.5 py-0.5 rounded font-bold text-gray-600">${row.role}</span></td>
+                    <td class="p-3 font-bold text-xs whitespace-nowrap"><span class="text-blue-600">${row.action}</span></td>
+                    <td class="p-3 text-gray-500 text-xs whitespace-nowrap">${cell(row.target)}</td>
+                    <td class="p-3 text-gray-400 font-mono text-[10px] whitespace-nowrap">${cell(row.ip)}</td>
+                    <td class="p-3 text-gray-400 font-mono text-[9px] truncate max-w-xs hover:text-gray-600 transition" title='${row.meta}'>${metaShort}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openModal(row) {
+            document.getElementById('m-time').innerText = row.time;
+            document.getElementById('m-ip').innerText = row.ip;
+            document.getElementById('m-user').innerText = row.user;
+            document.getElementById('m-role').innerText = row.role;
+            document.getElementById('m-action').innerText = row.action;
+            document.getElementById('m-target').innerText = row.target;
+
+            // Pretty Print JSON in Modal
+            try {
+                const metaObj = JSON.parse(row.meta);
+                document.getElementById('m-meta').innerText = JSON.stringify(metaObj, null, 2);
+            } catch(e) {
+                document.getElementById('m-meta').innerText = row.meta;
+            }
+
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.classList.add('modal-active');
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.body.classList.remove('modal-active');
+        }
+
+        // Local File Loader
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const file = e.target.files; if (!file) return;
+            const nameEl = document.getElementById('current-file-name');
+            if(nameEl) nameEl.innerText = "Local: " + file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => parseLogs(e.target.result);
+            reader.readAsText(file);
+        });
+    </script>
 
 </body>
 </html>
