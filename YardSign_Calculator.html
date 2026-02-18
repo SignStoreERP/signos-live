@@ -3,445 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yard Sign Calculator v21.8</title>
+    <title>Yard Sign Calculator v22.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
+    <!-- PRODUCTION LOGIC ENGINE -->
+    <script src="logic_yard.js"></script>
     <style>
-        /* CORE STYLES */
-        .tab-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; background: #eff6ff; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        
-        .toggle-checkbox:checked { right: 0; border-color: #68D391; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
-        
-        /* VIEW MODE LOGIC */
-        .mode-sales #btn-cost, .mode-sales #btn-vend { display: none !important; }
-        .mode-prod #btn-retail, .mode-prod #btn-vend { display: none !important; }
-        .mode-prod .prod-hidden { display: none !important; }
-        .mode-prod .prod-width { width: 100% !important; text-align: right; }
-        
         .warn-pulse { animation: pulse-red 2s infinite; }
         @keyframes pulse-red { 0% { background-color: #FECACA; } 50% { background-color: #F87171; } 100% { background-color: #FECACA; } }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
 
-<div id="main-card" class="max-w-md mx-auto w-full bg-white shadow-2xl overflow-hidden min-h-screen sm:min-h-0 sm:my-10 sm:rounded-xl border border-gray-200">
+    <div class="max-w-md mx-auto w-full bg-white shadow-2xl overflow-hidden min-h-screen sm:min-h-0 sm:my-10 sm:rounded-xl border border-gray-200">
 
-    <!-- 1. AUTH HEADER -->
-    <div class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center text-xs border-b border-gray-700">
-        <div class="flex gap-3">
-            <span class="tracking-wide">USER: <span class="font-bold text-gray-200 uppercase" id="auth-user">---</span></span>
-            <span class="tracking-wide">ROLE: <span class="font-bold text-blue-400 uppercase" id="auth-role">---</span></span>
-        </div>
-        <button onclick="logout()" class="font-bold text-red-400 hover:text-white uppercase tracking-wider text-[10px] border border-red-900/50 hover:bg-red-900/50 px-2 py-1 rounded transition">Logout</button>
-    </div>
-
-    <!-- 2. PRODUCT HEADER -->
-    <div class="bg-gray-900 px-6 py-4 text-white flex justify-between items-center">
-        <a href="#" onclick="goBack()" class="text-gray-400 hover:text-white text-xs font-bold uppercase flex items-center gap-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> MENU
-        </a>
-        <div class="text-center">
-            <h2 class="text-lg font-bold" id="product-label">Yard Signs</h2>
-            <div class="flex items-center justify-center gap-2 text-[10px] mt-0.5">
-                <span id="status-dot" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                <span id="status-text" class="font-bold text-gray-400">CONNECTING...</span>
-                <span id="version-display" class="text-gray-600 font-mono hidden"></span>
+        <!-- 1. AUTH HEADER -->
+        <div class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center text-xs border-b border-gray-700">
+            <div class="flex gap-3">
+                <span class="tracking-wide">USER: <span class="font-bold text-gray-200 uppercase" id="auth-user">---</span></span>
+                <span class="tracking-wide">ROLE: <span class="font-bold text-blue-400 uppercase" id="auth-role">---</span></span>
             </div>
-        </div>
-        <button onclick="location.reload()" class="text-gray-400 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
-    </div>
-
-    <!-- INPUTS -->
-    <div class="p-6 space-y-4">
-        <!-- Specs -->
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Quantity</label>
-                <input type="number" id="qty" value="10" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="calculate()">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Sides</label>
-                <select id="sides" class="w-full border p-2 rounded h-[46px] bg-white font-bold text-sm" onchange="calculate()">
-                    <option value="1">Single (4/0)</option>
-                    <option value="2">Double (4/4)</option>
-                </select>
-            </div>
+            <button onclick="logout()" class="font-bold text-red-400 hover:text-white uppercase tracking-wider text-[10px] border border-red-900/50 hover:bg-red-900/50 px-2 py-1 rounded transition">Logout</button>
         </div>
 
-        <input type="hidden" id="width" value="24">
-        <input type="hidden" id="height" value="18">
-
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Design Files</label>
-                <input type="number" id="files" value="1" min="1" class="w-full border p-2 rounded text-center font-bold text-lg" oninput="calculate()">
+        <!-- 2. PRODUCT HEADER -->
+        <div class="bg-gray-900 px-6 py-4 text-white flex justify-between items-center">
+            <a href="#" onclick="goBack()" class="text-gray-400 hover:text-white text-xs font-bold uppercase flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> MENU
+            </a>
+            <div class="text-center">
+                <h2 class="text-lg font-bold" id="product-label">Yard Signs</h2>
+                <div class="flex items-center justify-center gap-2 text-[10px] mt-0.5">
+                    <span id="status-dot" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    <span id="status-text" class="font-bold text-gray-400">CONNECTING...</span>
+                    <!-- DYNAMIC VERSION DISPLAY -->
+                    <span id="version-display" class="text-gray-500 font-mono hidden"></span>
+                </div>
             </div>
-            <div class="flex items-center p-2 border rounded bg-gray-50 mt-5 h-[46px]">
-                <input type="checkbox" id="stakes" class="w-5 h-5 text-blue-600 rounded" checked onchange="calculate()">
+            <button onclick="location.reload()" class="text-gray-400 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
+        </div>
+
+        <!-- INPUTS -->
+        <div class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Qty</label><input type="number" id="qty" value="10" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="runCalc()"></div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Sides</label><select id="sides" class="w-full border p-2 rounded bg-white font-bold text-sm h-[46px]" onchange="runCalc()"><option value="1">Single Sided</option><option value="2">Double Sided</option></select></div>
+            </div>
+
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Files</label><input type="number" id="files" value="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="runCalc()"></div>
+
+            <div class="flex items-center p-2 border rounded bg-gray-50 mt-2 h-[46px]">
+                <input type="checkbox" id="stakes" class="w-5 h-5 text-blue-600 rounded" checked onchange="runCalc()"> 
                 <label for="stakes" class="ml-2 text-xs font-bold text-gray-700">Include Wire Stakes</label>
             </div>
-        </div>
 
-        <div class="space-y-2">
-            <div class="flex items-center justify-between p-2 bg-purple-50 border border-purple-100 rounded">
-                <span class="text-xs font-bold text-purple-900">Include Design Fee?</span>
-                <div class="relative inline-block w-9 align-middle select-none">
-                    <input type="checkbox" id="inc-design" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300" checked onchange="calculate()"/>
-                    <label for="inc-design" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
+            <!-- FEE TOGGLES -->
+            <div class="space-y-2 pt-2">
+                <div class="flex items-center justify-between p-2 bg-purple-50 rounded border border-purple-100">
+                    <span class="text-xs font-bold text-purple-900">Include Design Fee?</span>
+                    <input type="checkbox" id="design" checked onchange="runCalc()" class="w-5 h-5 text-purple-600">
                 </div>
-            </div>
-            <div class="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded">
-                <span class="text-xs font-bold text-gray-600">Charge Setup Per File?</span>
-                <div class="relative inline-block w-9 align-middle select-none">
-                    <input type="checkbox" id="inc-setup-per-file" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300" onchange="calculate()"/>
-                    <label for="inc-setup-per-file" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200">
+                    <span class="text-xs font-bold text-gray-600">Charge Setup Per File?</span>
+                    <input type="checkbox" id="setup-per-file" onchange="runCalc()" class="w-5 h-5 text-gray-600">
                 </div>
             </div>
         </div>
 
-        <div class="text-[10px] text-center text-gray-400 uppercase tracking-widest border-t border-gray-100 pt-2">
-            Production: HP R1000 Standard (4-Pass)
-        </div>
-    </div>
-
-    <!-- METRICS DECK -->
-    <div class="border-t border-gray-200">
-        <div class="flex" id="tab-container">
-            <button onclick="switchTab('retail')" class="flex-1 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 tab-btn active" id="btn-retail">RETAIL</button>
-            <button onclick="switchTab('cost')" class="flex-1 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 tab-btn" id="btn-cost">IN-HOUSE</button>
-            <button onclick="switchTab('vend')" class="flex-1 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 tab-btn" id="btn-vend">VENDED</button>
-        </div>
-
-        <!-- TAB 1: RETAIL -->
-        <div id="tab-retail" class="tab-content active bg-white p-6">
+        <!-- RESULTS -->
+        <div class="bg-white p-6 border-t border-gray-200">
             <div class="flex justify-between items-center mb-1">
                 <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Base Unit Price</span>
-                <div class="text-right">
-                    <span class="text-2xl font-bold text-gray-900" id="unit-price">$0.00</span>
-                    <span class="text-[10px] text-gray-400 block">(Sign + Stakes Only)</span>
-                </div>
+                <span class="text-2xl font-bold text-gray-900" id="ui-unit">---</span>
             </div>
 
+            <!-- DISCOUNT TABLE -->
             <div class="mb-4 text-right">
-                <button onclick="toggleDiscounts()" class="text-[10px] font-bold text-blue-600 hover:underline uppercase tracking-wide">Show Volume Discounts ▼</button>
-                <div id="discount-table" class="hidden mt-2 bg-blue-50 rounded p-2 text-xs border border-blue-100">
+                <button onclick="document.getElementById('disc-table').classList.toggle('hidden')" class="text-[10px] font-bold text-blue-600 uppercase hover:underline">Show Volume Discounts ▼</button>
+                <div id="disc-table" class="hidden mt-2 bg-blue-50 rounded p-2 text-xs border border-blue-100">
                     <table class="w-full text-right">
-                        <thead class="text-gray-400 text-[9px] uppercase border-b border-blue-200">
-                            <tr><th class="pb-1 pr-4">Quantity</th><th class="pb-1 pr-4">Base Sign</th><th class="pb-1 text-blue-600">You Pay</th></tr>
-                        </thead>
-                        <tbody class="font-bold text-gray-700" id="discount-rows"></tbody>
+                        <thead class="text-gray-400 text-[9px] uppercase border-b border-blue-200"><tr><th class="pr-4 pb-1">Qty</th><th class="pr-4 pb-1">Base Sign</th><th class="pb-1 text-blue-600">You Pay</th></tr></thead>
+                        <tbody id="tier-rows" class="font-bold text-gray-700"></tbody>
                     </table>
                 </div>
             </div>
 
             <div class="border-t border-gray-100 my-3"></div>
+
+            <!-- LINE ITEMS -->
             <div class="space-y-1 text-xs text-gray-600">
-                <div class="flex justify-between"><span>Prints (x<span id="lbl-qty">0</span>):</span><span id="ret-print" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between"><span>Step Stakes (<span id="lbl-stakes">No</span>):</span><span id="ret-stakes" class="font-bold">$0.00</span></div>
+                <div class="flex justify-between"><span>Prints:</span><span id="ui-print" class="font-bold">$0.00</span></div>
+                <div class="flex justify-between"><span>Stakes:</span><span id="ui-stakes" class="font-bold">$0.00</span></div>
                 <div class="border-t border-dashed border-gray-200 my-1 pt-1"></div>
-                <div class="flex justify-between text-blue-700"><span>Setup (<span id="lbl-setup-type">Flat</span>):</span><span id="ret-setup" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between text-purple-700" id="row-design"><span>Design Fee (<span id="lbl-files-d">1</span> Files):</span><span id="ret-design" class="font-bold">$0.00</span></div>
+                <div class="flex justify-between text-blue-700"><span>Setup (<span id="lbl-setup">Flat</span>):</span><span id="ui-setup" class="font-bold">$0.00</span></div>
+                <div class="flex justify-between text-purple-700" id="row-design"><span>Design Fee:</span><span id="ui-design" class="font-bold">$0.00</span></div>
             </div>
 
-            <div class="border-t-2 border-gray-800 my-3"></div>
-            <div class="flex justify-between items-end">
+            <div class="flex justify-between items-end border-t-2 border-gray-800 my-3 pt-2">
                 <div>
                     <span class="text-xs font-bold text-gray-400 uppercase">Total Quote</span>
                     <div id="min-badge" class="hidden bg-red-100 text-red-600 text-[9px] font-bold px-1 rounded inline-block ml-1">MINIMUM APPLIED</div>
                 </div>
-                <span class="text-3xl font-black text-blue-600" id="total-price">---</span>
+                <span class="text-3xl font-black text-blue-600" id="ui-total">---</span>
             </div>
         </div>
 
-        <!-- TAB 2: IN-HOUSE COST -->
-        <div id="tab-cost" class="tab-content bg-yellow-50 p-6">
-            <div class="space-y-2 text-xs text-gray-700">
-                <h4 class="font-bold text-yellow-800 uppercase text-[10px] mb-1">Materials</h4>
-                <div class="flex justify-between items-center"><span>Blank:</span><span class="prod-width text-right font-bold"><span id="lbl-qty-mat">0</span> units</span><span id="cost-mat" class="font-bold prod-hidden">$0.00</span></div>
-                <div class="flex justify-between items-center"><span>Ink:</span><span class="prod-width text-right text-[10px] bg-yellow-200 px-1 rounded font-bold" id="lbl-ink-sqft">0 ft²</span><span id="cost-ink" class="font-bold prod-hidden">$0.00</span></div>
-                <div class="flex justify-between items-center"><span>Stake:</span><span class="prod-width text-right font-bold"><span id="lbl-qty-stake">0</span> units</span><span id="cost-hard" class="font-bold prod-hidden">$0.00</span></div>
-
-                <div class="border-t border-yellow-200 my-1 pt-1"></div>
-                <h4 class="font-bold text-yellow-800 uppercase text-[10px] mb-1">Production Time</h4>
-                <div class="flex justify-between items-center text-purple-800" id="row-cost-design"><span class="w-1/3">Design:</span><span id="time-design" class="w-1/3 text-right text-[10px] bg-purple-100 rounded px-1 prod-width">0m</span><span id="cost-design" class="w-1/3 text-right font-bold prod-hidden">$0.00</span></div>
-                <div class="flex justify-between items-center mt-1"><span class="w-1/3">Setup:</span><span id="time-setup" class="w-1/3 text-right text-[10px] bg-yellow-100 rounded px-1 prod-width">0m</span><span id="cost-setup-internal" class="w-1/3 text-right font-bold prod-hidden">$0.00</span></div>
-                <div class="flex justify-between items-center mt-1"><span class="w-1/3">Run:</span><span id="time-machine" class="w-1/3 text-right text-[10px] bg-yellow-100 rounded px-1 prod-width">0m</span><span id="cost-machine" class="w-1/3 text-right font-bold prod-hidden">$0.00</span></div>
-                <div class="flex justify-between items-center mt-1"><span class="w-1/3">Labor:</span><span id="time-op" class="w-1/3 text-right text-[10px] bg-yellow-100 rounded px-1 prod-width">0m</span><span id="cost-op" class="w-1/3 text-right font-bold prod-hidden">$0.00</span></div>
-
-                <div class="border-t border-yellow-200 my-2 pt-1"></div>
-                <div class="flex justify-between items-center text-gray-400"><span class="w-1/2 text-[10px] uppercase">Risk Buffer:</span><span id="risk-pct" class="w-1/4 text-right text-[10px] bg-gray-100 rounded px-1 font-bold prod-width">0%</span><span id="cost-waste" class="w-1/4 text-right font-bold prod-hidden text-[10px]">$0.00</span></div>
-
-                <div class="border-t-2 border-yellow-300 my-2 prod-hidden"></div>
-                <div class="flex justify-between text-yellow-900 font-bold text-sm prod-hidden"><span>Total Cost:</span> <span id="cost-total">$0.00</span></div>
-                <div class="mt-4 bg-white p-3 rounded border border-yellow-200 shadow-sm prod-hidden">
-                    <div class="flex justify-between items-end">
-                        <div><div class="text-[10px] uppercase font-bold text-gray-400">Net Profit</div><div class="text-xl font-bold text-green-600" id="profit-inhouse">$0.00</div></div>
-                        <div class="text-right"><div class="text-[10px] uppercase font-bold text-gray-400">Margin</div><div class="text-xl font-bold text-blue-600" id="margin-inhouse">0%</div></div>
-                    </div>
-                </div>
-            </div>
+        <!-- DESCRIPTION GENERATOR -->
+        <div class="bg-gray-50 p-4 border-t border-gray-200">
+            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
+            <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-20 text-gray-600 font-mono outline-none" readonly></textarea>
         </div>
 
-        <!-- TAB 3: VENDED COST -->
-        <div id="tab-vend" class="tab-content bg-indigo-50 p-6">
-            <div class="space-y-2 text-xs text-gray-700">
-                <div class="flex justify-between"><span>Vendor Print:</span> <span id="vend-print" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between"><span>Vendor Stakes:</span> <span id="vend-stakes" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between"><span>Shipping:</span> <span id="vend-ship" class="font-bold">$0.00</span></div>
-                <div class="border-t border-indigo-200 my-1"></div>
-                <div class="flex justify-between text-indigo-900 font-bold text-sm"><span>Total Vended Bill:</span> <span id="vend-total">$0.00</span></div>
-                <div class="mt-4 bg-white p-3 rounded border border-indigo-200 shadow-sm">
-                    <div class="flex justify-between items-end">
-                        <div><div class="text-[10px] uppercase font-bold text-gray-400">Net Profit</div><div class="text-xl font-bold text-green-600" id="profit-vend">$0.00</div></div>
-                        <div class="text-right"><div class="text-[10px] uppercase font-bold text-gray-400">Margin</div><div class="text-xl font-bold text-blue-600" id="margin-vend">0%</div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-
-    <!-- COPY PASTE DESCRIPTION -->
-    <div class="bg-gray-50 p-4 border-t border-gray-200">
-        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
-        <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white text-gray-600 font-mono h-20 outline-none" readonly></textarea>
-    </div>
-    <div id="error-msg" class="hidden text-[10px] text-red-500 p-4 text-center bg-red-50"></div>
-</div>
 
 <script>
-    const TAB_NAME = "PROD_Yard_Signs";
-    let backend = {};
-    let currentUser = { name: "Guest", role: "VIEW", mode: "sales" };
-
-    function initSession() {
-        const params = new URLSearchParams(window.location.search);
-        const urlMode = params.get('mode'); 
-        const storeUser = sessionStorage.getItem('signos_user');
-        const storeRole = sessionStorage.getItem('signos_role');
-
-        if(storeUser) currentUser.name = storeUser;
-        if(storeRole) currentUser.role = storeRole;
-
-        // Strict Role Check via Core Logic or manual override here?
-        // Let's rely on sessionStorage + simple view switch
-        if (currentUser.role === 'ADMIN') currentUser.mode = urlMode || 'dev';
-        else if (currentUser.role === 'PROD') currentUser.mode = 'production';
-        else currentUser.mode = 'sales';
-
-        document.getElementById('auth-user').innerText = currentUser.name;
-        document.getElementById('auth-role').innerText = currentUser.role;
-
-        const body = document.body;
-        body.classList.remove('mode-sales', 'mode-prod', 'mode-admin');
-        
-        if(currentUser.mode === 'sales') { body.classList.add('mode-sales'); switchTab('retail'); }
-        else if (currentUser.mode === 'production') { body.classList.add('mode-prod'); switchTab('cost'); }
-        else { body.classList.add('mode-admin'); }
-    }
-
-    function switchTab(id) { document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('btn-'+id).classList.add('active'); }
-    function toggleDiscounts() { document.getElementById('discount-table').classList.toggle('hidden'); }
-
-    function validateInputs() {
-        const qty = document.getElementById('qty');
-        const files = document.getElementById('files');
-        if(parseFloat(qty.value) < 1) qty.value = 1;
-        if(parseFloat(files.value) < 1) files.value = 1;
-    }
+    let backendData = {};
 
     window.onload = async function() {
-        initSession();
+        // UI INIT
+        const u = sessionStorage.getItem('signos_user') || 'Guest';
+        const r = sessionStorage.getItem('signos_role') || 'VIEW';
+        document.getElementById('auth-user').innerText = u;
+        document.getElementById('auth-role').innerText = r;
+
         const statusText = document.getElementById("status-text");
         const statusDot = document.getElementById("status-dot");
-        const vDisplay = document.getElementById("version-display");
-        
+        const verDisplay = document.getElementById("version-display");
+
         try {
-            // TELEMETRY: Pass IP and User params
-            const response = await fetch(`${SCRIPT_URL}?tab=${TAB_NAME}&ip=${clientIP}&user=${currentUser.name}&role=${currentUser.role}&req=view_module`);
-            const data = await response.json();
-            if (data.error) throw new Error(data.error);
-            backend = data;
+            // TARGET: PROD_Yard_Signs (Production Data)
+            const res = await fetch(`${SCRIPT_URL}?tab=PROD_Yard_Signs&ip=${clientIP}&user=${u}&role=${r}&req=view_module`);
+            const data = await res.json();
+            
+            if(data.error) throw new Error(data.error);
+            backendData = data;
 
-            // Kill Switch
-            const isLive = (backend.Is_Live === undefined) ? true : (backend.Is_Live === true || backend.Is_Live === "TRUE");
-            if (!isLive && currentUser.role !== 'ADMIN') {
-                document.getElementById('main-card').innerHTML = `<div class="p-10 text-center"><h1 class="text-xl font-black text-gray-400">MODULE OFFLINE</h1><button onclick="goBack()" class="mt-6 bg-blue-600 text-white px-4 py-2 rounded font-bold text-xs">Return to Menu</button></div>`;
-                return;
-            }
-
-            // UI Status
-            const isDev = currentUser.mode === 'dev';
-            statusText.innerText = isDev ? "DEV MODE" : "ONLINE";
-            statusText.className = isDev ? "font-bold text-orange-500" : "font-bold text-green-500";
-            statusDot.className = isDev ? "w-2 h-2 rounded-full bg-orange-500" : "w-2 h-2 rounded-full bg-green-500";
+            // Update UI State
+            statusText.innerText = "ONLINE";
+            statusText.className = "font-bold text-green-500";
+            statusDot.className = "w-2 h-2 rounded-full bg-green-500";
             statusDot.classList.remove("animate-pulse");
+            
+            // Show Version from Backend
+            const isDev = window.location.href.includes('mode=dev');
+            const ver = isDev ? (data.Sys_Version_Dev || 'v22.0') : (data.Sys_Version_Live || 'v22.0');
+            verDisplay.innerText = isDev ? `(Beta ${ver})` : `Live ${ver}`;
+            verDisplay.classList.remove('hidden');
 
-            const ver = isDev ? (backend.Sys_Version_Dev || 'v0.0') : (backend.Sys_Version_Live || 'v0.0');
-            vDisplay.innerText = isDev ? `(Beta ${ver})` : `Live ${ver}`;
-            vDisplay.classList.remove('hidden');
+            runCalc();
 
-            if(backend.Item_Name) document.getElementById("product-label").innerText = backend.Item_Name;
-            calculate();
-
-        } catch (e) {
+        } catch(e) { 
             statusText.innerText = "OFFLINE";
             statusText.className = "font-bold text-red-500";
-            document.getElementById("error-msg").innerText = e.message;
-            document.getElementById("error-msg").classList.remove("hidden");
+            console.error(e);
         }
     };
 
-    function calculate() {
-        if (!backend.Retail_Price_Sign_SS) return;
-        validateInputs();
+    function runCalc() {
+        if(!backendData.Item_Name) return;
 
-        const qty = parseFloat(document.getElementById('qty').value) || 1;
-        const sides = parseInt(document.getElementById('sides').value);
-        const numDesigns = parseFloat(document.getElementById('files').value) || 1;
-        const hasStakes = document.getElementById('stakes').checked;
-        const incDesign = document.getElementById('inc-design').checked;
-        const chargeSetupPerFile = document.getElementById('inc-setup-per-file').checked;
+        // 1. Scrape Inputs
+        const inputs = {
+            qty: parseFloat(document.getElementById('qty').value) || 1,
+            sides: parseInt(document.getElementById('sides').value),
+            files: parseFloat(document.getElementById('files').value) || 1,
+            hasStakes: document.getElementById('stakes').checked,
+            incDesign: document.getElementById('design').checked,
+            setupPerFile: document.getElementById('setup-per-file').checked
+        };
 
-        // --- 1. RETAIL PRICING ---
-        const defaultBase = parseFloat(backend.Retail_Price_Sign_SS || 15.00);
-        const adderDS = parseFloat(backend.Retail_Price_Sign_DS || 3.00);
-        const stakePrice = parseFloat(backend.Retail_Price_Stake || 2.50);
+        // 2. RUN ENGINE (External JS)
+        const result = calculateYardSign(inputs, backendData);
+        const ret = result.retail;
 
-        let baseSignPrice = defaultBase;
-        let i = 1;
-        const tiers = [];
-        while(backend[`Tier_${i}_Qty`]) {
-            const tQty = parseFloat(backend[`Tier_${i}_Qty`]);
-            const tPrice = parseFloat(backend[`Tier_${i}_Price`] || 0);
-            tiers.push({ q: tQty, p: tPrice });
-            if (qty >= tQty) { baseSignPrice = tPrice; }
-            i++;
-        }
-
-        let isCustom = (baseSignPrice === 0);
-        let unitTotal = baseSignPrice;
-        if (sides === 2) unitTotal += adderDS;
-        if (hasStakes) unitTotal += stakePrice;
-
-        let totalSignAndStake = unitTotal * qty;
-        const feeSetupRate = parseFloat(backend.Retail_Fee_Setup || 15.00);
-        const totalSetupPrice = chargeSetupPerFile ? (feeSetupRate * numDesigns) : feeSetupRate;
-        const feeDesignRate = parseFloat(backend.Retail_Fee_Design || 45.00);
-        const totalDesignPrice = incDesign ? (feeDesignRate * numDesigns) : 0;
-
-        let quoteTotal = totalSignAndStake + totalSetupPrice + totalDesignPrice;
-        const minOrder = parseFloat(backend.Retail_Min_Order || 75);
-        if (quoteTotal < minOrder) { quoteTotal = minOrder; document.getElementById('min-badge').classList.remove('hidden'); } 
-        else { document.getElementById('min-badge').classList.add('hidden'); }
-
+        // 3. Update UI
         const fmt = (n) => "$" + n.toFixed(2);
-        const pct = (n) => (n * 100).toFixed(1) + "%";
-        const fmtTime = (h) => { const hrs = Math.floor(h); const mins = Math.round((h - hrs) * 60); return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`; };
 
+        document.getElementById('ui-unit').innerText = ret.isCustom ? "CUSTOM" : fmt(ret.unitPrice);
+        document.getElementById('ui-total').innerText = ret.isCustom ? "CONTACT US" : fmt(ret.grandTotal);
+
+        // Line Items
+        document.getElementById('ui-print').innerText = fmt(ret.printTotal);
+        document.getElementById('ui-stakes').innerText = fmt(ret.stakeTotal);
+        document.getElementById('ui-setup').innerText = fmt(ret.setupFee);
+        document.getElementById('ui-design').innerText = fmt(ret.designFee);
+
+        document.getElementById('lbl-setup').innerText = inputs.setupPerFile ? `${inputs.files} Files` : "Flat";
+        document.getElementById('row-design').classList.toggle('hidden', ret.designFee === 0);
+        document.getElementById('min-badge').classList.toggle('hidden', !ret.isMinApplied);
+
+        // Discount Table
         let rowsHtml = "";
-        tiers.forEach(tier => {
-            if(tier.p === 0) return;
-            let rowBase = tier.p + (sides===2 ? adderDS : 0) + (hasStakes ? stakePrice : 0);
-            rowsHtml += `<tr><td class="pr-4 py-1 text-gray-500">${tier.q}+</td><td class="pr-4 py-1 text-gray-400">$${tier.p.toFixed(2)}</td><td class="py-1 text-blue-600 font-bold">$${rowBase.toFixed(2)}</td></tr>`;
+        ret.tiers.forEach(tier => {
+            if(tier.base === 0) return;
+            rowsHtml += `<tr><td class="pr-4 py-1 text-gray-500">${tier.q}+</td><td class="pr-4 py-1 text-gray-400">$${tier.base.toFixed(2)}</td><td class="py-1 text-blue-600 font-bold">$${tier.unit.toFixed(2)}</td></tr>`;
         });
-        document.getElementById('discount-rows').innerHTML = rowsHtml;
+        document.getElementById('tier-rows').innerHTML = rowsHtml;
 
-        document.getElementById('unit-price').innerText = isCustom ? "CUSTOM" : fmt(unitTotal);
-        document.getElementById('total-price').innerText = isCustom ? "CONTACT US" : fmt(quoteTotal);
-        document.getElementById('lbl-qty').innerText = qty;
-        document.getElementById('ret-print').innerText = fmt(baseSignPrice * qty + (sides===2 ? adderDS*qty : 0));
-        document.getElementById('ret-stakes').innerText = fmt(hasStakes ? stakePrice*qty : 0);
-        document.getElementById('ret-setup').innerText = fmt(totalSetupPrice);
-        document.getElementById('lbl-setup-type').innerText = chargeSetupPerFile ? `${numDesigns} Files` : "Flat";
-        document.getElementById('ret-design').innerText = fmt(totalDesignPrice);
-        document.getElementById('lbl-files-d').innerText = numDesigns;
-        if(incDesign) document.getElementById('row-design').classList.remove('hidden'); else document.getElementById('row-design').classList.add('hidden');
-
-        // --- 2. IN-HOUSE ---
-        const bulkTrigger = parseFloat(backend.Bulk_Qty_Trigger || 1100);
-        let blankCost = parseFloat(backend.Cost_Blank_Standard || 0.91);
-        if (qty >= bulkTrigger) blankCost = parseFloat(backend.Cost_Blank_Bulk || 0.79);
-        const wasteFactor = parseFloat(backend.Waste_Factor || 1.05);
-        const totalMatCost = (blankCost * wasteFactor) * qty;
-        const areaPerSign = (24*18)/144;
-        const totalPrintArea = areaPerSign * sides * qty;
-        const inkRate = parseFloat(backend.Cost_Ink_Base || 0.16);
-        const totalInkCost = totalPrintArea * inkRate;
-        const unitStakeCost = hasStakes ? parseFloat(backend.Cost_Stake || 0.93) : 0;
-        const totalStakeCost = unitStakeCost * qty;
-
-        let designHrs = incDesign ? ((parseFloat(backend.Time_Design_Per_File || 15) * numDesigns) / 60) : 0;
-        let totalDesignCost = designHrs * parseFloat(backend.Rate_Design_Cost || 35);
-        if(incDesign) document.getElementById('row-cost-design').classList.remove('hidden'); else document.getElementById('row-cost-design').classList.add('hidden');
-
-        const setupHrs = (parseFloat(backend.Time_Setup_Base || 15) + (parseFloat(backend.Time_Setup_Adder || 2) * numDesigns)) / 60;
-        const rateOp = parseFloat(backend.Rate_Operator || 25);
-        const setupCost = setupHrs * rateOp;
-
-        const speed = parseFloat(backend.Machine_Speed_LF_Hr || 25);
-        const printerBedCap = parseFloat(backend.Printer_Bed_Capacity || 3);
-        const rateMachine = parseFloat(backend.Rate_Machine || 45);
-        const linearFtPerSign = (2.0 / printerBedCap);
-        const totalRunTimeHrs = ((linearFtPerSign / speed) * (sides === 2 ? 2 : 1)) * qty;
-        const runCost = totalRunTimeHrs * rateMachine;
-        const opRunCost = totalRunTimeHrs * rateOp;
-
-        const riskPct = (sides === 2 ? parseFloat(backend.Rework_Risk_DS || 0.05) : 0) + ((numDesigns > 1) ? (numDesigns-1)*parseFloat(backend.Rework_Risk_File || 0.02) : 0);
-        const totalRiskCost = (qty * riskPct) * (blankCost + inkRate + rateMachine + rateOp);
-        
-        const totalInternalCost = totalMatCost + totalInkCost + totalStakeCost + totalDesignCost + setupCost + runCost + opRunCost;
-
-        document.getElementById('lbl-qty-mat').innerText = qty;
-        document.getElementById('cost-mat').innerText = fmt(totalMatCost);
-        document.getElementById('lbl-ink-sqft').innerText = totalPrintArea.toFixed(1) + " ft²";
-        document.getElementById('cost-ink').innerText = fmt(totalInkCost);
-        document.getElementById('lbl-qty-stake').innerText = hasStakes ? qty : 0;
-        document.getElementById('cost-hard').innerText = fmt(totalStakeCost);
-        
-        document.getElementById('time-design').innerText = fmtTime(designHrs);
-        document.getElementById('cost-design').innerText = fmt(totalDesignCost);
-        document.getElementById('time-setup').innerText = fmtTime(setupHrs);
-        document.getElementById('cost-setup-internal').innerText = fmt(setupCost);
-        document.getElementById('time-machine').innerText = fmtTime(totalRunTimeHrs);
-        document.getElementById('cost-machine').innerText = fmt(runCost);
-        document.getElementById('time-op').innerText = fmtTime(totalRunTimeHrs);
-        document.getElementById('cost-op').innerText = fmt(opRunCost);
-        document.getElementById('risk-pct').innerText = (riskPct * 100).toFixed(1) + "% Buffer";
-        document.getElementById('cost-waste').innerText = fmt(totalRiskCost);
-        document.getElementById('cost-total').innerText = fmt(totalInternalCost);
-
-        const profitIn = quoteTotal - totalInternalCost;
-        document.getElementById('profit-inhouse').innerText = fmt(profitIn);
-        if(!isCustom && quoteTotal>0) document.getElementById('margin-inhouse').innerText = pct(profitIn / quoteTotal);
-
-        // --- 3. VENDED ---
-        const sheetsNeeded = Math.ceil(qty / 10);
-        let sheetPrice = 44.00;
-        if (sides === 1) sheetPrice = sheetsNeeded < 10 ? parseFloat(backend.Vend_SS_Sheet_Tier1 || 44) : parseFloat(backend.Vend_SS_Sheet_Tier2 || 33);
-        else sheetPrice = sheetsNeeded < 10 ? parseFloat(backend.Vend_DS_Sheet_Tier1 || 55) : parseFloat(backend.Vend_DS_Sheet_Tier2 || 44);
-        
-        const vendPrintCost = sheetsNeeded * sheetPrice;
-        const vendStakeCost = hasStakes ? (qty * parseFloat(backend.Vend_Stake_Cost || 1.38)) : 0;
-        let vendShip = parseFloat(backend.Vend_Shipping_Base || 10);
-        if (sheetsNeeded >= parseFloat(backend.Vend_Freight_Threshold || 58)) vendShip = parseFloat(backend.Vend_Freight_Flat || 199);
-        const totalVendedCost = vendPrintCost + vendStakeCost + vendShip;
-
-        document.getElementById('vend-print').innerText = fmt(vendPrintCost);
-        document.getElementById('vend-stakes').innerText = fmt(vendStakeCost);
-        document.getElementById('vend-ship').innerText = fmt(vendShip);
-        document.getElementById('vend-total').innerText = fmt(totalVendedCost);
-        const profitVend = quoteTotal - totalVendedCost;
-        document.getElementById('profit-vend').innerText = fmt(profitVend);
-        if(!isCustom && quoteTotal>0) document.getElementById('margin-vend').innerText = pct(profitVend / quoteTotal);
-
-        // JOB DESC
-        const sideTxt = sides === 1 ? "ONE" : "TWO";
-        const stakeTxt = hasStakes ? "with 10\" x 24\" wire H-frame step stakes" : "NO Stakes";
-        document.getElementById('job-desc').value = `(x${qty}) 24" x 18" 4mm Coroplast Signs with direct print latex ink on ${sideTxt} side(s) ${stakeTxt}.`;
+        // Job Description
+        const sideTxt = inputs.sides === 1 ? "ONE" : "TWO";
+        const stakeTxt = inputs.hasStakes ? "with 10\" x 24\" wire H-frame step stakes" : "NO Stakes";
+        document.getElementById('job-desc').value = `(x${inputs.qty}) 24" x 18" 4mm Coroplast Signs with direct print latex ink on ${sideTxt} side(s) ${stakeTxt}.`;
     }
 </script>
 </body>
