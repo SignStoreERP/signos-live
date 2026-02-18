@@ -2,73 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignOS Menu v5.4</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SignOS Menu v5.9 (Mobile)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans flex flex-col">
+<body class="bg-gray-50 min-h-screen font-sans flex flex-col pb-10">
 
-    <!-- 1. HEADER -->
-    <div class="bg-gray-800 text-white px-6 py-2 flex justify-between items-center text-xs shadow-md shrink-0">
-        <div class="flex gap-4">
-            <span class="tracking-wide">USER: <span class="font-bold text-gray-200 uppercase" id="auth-user">---</span></span>
-            <span class="tracking-wide">ROLE: <span class="font-bold text-blue-400 uppercase" id="auth-role">---</span></span>
+    <div class="bg-gray-900 text-white px-4 py-3 flex justify-between items-center text-xs shadow-md shrink-0 sticky top-0 z-50">
+        <div class="flex flex-col leading-tight">
+            <span class="text-gray-400 text-[10px] uppercase tracking-wider">Welcome</span>
+            <span class="font-bold text-white text-sm truncate max-w-[150px]" id="auth-user">---</span>
         </div>
-        <button onclick="logout()" class="font-bold text-red-400 hover:text-white uppercase tracking-wider text-[10px] border border-red-900/50 hover:bg-red-900/50 px-2 py-1 rounded transition">Logout</button>
+        <div class="flex items-center gap-3">
+            <span class="bg-gray-800 px-2 py-1 rounded text-[10px] font-mono text-blue-400 border border-gray-700" id="auth-role">---</span>
+            <button onclick="logout()" class="text-red-400 hover:text-white text-[10px] font-bold border border-red-900/50 bg-red-900/10 px-3 py-1.5 rounded transition">EXIT</button>
+        </div>
     </div>
 
-    <div class="max-w-6xl mx-auto p-8 flex-1 w-full">
+    <div class="w-full max-w-3xl mx-auto px-4 py-6 flex-1">
         
-        <!-- 2. TITLE BAR -->
-        <div class="mb-8 flex justify-between items-end bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+        <div class="mb-6 bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-                <h1 class="text-3xl font-black text-gray-800 tracking-tight">SignOS <span class="text-blue-500">Core</span></h1>
-                <p class="text-gray-400 text-sm font-medium mt-1">Production Management System</p>
+                <h1 class="text-2xl font-black text-gray-800 tracking-tight">SignOS <span class="text-blue-500">Core</span></h1>
+                <p class="text-gray-400 text-xs font-bold uppercase tracking-wide mt-1">Production Portal</p>
             </div>
-            <div class="text-right">
-                <span id="env-badge" class="bg-gray-100 text-gray-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-gray-200">Loading Environment...</span>
+            <div class="md:text-right">
+                <span id="env-badge" class="inline-block bg-gray-100 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-gray-200 w-full text-center md:w-auto">
+                    Loading...
+                </span>
             </div>
         </div>
 
-        <!-- 3. MAIN APP GRID (Dynamic) -->
-        <div id="loader" class="text-center py-20 text-gray-400 animate-pulse tracking-widest text-xs font-bold">CONNECTING TO BACKEND...</div>
-        <div id="menu-container" class="hidden space-y-8 min-h-[400px]"></div>
+        <div id="loader" class="text-center py-20 text-gray-400 animate-pulse tracking-widest text-xs font-bold">
+            CONNECTING TO BACKEND...
+        </div>
+        
+        <div id="menu-container" class="hidden space-y-8"></div>
 
-        <!-- 4. ADMIN CONSOLE (Bottom Footer) -->
-        <div id="admin-workflow" class="hidden mt-12 pt-8 border-t-2 border-dashed border-gray-300">
-            <div class="flex justify-between items-end mb-4">
-                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">ADMINISTRATION & LOGS</h3>
-                <span id="super-badge" class="hidden bg-purple-600 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow animate-pulse">SUPER USER ACTIVE</span>
+        <div id="admin-workflow" class="hidden mt-10 pt-8 border-t-2 border-dashed border-gray-200">
+            <div class="flex justify-between items-end mb-4 px-1">
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">ADMIN TOOLS</h3>
+                <span id="super-badge" class="hidden bg-purple-100 text-purple-700 border border-purple-200 text-[9px] font-bold px-2 py-0.5 rounded shadow-sm">SUPER USER</span>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <a href="admin_roadmap.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-orange-500 cursor-pointer">
-                    <div class="flex justify-between items-start">
-                        <div><h3 class="font-bold text-white text-sm">Roadmap</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-orange-300">Feature Requests & Bugs</p></div>
-                        <span class="text-lg">🚧</span>
-                    </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <a href="admin_roadmap.html" class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 active:scale-95 transition flex flex-col items-center text-center gap-2">
+                    <span class="text-2xl">🚧</span>
+                    <span class="text-xs font-bold text-gray-700">Dev Roadmap</span>
                 </a>
 
-                <a href="admin_viewer.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-blue-500 cursor-pointer">
-                    <div class="flex justify-between items-start">
-                        <div><h3 class="font-bold text-white text-sm">System Logs</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-blue-300">View Access History</p></div>
-                        <span class="text-lg">⚙️</span>
-                    </div>
+                <a href="admin_viewer.html" class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 hover:border-blue-500 active:scale-95 transition flex flex-col items-center text-center gap-2">
+                    <span class="text-2xl">⚙️</span>
+                    <span class="text-xs font-bold text-gray-700">Site Activity</span>
                 </a>
 
-                <a href="admin_backup.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-green-500 cursor-pointer">
-                    <div class="flex justify-between items-start">
-                        <div><h3 class="font-bold text-white text-sm">Backup</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-green-300">Manual Data Export</p></div>
-                        <span class="text-lg">💾</span>
-                    </div>
+                <a id="btn-backup" href="admin_backup.html" class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 hover:border-green-500 active:scale-95 transition flex flex-col items-center text-center gap-2">
+                    <span class="text-2xl">💾</span>
+                    <span class="text-xs font-bold text-gray-700">Backup Activity</span>
                 </a>
 
-                <a href="admin_changelog.html" class="group bg-slate-800 p-4 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-purple-500 cursor-pointer">
-                    <div class="flex justify-between items-start">
-                        <div><h3 class="font-bold text-white text-sm">Changelog</h3><p class="text-slate-400 text-[10px] mt-1 group-hover:text-purple-300">Commit History</p></div>
-                        <span class="text-lg">📜</span>
-                    </div>
+                <a href="admin_changelog.html" class="bg-white p-3 rounded-lg shadow-sm border border-gray-200 hover:border-purple-500 active:scale-95 transition flex flex-col items-center text-center gap-2">
+                    <span class="text-2xl">📜</span>
+                    <span class="text-xs font-bold text-gray-700">Site History</span>
                 </a>
             </div>
         </div>
@@ -76,167 +72,197 @@
     </div>
 
 <script>
-// 1. SAFETY VALVE
-function val(obj, key) {
-    if (!obj) return "";
-    return obj[key] || obj[key.toUpperCase()] || obj[key.toLowerCase()] || "";
-}
-
-// 2. STYLE MAP
-const ICON_STYLES = {
-    blue: "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white",
-    green: "bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white",
-    purple: "bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white",
-    red: "bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white",
-    orange: "bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white",
-    slate: "bg-slate-50 text-slate-600 group-hover:bg-slate-600 group-hover:text-white",
-    teal: "bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white",
-    indigo: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white",
-    pink: "bg-pink-50 text-pink-600 group-hover:bg-pink-600 group-hover:text-white",
-    yellow: "bg-yellow-50 text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white",
-    gray: "bg-gray-100 text-gray-600 group-hover:bg-gray-600 group-hover:text-white"
-};
-
-window.onload = async function() {
-    const user = sessionStorage.getItem('signos_user');
-    const role = sessionStorage.getItem('signos_role'); 
-
-    if (!user) { window.location.href = 'index.html'; return; }
-
-    document.getElementById('auth-user').innerText = user;
-    document.getElementById('auth-role').innerText = role;
-
-    // Environment Badge
-    const envEl = document.getElementById('env-badge');
-    if (IS_DEV_ENV) {
-        envEl.innerHTML = `<span class="text-orange-600 font-bold">⚠️ DEVELOPMENT ENVIRONMENT</span> | <span class="text-gray-400">${clientIP}</span>`;
-    } else {
-        envEl.innerHTML = `<span class="text-green-600 font-bold">● LIVE SYSTEM</span> | <span class="text-gray-400">${clientIP}</span>`;
+    // 1. SAFETY VALVE
+    function val(obj, key) {
+        if (!obj) return "";
+        return obj[key] || obj[key.toUpperCase()] || obj[key.toLowerCase()] || "";
     }
 
-    // Admin/Super Visibility
-    if (role === 'ADMIN' || role === 'SUPER') {
-        document.getElementById('admin-workflow').classList.remove('hidden');
-        if (role === 'SUPER') document.getElementById('super-badge').classList.remove('hidden');
-    }
+    // 2. STYLE MAP
+    const ICON_STYLES = {
+        blue: "bg-blue-50 text-blue-600",
+        green: "bg-green-50 text-green-600",
+        purple: "bg-purple-50 text-purple-600",
+        red: "bg-red-50 text-red-600",
+        orange: "bg-orange-50 text-orange-600",
+        slate: "bg-slate-50 text-slate-600",
+        teal: "bg-teal-50 text-teal-600",
+        indigo: "bg-indigo-50 text-indigo-600",
+        pink: "bg-pink-50 text-pink-600",
+        yellow: "bg-yellow-50 text-yellow-600",
+        gray: "bg-gray-100 text-gray-600"
+    };
 
-    // Load Modules
-    try {
-        const response = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Modules&ip=${clientIP}&user=${user}`);
-        const data = await response.json();
+    // 3. RENDER LOGIC (UPDATED LAYOUT)
+    function renderMenu(data, role) {
+        const container = document.getElementById('menu-container');
+        container.innerHTML = "";
+
+        // Get Categories
+        const cats = [...new Set(data.map(i => val(i, 'Category')))].filter(c => c);
         
-        document.getElementById('loader').classList.add('hidden');
-        document.getElementById('menu-container').classList.remove('hidden');
-        
-        renderMenu(data, role);
-
-    } catch (e) {
-        document.getElementById('loader').innerHTML = `<div class="p-4 text-red-500 font-bold">Error: ${e.message}</div>`;
-    }
-};
-
-function renderMenu(data, role) {
-    const container = document.getElementById('menu-container');
-    container.innerHTML = "";
-
-    const categories = {};
-    
-    // Sort and Group
-    data.forEach(mod => {
-        const cat = val(mod, 'Category') || 'Uncategorized';
-        if (!categories[cat]) categories[cat] = [];
-        categories[cat].push(mod);
-    });
-
-    for (const [catName, mods] of Object.entries(categories)) {
-        const section = document.createElement('section');
-        section.className = "bg-white rounded-2xl shadow-sm border border-gray-200 p-6";
-        
-        const title = document.createElement('h2');
-        title.className = "text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2";
-        title.innerText = catName;
-        section.appendChild(title);
-        
-        const grid = document.createElement('div');
-        grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4";
-
-        mods.forEach(mod => {
-            // 1. DEDUPLICATION: Hide bottom-bar tools
-            const id = val(mod, 'Module_ID');
-            if (['SYS_Roadmap', 'SYS_Changelog', 'SYS_Log_Analyzer', 'SYS_Log_Backup'].includes(id)) return;
-
-            // 2. ROLE CHECK (Twin-Engine)
-            const checkRole = (role === 'SUPER') ? 'ADMIN' : role;
-            const envPrefix = IS_DEV_ENV ? 'Dev_' : 'Live_';
-            const permKey = envPrefix + checkRole; // e.g. "Live_SALES"
-            const isAllowed = String(val(mod, permKey)).toUpperCase() === 'TRUE';
-
-            if (!isAllowed && role !== 'SUPER') return;
-
-            // 3. VERSION CHECK & GHOST PROTOCOL
-            const devVer = val(mod, 'Dev_Ver');
-            const liveVer = val(mod, 'Live_Ver');
-            
-            // Badge Logic
-            let verText = "v0.0";
-            let verClass = "bg-gray-100 text-gray-500";
-
-            if (IS_DEV_ENV) {
-                verText = devVer ? `DEV ${devVer}` : `DEV v0.0`;
-                verClass = "bg-orange-50 text-orange-700 border border-orange-100";
-            } else {
-                // If on Live and no version, Ghost Protocol kicks in
-                if (!liveVer || liveVer === '') return;
-                verText = `LIVE ${liveVer}`;
-                verClass = "bg-green-50 text-green-700 border border-green-100";
-            }
-
-            // 4. RENDER
-            const displayName = val(mod, 'Display_Name');
-            const fileLink = val(mod, 'File_Link');
-            const iconColor = val(mod, 'Icon');
-            const iconPath = val(mod, 'Icon_Path'); 
-
-            let targetMode = (role === 'PROD') ? 'production' : (role === 'ADMIN' || role === 'SUPER' ? 'dev' : 'sales');
-            
-            const link = document.createElement('a');
-            link.href = `${fileLink}?mode=${targetMode}`;
-            link.className = "block bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition group relative";
-
-            const colorClass = ICON_STYLES[(iconColor || 'blue').toLowerCase()] || ICON_STYLES['blue'];
-            
-            // Hidden Badge for Super Users
-            const draftBadge = (!isAllowed && role === 'SUPER') 
-                ? `<div class="absolute top-2 right-2 text-[8px] font-bold bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded border border-purple-200">HIDDEN</div>` 
-                : '';
-
-            const iconHtml = iconPath 
-                ? `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="${iconPath}"></path></svg>`
-                : `<span class="text-xl font-bold">●</span>`;
-
-            link.innerHTML = `
-                ${draftBadge}
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center transition ${colorClass}">
-                        ${iconHtml}
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition">${displayName}</h3>
-                        <div class="mt-1">
-                            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold ${verClass}">${verText}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            grid.appendChild(link);
+        // Define Custom Sort Order
+        const sortOrder = ["Rigid Signs", "Roll Media", "Services", "System"];
+        cats.sort((a, b) => {
+            const idxA = sortOrder.indexOf(a);
+            const idxB = sortOrder.indexOf(b);
+            if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+            if (idxA === -1) return 1;
+            if (idxB === -1) return -1;
+            return idxA - idxB;
         });
 
-        if (grid.children.length > 0) {
-            section.appendChild(grid);
-            container.appendChild(section);
-        }
+        cats.forEach(cat => {
+            const section = document.createElement('div');
+            section.innerHTML = `<h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">${cat}</h2>`;
+            
+            // --- LAYOUT CHANGE: grid-cols-1 for Mobile ---
+            const grid = document.createElement('div');
+            grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"; 
+
+            data.filter(i => val(i, 'Category') === cat).forEach(mod => {
+                
+                // Permission Check
+                const isAllowed = (val(mod, 'Live_PROD') === true && role === 'PROD') ||
+                                (val(mod, 'Live_SALES') === true && role === 'SALES') ||
+                                (role === 'ADMIN' || role === 'SUPER');
+
+                if (!isAllowed && role !== 'SUPER') return; 
+
+                // Version Logic
+                const liveVer = val(mod, 'Live_Ver');
+                const devVer = val(mod, 'Dev_Ver');
+                let verText = "";
+                let verClass = "";
+
+                if (IS_DEV_ENV) {
+                    if (!devVer || devVer === '') return;
+                    verText = `DEV ${devVer}`;
+                    verClass = "bg-orange-100 text-orange-800 border-orange-200";
+                } else {
+                    if (!liveVer || liveVer === '') return;
+                    verText = `v${liveVer.replace('v','')}`; // Shorten for mobile
+                    verClass = "bg-green-100 text-green-800 border-green-200";
+                }
+
+                // Render Item
+                const displayName = val(mod, 'Display_Name');
+                const fileLink = val(mod, 'File_Link');
+                const iconColor = val(mod, 'Icon');
+                const iconPath = val(mod, 'Icon_Path');
+                
+                let targetMode = (role === 'PROD') ? 'production' : (role === 'ADMIN' || role === 'SUPER' ? 'dev' : 'sales');
+
+                const link = document.createElement('a');
+                link.href = `${fileLink}?mode=${targetMode}`;
+                
+                // --- STYLING CHANGE: Row Layout for Cards ---
+                link.className = "relative bg-white p-4 rounded-xl shadow-sm border border-gray-200 active:scale-98 active:bg-gray-50 transition-all duration-100 flex items-center justify-between group";
+                
+                const colorClass = ICON_STYLES[(iconColor || 'blue').toLowerCase()] || ICON_STYLES['blue'];
+
+                const draftBadge = (!isAllowed && role === 'SUPER') 
+                    ? `<div class="absolute -top-2 -right-2 text-[8px] font-bold bg-purple-600 text-white px-2 py-0.5 rounded-full shadow-sm z-10">HIDDEN</div>` 
+                    : '';
+
+                const iconHtml = iconPath 
+                    ? `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="${iconPath}"></path></svg>`
+                    : `<span class="text-xl font-bold">●</span>`;
+
+                link.innerHTML = `
+                    ${draftBadge}
+                    <div class="flex items-center gap-4 w-full">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${colorClass} shadow-inner">
+                            ${iconHtml}
+                        </div>
+                        <div class="flex-1 min-w-0"> <h3 class="font-bold text-gray-800 text-sm truncate">${displayName}</h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold ${verClass}">${verText}</span>
+                            </div>
+                        </div>
+                        <div class="text-gray-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(link);
+            });
+
+            if (grid.children.length > 0) {
+                section.appendChild(grid);
+                container.appendChild(section);
+            }
+        });
     }
-}
+
+    // 4. MAIN INIT (Same Logic as v5.8)
+    window.onload = async function() {
+        const user = sessionStorage.getItem('signos_user');
+        const role = sessionStorage.getItem('signos_role');
+
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        document.getElementById('auth-user').innerText = user;
+        document.getElementById('auth-role').innerText = role;
+
+        // Environment Badge Logic
+        const envEl = document.getElementById('env-badge');
+        if (IS_DEV_ENV) {
+            envEl.innerHTML = `<span class="text-orange-600 font-bold">⚠️ DEV MODE</span> <span class="text-gray-300 mx-1">|</span> <span class="text-gray-400">${clientIP}</span>`;
+        } else {
+            envEl.innerHTML = `<span class="text-green-600 font-bold">● LIVE</span> <span class="text-gray-300 mx-1">|</span> <span class="text-gray-400">${clientIP}</span>`;
+        }
+
+        // IP Address Fix
+        const ipWatcher = setInterval(() => {
+            if (clientIP !== 'Unknown') {
+                if (IS_DEV_ENV) {
+                    envEl.innerHTML = `<span class="text-orange-600 font-bold">⚠️ DEV MODE</span> <span class="text-gray-300 mx-1">|</span> <span class="text-gray-400">${clientIP}</span>`;
+                } else {
+                    envEl.innerHTML = `<span class="text-green-600 font-bold">● LIVE</span> <span class="text-gray-300 mx-1">|</span> <span class="text-gray-400">${clientIP}</span>`;
+                }
+                clearInterval(ipWatcher);
+            }
+        }, 100);
+        setTimeout(() => clearInterval(ipWatcher), 5000);
+
+        // Admin Visibility
+        if (role === 'ADMIN' || role === 'SUPER') {
+            document.getElementById('admin-workflow').classList.remove('hidden');
+            if (role === 'SUPER') document.getElementById('super-badge').classList.remove('hidden');
+            
+            // Backup Permission Check
+            const perms = JSON.parse(sessionStorage.getItem('signos_perms') || '{}');
+            const btnBackup = document.getElementById('btn-backup');
+            
+            if (role !== 'SUPER' && perms.backup !== 'Run' && perms.backup !== 'Full') {
+                btnBackup.classList.add('hidden');
+            }
+        }
+
+        // --- FETCH MENU DATA ---
+        try {
+            const response = await fetch(`${SCRIPT_URL}?tab=SYS_Modules&ip=${clientIP}&user=${user}&role=${role}&req=table`);
+            const data = await response.json();
+
+            // Safety Check
+            if (data.error) throw new Error(data.error);
+            if (!Array.isArray(data)) throw new Error("Invalid Data Format");
+
+            // Hide Loader & Render
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('menu-container').classList.remove('hidden');
+            renderMenu(data, role);
+
+        } catch (e) {
+            document.getElementById('loader').innerText = "CONNECTION FAILED: " + e.message;
+            document.getElementById('loader').classList.add('text-red-500', 'font-bold');
+            console.error("Menu Load Error:", e);
+        }
+    };
 </script>
 </body>
 </html>
