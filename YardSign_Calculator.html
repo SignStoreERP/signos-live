@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yard Sign Calculator v22.0</title>
+    <title>Yard Sign Calculator v22.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
     <!-- PRODUCTION LOGIC ENGINE -->
@@ -11,49 +11,27 @@
     <style>
         .warn-pulse { animation: pulse-red 2s infinite; }
         @keyframes pulse-red { 0% { background-color: #FECACA; } 50% { background-color: #F87171; } 100% { background-color: #FECACA; } }
+        /* Toggle Switch Styling */
+        .toggle-checkbox:checked { right: 0; border-color: #2563EB; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #2563EB; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
 
-    <div class="max-w-md mx-auto w-full bg-white shadow-2xl overflow-hidden min-h-screen sm:min-h-0 sm:my-10 sm:rounded-xl border border-gray-200">
-
-        <!-- 1. AUTH HEADER -->
-        <div class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center text-xs border-b border-gray-700">
-            <div class="flex gap-3">
-                <span class="tracking-wide">USER: <span class="font-bold text-gray-200 uppercase" id="auth-user">---</span></span>
-                <span class="tracking-wide">ROLE: <span class="font-bold text-blue-400 uppercase" id="auth-role">---</span></span>
-            </div>
-            <button onclick="logout()" class="font-bold text-red-400 hover:text-white uppercase tracking-wider text-[10px] border border-red-900/50 hover:bg-red-900/50 px-2 py-1 rounded transition">Logout</button>
-        </div>
-
-        <!-- 2. PRODUCT HEADER -->
-        <div class="bg-gray-900 px-6 py-4 text-white flex justify-between items-center">
-            <a href="#" onclick="goBack()" class="text-gray-400 hover:text-white text-xs font-bold uppercase flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> MENU
-            </a>
-            <div class="text-center">
-                <h2 class="text-lg font-bold" id="product-label">Yard Signs</h2>
-                <div class="flex items-center justify-center gap-2 text-[10px] mt-0.5">
-                    <span id="status-dot" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                    <span id="status-text" class="font-bold text-gray-400">CONNECTING...</span>
-                    <!-- DYNAMIC VERSION DISPLAY -->
-                    <span id="version-display" class="text-gray-500 font-mono hidden"></span>
-                </div>
-            </div>
-            <button onclick="location.reload()" class="text-gray-400 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
-        </div>
+    <!-- MAIN CARD: Header will be injected here automatically -->
+    <div id="main-card" class="max-w-md mx-auto w-full bg-white shadow-2xl overflow-hidden min-h-screen sm:min-h-0 sm:my-10 sm:rounded-xl border border-gray-200">
 
         <!-- INPUTS -->
         <div class="p-6 space-y-4">
             <div class="grid grid-cols-2 gap-4">
-                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Qty</label><input type="number" id="qty" value="10" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="runCalc()"></div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Qty</label><input type="number" id="qty" value="10" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="runCalc()"></div>
                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Sides</label><select id="sides" class="w-full border p-2 rounded bg-white font-bold text-sm h-[46px]" onchange="runCalc()"><option value="1">Single Sided</option><option value="2">Double Sided</option></select></div>
             </div>
 
-            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Files</label><input type="number" id="files" value="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="runCalc()"></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Files</label><input type="number" id="files" value="1" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="runCalc()"></div>
 
             <div class="flex items-center p-2 border rounded bg-gray-50 mt-2 h-[46px]">
-                <input type="checkbox" id="stakes" class="w-5 h-5 text-blue-600 rounded" checked onchange="runCalc()"> 
+                <input type="checkbox" id="stakes" class="w-5 h-5 text-blue-600 rounded" checked onchange="runCalc()">
                 <label for="stakes" class="ml-2 text-xs font-bold text-gray-700">Include Wire Stakes</label>
             </div>
 
@@ -120,12 +98,13 @@
     let backendData = {};
 
     window.onload = async function() {
-        // UI INIT
+        // 1. INJECT HEADER (User/Role/Logout + Status UI)
+        injectHeader("Yard Signs");
+
         const u = sessionStorage.getItem('signos_user') || 'Guest';
         const r = sessionStorage.getItem('signos_role') || 'VIEW';
-        document.getElementById('auth-user').innerText = u;
-        document.getElementById('auth-role').innerText = r;
-
+        
+        // Note: The new header includes the status elements with these IDs
         const statusText = document.getElementById("status-text");
         const statusDot = document.getElementById("status-dot");
         const verDisplay = document.getElementById("version-display");
@@ -138,23 +117,30 @@
             if(data.error) throw new Error(data.error);
             backendData = data;
 
-            // Update UI State
-            statusText.innerText = "ONLINE";
-            statusText.className = "font-bold text-green-500";
-            statusDot.className = "w-2 h-2 rounded-full bg-green-500";
-            statusDot.classList.remove("animate-pulse");
-            
+            // Update UI State (using the injected elements)
+            if(statusText) {
+                statusText.innerText = "ONLINE";
+                statusText.className = "font-bold text-green-500";
+                statusDot.className = "w-2 h-2 rounded-full bg-green-500";
+                statusDot.classList.remove("animate-pulse");
+            }
+
             // Show Version from Backend
             const isDev = window.location.href.includes('mode=dev');
-            const ver = isDev ? (data.Sys_Version_Dev || 'v22.0') : (data.Sys_Version_Live || 'v22.0');
-            verDisplay.innerText = isDev ? `(Beta ${ver})` : `Live ${ver}`;
-            verDisplay.classList.remove('hidden');
+            const ver = isDev ? (data.Sys_Version_Dev || 'v22.1') : (data.Sys_Version_Live || 'v22.1');
+            
+            if(verDisplay) {
+                verDisplay.innerText = isDev ? `(Beta ${ver})` : `Live ${ver}`;
+                verDisplay.classList.remove('hidden');
+            }
 
             runCalc();
 
-        } catch(e) { 
-            statusText.innerText = "OFFLINE";
-            statusText.className = "font-bold text-red-500";
+        } catch(e) {
+            if(statusText) {
+                statusText.innerText = "OFFLINE";
+                statusText.className = "font-bold text-red-500";
+            }
             console.error(e);
         }
     };
@@ -173,6 +159,7 @@
         };
 
         // 2. RUN ENGINE (External JS)
+        // Uses logic_yard.js (Make sure this file is present)
         const result = calculateYardSign(inputs, backendData);
         const ret = result.retail;
 
