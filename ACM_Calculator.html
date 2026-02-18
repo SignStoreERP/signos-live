@@ -3,579 +3,418 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACM Calculator v5.10</title>
+    <title>ACM Signs v6.12 (Sandbox)</title>
+    
+    <script>
+        if(!sessionStorage.getItem('signos_user')) {
+            sessionStorage.setItem('signos_user', 'TEST_MODE');
+            sessionStorage.setItem('signos_role', 'ADMIN');
+            console.warn("⚠️ Sandbox Mode: Auto-Authentication Active");
+        }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
+    <script src="logic_acm.js"></script>
+    
     <style>
-        /* CORE STYLES */
-        .tab-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; background: #eff6ff; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        .toggle-checkbox:checked { right: 0; border-color: #68D391; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
-        
-        .side-btn.selected { background-color: #2563eb; color: white; border-color: #2563eb; }
-        
-        /* VIEW MODE LOGIC */
-        .mode-sales #btn-cost, .mode-sales #btn-vend { display: none !important; }
-        .mode-prod #btn-retail, .mode-prod #btn-vend { display: none !important; }
-        .mode-prod .prod-hidden { display: none !important; }
-        .mode-prod .prod-width { width: 100% !important; text-align: right; }
-        
         .warn-pulse { animation: pulse-red 2s infinite; }
         @keyframes pulse-red { 0% { background-color: #FECACA; } 50% { background-color: #F87171; } 100% { background-color: #FECACA; } }
+        .toggle-checkbox:checked { right: 0; border-color: #2563EB; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #2563EB; }
         
-        .blur-section { filter: grayscale(100%) opacity(0.5); pointer-events: none; }
+        .svg-preview { display: flex; align-items: center; justify-content: center; background: transparent; }
+        .svg-preview svg { width: 100%; height: 100%; max-height: 100%; display: block; object-fit: contain; }
+
+        .grid-bg {
+            background-color: #f8fafc;
+            background-image: 
+                linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+                linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
 
-<div id="main-card" class="max-w-md mx-auto w-full bg-white shadow-2xl overflow-hidden min-h-screen sm:min-h-0 sm:my-10 sm:rounded-xl border border-gray-200">
+    <div id="main-card" class="max-w-md mx-auto w-full bg-white shadow-2xl overflow-hidden min-h-screen sm:min-h-0 sm:my-10 sm:rounded-xl border border-gray-200">
 
-    <!-- 1. AUTH HEADER -->
-    <div class="bg-gray-800 text-white px-4 py-2 flex justify-between items-center text-xs border-b border-gray-700">
-        <div class="flex gap-3">
-            <span class="tracking-wide">USER: <span class="font-bold text-gray-200 uppercase" id="auth-user">---</span></span>
-            <span class="tracking-wide">ROLE: <span class="font-bold text-blue-400 uppercase" id="auth-role">---</span></span>
-        </div>
-        <button onclick="logout()" class="font-bold text-red-400 hover:text-white uppercase tracking-wider text-[10px] border border-red-900/50 hover:bg-red-900/50 px-2 py-1 rounded transition">Logout</button>
-    </div>
-
-    <!-- 2. PRODUCT HEADER -->
-    <div class="bg-gray-900 px-6 py-4 text-white flex justify-between items-center">
-        <a href="#" onclick="goBack()" class="text-gray-400 hover:text-white text-xs font-bold uppercase flex items-center gap-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> MENU
-        </a>
-        <div class="text-center">
-            <h2 class="text-lg font-bold" id="product-label">ACM Signs</h2>
-            <!-- CLEAN STATUS INDICATOR -->
-            <div class="flex items-center justify-center gap-2 text-[10px] mt-0.5">
-                <span id="status-dot" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                <span id="status-text" class="font-bold text-gray-400">CONNECTING...</span>
-                <span id="version-display" class="text-gray-600 font-mono hidden"></span>
+        <div class="bg-gray-800 px-4 py-1 flex justify-between items-center text-[10px] text-gray-400 border-b border-gray-700">
+            <div class="flex gap-2">
+                <span>USER: <b id="auth-user" class="text-gray-200">Loading...</b></span>
+                <span>ROLE: <b id="auth-role" class="text-gray-200">---</b></span>
             </div>
-        </div>
-        <button onclick="location.reload()" class="text-gray-400 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
-    </div>
-
-    <div id="size-warn" class="hidden bg-orange-500 text-white text-center py-2 px-4 text-xs font-bold uppercase">⚠️ Oversized: Exceeds 60" x 120" Sheet</div>
-    <div id="profit-warn" class="hidden bg-red-600 text-white text-center py-2 px-4 text-sm font-bold uppercase border-b-4 border-red-800">🛑 LOSS ALERT: PRICE TOO LOW</div>
-
-    <!-- INPUTS -->
-    <div class="p-6 space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Width</label><input type="number" id="width" value="24" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="calculate()"></div>
-            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Height</label><input type="number" id="height" value="18" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="calculate()"></div>
+            <button onclick="logout()" class="hover:text-white font-bold uppercase transition flex items-center gap-1">
+                Logout
+            </button>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Quantity</label><input type="number" id="qty" value="1" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="calculate()"></div>
-            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Files</label><input type="number" id="files" value="1" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg" oninput="calculate()"></div>
+        <div class="bg-gray-900 px-6 py-4 text-white flex justify-between items-center">
+            <a href="#" onclick="goBack()" class="text-gray-400 hover:text-white text-xs font-bold uppercase flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> MENU
+            </a>
+            <div class="text-center">
+                <h2 class="text-lg font-bold">ACM Signs</h2>
+                <div class="flex items-center justify-center gap-2 text-[10px] mt-0.5">
+                    <span id="status-dot" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    <span id="status-text" class="font-bold text-gray-400">CONNECTING...</span>
+                    <span id="version-display" class="text-gray-500 font-mono hidden"></span>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="text-gray-400 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
         </div>
 
-        <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Material</label>
-            <select id="material" class="w-full border p-2 rounded bg-white font-bold text-sm h-[46px]" onchange="calculate()">
-                <option value="3mm">3mm ACM (Standard)</option>
-                <option value="6mm">6mm ACM (Heavy Duty)</option>
-            </select>
+        <div id="size-warn" class="hidden bg-orange-500 text-white text-center py-2 px-4 text-xs font-bold uppercase tracking-wide animate-pulse">
+            ⚠️ Oversized: Exceeds 60" x 120"
         </div>
 
-        <div class="grid grid-cols-2 gap-2">
-            <button type="button" id="btn-side-1" class="side-btn selected py-2 border rounded font-bold text-sm" onclick="setSides(1)">Single Sided</button>
-            <button type="button" id="btn-side-2" class="side-btn py-2 border rounded font-bold text-sm" onclick="setSides(2)">Double Sided</button>
-            <input type="hidden" id="sides" value="1">
-        </div>
+        <div class="p-6 space-y-4">
+            <div class="grid grid-cols-3 gap-3">
+                <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty</label><input type="number" id="qty" value="1" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="validateInput(this)" onblur="validateInput(this)"></div>
+                <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Width</label><input type="number" id="width" value="24" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="validateInput(this)" onblur="validateInput(this)"></div>
+                <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Height</label><input type="number" id="height" value="18" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="validateInput(this)" onblur="validateInput(this)"></div>
+            </div>
 
-        <div class="space-y-2 border-t border-gray-100 pt-2">
-            <!-- SHAPE -->
-            <div class="flex flex-col gap-2 p-2 bg-gray-50 border border-gray-200 rounded">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-gray-700">Shape</span>
-                    <select id="cut-type" class="bg-white border text-xs p-1 rounded font-bold w-32" onchange="toggleRounded(); calculate()">
-                        <option value="Square">Rectangle (Shear)</option>
-                        <option value="Contour">Contour (CNC)</option>
+            <div class="bg-blue-50 p-3 rounded border border-blue-100 space-y-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-1/3">
+                        <label class="block text-[9px] font-bold text-blue-800 uppercase mb-1"># Designs</label>
+                        <input type="number" id="files" value="1" min="1" class="w-full border border-blue-200 p-1.5 rounded font-bold text-center text-sm" oninput="validateInput(this)" onblur="validateInput(this)">
+                    </div>
+                    <div class="flex-1 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold text-gray-600">Charge setup per file?</span>
+                            <input type="checkbox" id="setup-per-file" class="w-4 h-4 text-blue-600" onchange="runCalc()">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold text-purple-700">Include design fee?</span>
+                            <input type="checkbox" id="design" class="w-4 h-4 text-purple-600" onchange="updateDesignOptions()">
+                        </div>
+                    </div>
+                </div>
+                <div id="sub-design-opt" class="hidden border-t border-blue-200 pt-2 flex items-center justify-end gap-2">
+                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Charge design per file?</span>
+                    <input type="checkbox" id="design-per-file" class="w-4 h-4 text-purple-600" onchange="runCalc()">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Material</label><select id="material" class="w-full border p-2 rounded bg-white font-bold text-sm" onchange="runCalc()"><option value="3mm">3mm Standard</option><option value="6mm">6mm Heavy Duty</option></select></div>
+                <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Print Sides</label><select id="sides" class="w-full border p-2 rounded bg-white font-bold text-sm" onchange="runCalc()"><option value="1">Single Sided</option><option value="2">Double Sided</option></select></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Laminate</label>
+                    <select id="lam" class="w-full border p-2 rounded bg-white font-bold text-sm" onchange="runCalc()">
+                        <option value="Gloss">Gloss (Default)</option>
+                        <option value="Matte">Matte</option>
                     </select>
                 </div>
-                <!-- Rounded Corner Toggle (Hidden if Contour) -->
-                <div class="flex items-center justify-between border-t border-gray-200 pt-2 hidden" id="opt-rounded">
-                    <span class="text-[10px] font-bold text-gray-500 pl-2">Rounded Corners?</span>
-                    <div class="relative inline-block w-9 align-middle select-none">
-                        <input type="checkbox" id="is-rounded" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300" onchange="calculate()"/>
-                        <label for="is-rounded" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- LAMINATE (Default: Gloss) -->
-            <div class="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded">
-                <span class="text-xs font-bold text-gray-700">Laminate</span>
-                <select id="lam-type" class="bg-white border text-xs p-1 rounded font-bold w-32" onchange="calculate()">
-                    <option value="Gloss" selected>Gloss</option>
-                    <option value="Matte">Matte</option>
-                    <option value="None">None</option>
-                </select>
-            </div>
-
-            <!-- DESIGN & SETUP (Default: Design ON) -->
-            <div class="flex flex-col gap-2 p-2 bg-purple-50 border border-purple-100 rounded">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-purple-900">Include Design Fee?</span>
-                    <div class="relative inline-block w-9 align-middle select-none">
-                        <input type="checkbox" id="inc-design" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300" checked onchange="calculate()"/>
-                        <label for="inc-design" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between border-t border-purple-200 pt-2">
-                    <span class="text-xs font-bold text-purple-700">Charge Setup Per File?</span>
-                    <div class="relative inline-block w-9 align-middle select-none">
-                        <input type="checkbox" id="setup-per-file" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300" onchange="calculate()"/>
-                        <label for="setup-per-file" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Shape</label>
+                    <select id="shape" class="w-full border p-2 rounded bg-white font-bold text-sm" onchange="updateShapeOptions()">
+                        <option value="Rectangle">Rectangle / Square</option>
+                        <option value="Contour">CNC Custom Shape</option>
+                    </select>
+                    <div id="sub-shape-opt" class="mt-2 flex items-center gap-2">
+                        <input type="checkbox" id="rounded" class="w-4 h-4 text-blue-600" onchange="runCalc()">
+                        <span class="text-[10px] font-bold text-gray-600">Rounded Corners?</span>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- METRICS -->
-    <div class="border-t border-gray-200">
-        <div class="flex" id="tab-container">
-            <button onclick="switchTab('retail')" class="flex-1 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 tab-btn active" id="btn-retail">RETAIL</button>
-            <button onclick="switchTab('cost')" class="flex-1 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 tab-btn" id="btn-cost">IN-HOUSE</button>
-            <button onclick="switchTab('vend')" class="flex-1 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 tab-btn" id="btn-vend">VENDED</button>
-        </div>
-
-        <!-- RETAIL TAB -->
-        <div id="tab-retail" class="tab-content active bg-white p-6">
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Unit Price</span>
-                <div class="text-right">
-                    <span class="text-2xl font-bold text-gray-900" id="unit-price">$0.00</span>
-                    <span class="text-[10px] text-gray-400 block">(Sign Only - No Fees)</span>
-                </div>
-            </div>
-            
-            <div class="border-t border-gray-100 my-3"></div>
-            
-            <div class="space-y-1 text-xs text-gray-600">
-                <div class="flex justify-between"><span>Base Print (<span id="lbl-mat">3mm</span>):</span><span id="ret-print" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between hidden text-blue-700" id="row-ret-lam"><span>Laminate:</span><span id="ret-lam" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between hidden text-orange-700" id="row-ret-contour"><span>CNC Shape:</span><span id="ret-contour" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between hidden text-gray-700" id="row-ret-shear"><span>Shear Cut:</span><span id="ret-shear" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between hidden text-gray-700" id="row-ret-round"><span>Rounded Corners:</span><span id="ret-round" class="font-bold">$0.00</span></div>
-                
-                <div class="border-t border-dashed border-gray-200 my-1"></div>
-                <div class="flex justify-between text-blue-700"><span>Setup (<span id="lbl-setup-type">Flat</span>):</span><span id="ret-setup" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between text-purple-700 hidden" id="row-ret-design"><span>Design Fee:</span><span id="ret-design" class="font-bold">$0.00</span></div>
+        <div class="bg-white p-6 border-t border-gray-200">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Base Unit Price</span>
+                <span class="text-2xl font-bold text-gray-900" id="ui-unit">---</span>
             </div>
 
-            <div class="flex justify-between items-end border-t-2 border-gray-800 pt-2 mt-2">
+            <div class="space-y-1 text-xs text-gray-600 border-t border-dashed border-gray-200 pt-2">
+                <div class="flex justify-between"><span>Base Material & Print:</span><span id="li-mat" class="font-bold font-mono">$0.00</span></div>
+                <div class="flex justify-between"><span>Laminate:</span><span id="li-lam" class="font-bold font-mono">$0.00</span></div>
+                <div class="flex justify-between hidden" id="row-finish"><span>Finishing (<span id="lbl-finish">Shear</span>):</span><span id="li-finish" class="font-bold font-mono">$0.00</span></div>
+                <div class="border-b border-gray-100 my-1"></div>
+                <div class="flex justify-between text-blue-700"><span>Setup (<span id="lbl-setup">Flat</span>):</span><span id="ui-setup" class="font-bold">$0.00</span></div>
+                <div class="flex justify-between text-purple-700 hidden" id="row-design"><span>Design (<span id="lbl-design">Flat</span>):</span><span id="ui-design" class="font-bold">$0.00</span></div>
+            </div>
+
+            <div class="flex justify-between items-end border-t-2 border-gray-800 my-4 pt-3">
                 <div>
                     <span class="text-xs font-bold text-gray-400 uppercase">Total Quote</span>
                     <div id="min-badge" class="hidden bg-red-100 text-red-600 text-[9px] font-bold px-1 rounded inline-block ml-1">MINIMUM APPLIED</div>
                 </div>
-                <span class="text-3xl font-black text-blue-600" id="total-price">---</span>
+                <span class="text-3xl font-black text-blue-600" id="ui-total">---</span>
+            </div>
+
+            <button onclick="openLightbox()" id="opt-badge" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 text-[10px] font-bold px-3 py-2 rounded border border-gray-200 text-center hidden flex items-center justify-center gap-2 transition">
+                <span>📐 Using <span id="opt-stock" class="text-blue-600">4x8</span> Stock</span>
+                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+
+            <div id="nest-container" class="hidden mt-2 border-2 border-blue-500 rounded bg-gray-100 p-2 relative group cursor-zoom-in" onclick="openLightbox()">
+                <div class="absolute top-2 right-2 bg-blue-600 text-white text-[9px] font-bold px-2 py-1 rounded shadow opacity-0 group-hover:opacity-100 transition">CLICK TO ZOOM</div>
+                <div id="nest-svg" class="svg-preview h-32"></div>
+                <div class="text-[9px] text-center text-gray-500 mt-1 font-mono">Blue: Cut Lines | Gray: Sheet</div>
             </div>
         </div>
 
-        <!-- IN-HOUSE TAB -->
-        <div id="tab-cost" class="tab-content bg-yellow-50 p-6">
-            <div class="space-y-2 text-xs text-gray-700">
-                <h4 class="font-bold text-yellow-800 uppercase text-[10px] mb-1">Materials</h4>
-                
-                <div class="bg-yellow-100 border border-yellow-200 p-2 rounded text-[10px] mb-2">
-                    <div class="flex justify-between"><span class="text-yellow-800 font-bold">OPTIMAL STOCK:</span><span id="opt-stock-size" class="font-mono font-bold text-blue-700">---</span></div>
-                    <div class="flex justify-between mt-1"><span>Sheet Yield:</span><span id="opt-yield" class="font-bold">0</span></div>
-                </div>
-
-                <div class="flex justify-between"><span>Substrate Cost:</span> <span id="cost-mat" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between"><span>Laminate:</span> <span id="cost-lam" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between"><span>Ink (HP Latex):</span> <span id="cost-ink" class="font-bold">$0.00</span></div>
-
-                <div class="border-t border-yellow-200 my-1 pt-1"></div>
-                <h4 class="font-bold text-yellow-800 uppercase text-[10px] mb-1">Production Labor</h4>
-                
-                <div class="flex justify-between items-center"><span class="w-1/3">Setup:</span><span id="time-setup" class="w-1/3 text-right text-[10px] bg-yellow-100 rounded px-1">0m</span><span id="cost-lab-setup" class="w-1/3 text-right font-bold">$0.00</span></div>
-                <div class="flex justify-between items-center"><span class="w-1/3">Print:</span><span id="time-run" class="w-1/3 text-right text-[10px] bg-yellow-100 rounded px-1">0m</span><span id="cost-run" class="w-1/3 text-right font-bold">$0.00</span></div>
-                <div class="flex justify-between items-center hidden" id="row-lab-cnc"><span class="w-1/3">CNC Router:</span><span id="time-cnc" class="w-1/3 text-right text-[10px] bg-orange-100 rounded px-1">0m</span><span id="cost-cnc" class="w-1/3 text-right font-bold">$0.00</span></div>
-                <div class="flex justify-between items-center hidden" id="row-lab-shear"><span class="w-1/3">Shearing:</span><span id="time-shear" class="w-1/3 text-right text-[10px] bg-gray-200 rounded px-1">0m</span><span id="cost-shear" class="w-1/3 text-right font-bold">$0.00</span></div>
-                <div class="flex justify-between items-center hidden" id="row-lab-round"><span class="w-1/3">Rounded Cnrs:</span><span id="time-round" class="w-1/3 text-right text-[10px] bg-gray-200 rounded px-1">0m</span><span id="cost-round" class="w-1/3 text-right font-bold">$0.00</span></div>
-
-                <div class="border-t border-yellow-200 my-2 pt-1"></div>
-                <div class="flex justify-between text-yellow-900 font-bold text-sm"><span>Total Cost:</span> <span id="cost-total">$0.00</span></div>
-                
-                <div class="mt-4 bg-white p-3 rounded border border-yellow-200 shadow-sm">
-                    <div class="flex justify-between items-end">
-                        <div><div class="text-[10px] uppercase font-bold text-gray-400">Net Profit</div><div class="text-xl font-bold text-green-600" id="profit-inhouse">$0.00</div></div>
-                        <div class="text-right"><div class="text-[10px] uppercase font-bold text-gray-400">Margin</div><div class="text-xl font-bold text-blue-600" id="margin-inhouse">0%</div></div>
-                    </div>
-                </div>
-            </div>
+        <div class="bg-gray-50 p-4 border-t border-gray-200">
+            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
+            <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-20 text-gray-600 font-mono outline-none" readonly></textarea>
         </div>
 
-        <!-- VENDED TAB -->
-        <div id="tab-vend" class="tab-content bg-indigo-50 p-6">
-            <div class="space-y-2 text-xs text-gray-700">
-                <div class="flex justify-between"><span>Wholesale Print:</span> <span id="vend-print" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between text-indigo-800"><span>Extras (Lam/Cut):</span> <span id="vend-extras" class="font-bold">$0.00</span></div>
-                <div class="flex justify-between"><span>Shipping (<span id="vend-ship-tier">T1</span>):</span> <span id="vend-ship" class="font-bold">$0.00</span></div>
-                <div class="border-t border-indigo-200 my-1"></div>
-                <div class="flex justify-between text-indigo-900 font-bold text-sm"><span>Total Vended Bill:</span> <span id="vend-total">$0.00</span></div>
-                <div class="mt-4 bg-white p-3 rounded border border-indigo-200 shadow-sm">
-                    <div class="flex justify-between items-end">
-                        <div><div class="text-[10px] uppercase font-bold text-gray-400">Net Profit</div><div class="text-xl font-bold text-green-600" id="profit-vend">$0.00</div></div>
-                        <div class="text-right"><div class="text-[10px] uppercase font-bold text-gray-400">Margin</div><div class="text-xl font-bold text-blue-600" id="margin-vend">0%</div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- DESCRIPTION -->
-    <div class="bg-gray-50 p-4 border-t border-gray-200">
-        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
-        <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-20 text-gray-600 font-mono outline-none" readonly></textarea>
-    </div>
-    <div id="error-msg" class="hidden text-[10px] text-red-500 p-4 text-center bg-red-50"></div>
-</div>
-
-<script>
-    const TAB_NAME = "PROD_ACM_Signs";
-    let backend = {};
-    let currentUser = { name: "Guest", role: "VIEW", mode: "sales" };
-
-    function initSession() {
-        const params = new URLSearchParams(window.location.search);
-        const urlMode = params.get('mode');
-        const storeUser = sessionStorage.getItem('signos_user');
-        const storeRole = sessionStorage.getItem('signos_role');
-
-        if(storeUser) currentUser.name = storeUser;
-        if(storeRole) currentUser.role = storeRole;
-
-        if (currentUser.role === 'ADMIN') currentUser.mode = urlMode || 'dev';
-        else if (currentUser.role === 'PROD') currentUser.mode = 'production';
-        else currentUser.mode = 'sales';
-
-        document.getElementById('auth-user').innerText = currentUser.name;
-        document.getElementById('auth-role').innerText = currentUser.role;
-
-        const body = document.body;
-        body.classList.remove('mode-sales', 'mode-prod', 'mode-admin');
-        
-        if(currentUser.mode === 'sales') { body.classList.add('mode-sales'); switchTab('retail'); }
-        else if (currentUser.mode === 'production') { body.classList.add('mode-prod'); switchTab('cost'); }
-        else { body.classList.add('mode-admin'); }
-    }
-
-    function switchTab(id) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('btn-'+id).classList.add('active'); }
-    function setSides(n) { document.getElementById('sides').value = n; document.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('selected')); document.getElementById('btn-side-'+n).classList.add('selected'); calculate(); }
     
-    function toggleRounded() {
-        const type = document.getElementById('cut-type').value;
-        const opt = document.getElementById('opt-rounded');
-        if (type === 'Square') opt.classList.remove('hidden'); else { opt.classList.add('hidden'); document.getElementById('is-rounded').checked = false; }
-    }
+    <div id="lightbox" class="fixed inset-0 z-50 hidden bg-black/90 flex items-center justify-center p-4">
+        <div class="max-w-4xl w-full bg-white rounded-lg overflow-hidden shadow-2xl flex flex-col h-[90vh] md:h-[80vh]">
+            
+            <div class="bg-gray-900 text-white px-4 py-3 flex justify-between items-center shrink-0">
+                <h3 class="font-bold text-sm flex items-center gap-2">
+                    <span class="text-blue-400">📐</span> Sheet Optimization Sandbox
+                </h3>
+                <button onclick="closeLightbox()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
 
-    function validateInputs() {
-        const ids = ['width', 'height', 'qty', 'files'];
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if(parseFloat(el.value) <= 0 || isNaN(parseFloat(el.value))) el.value = 1;
-        });
-    }
+            <div class="bg-gray-100 border-b border-gray-200 p-4 grid grid-cols-3 gap-4 shrink-0">
+                <div>
+                    <label class="block text-[9px] font-bold text-gray-500 uppercase">Quantity</label>
+                    <input type="number" id="sim-qty" min="1" class="w-full border p-1 rounded text-sm font-bold text-center" oninput="validateInput(this); updateSim()">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-bold text-gray-500 uppercase">Width</label>
+                    <input type="number" id="sim-w" min="1" class="w-full border p-1 rounded text-sm font-bold text-center" oninput="validateInput(this); updateSim()">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-bold text-gray-500 uppercase">Height</label>
+                    <input type="number" id="sim-h" min="1" class="w-full border p-1 rounded text-sm font-bold text-center" oninput="validateInput(this); updateSim()">
+                </div>
+            </div>
 
-    window.onload = async function() {
-        initSession();
-        toggleRounded();
-        const statusText = document.getElementById("status-text");
-        const statusDot = document.getElementById("status-dot");
-        const vDisplay = document.getElementById("version-display");
-        
-        try {
-            // TELEMETRY
-            const response = await fetch(`${SCRIPT_URL}?tab=${TAB_NAME}&ip=${clientIP}&user=${currentUser.name}&role=${currentUser.role}&req=view_module`);
-            const data = await response.json();
-            if(data.error) throw new Error(data.error);
-            backend = data;
+            <div class="flex-1 grid-bg p-8 flex justify-center items-center overflow-hidden">
+                <div id="lightbox-svg" class="w-full h-full max-w-3xl svg-preview drop-shadow-xl"></div>
+            </div>
 
-            const isLive = (backend.Is_Live === undefined) ? true : (backend.Is_Live === true || backend.Is_Live === "TRUE");
-            if (!isLive && currentUser.role !== 'ADMIN') {
-                document.getElementById('main-card').innerHTML = `<div class="p-10 text-center"><h1 class="text-xl font-black text-gray-400">MODULE OFFLINE</h1><button onclick="goBack()" class="mt-6 bg-blue-600 text-white px-4 py-2 rounded font-bold text-xs">Return to Menu</button></div>`;
-                return;
+            <div class="p-3 bg-gray-900 border-t border-gray-800 text-white flex flex-wrap justify-between items-center text-[10px] sm:text-xs font-mono shrink-0 gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500">STOCK:</span>
+                    <span id="sim-stock" class="text-blue-400 font-bold text-sm tracking-wide">---</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500">INV:</span>
+                    <span id="sim-inv" class="text-gray-400">---</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500">WASTE:</span>
+                    <span id="sim-waste" class="text-red-400 font-bold">---%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let backendData = {};
+        let currentSVG = "";
+
+        // --- 1. VALIDATION & UI LOGIC ---
+        function validateInput(el) {
+            if (!el.value || parseFloat(el.value) <= 0) {
+                el.value = 1;
             }
-
-            const isDev = currentUser.mode === 'dev';
-            statusText.innerText = isDev ? "DEV MODE" : "ONLINE";
-            statusText.className = isDev ? "font-bold text-orange-500" : "font-bold text-green-500";
-            statusDot.className = isDev ? "w-2 h-2 rounded-full bg-orange-500" : "w-2 h-2 rounded-full bg-green-500";
-            statusDot.classList.remove("animate-pulse");
-
-            const ver = isDev ? (backend.Sys_Version_Dev || 'v0.0') : (backend.Sys_Version_Live || 'v0.0');
-            vDisplay.innerText = isDev ? `(Beta ${ver})` : `Live ${ver}`;
-            vDisplay.classList.remove('hidden');
-
-            if(backend.Item_Name) document.getElementById("product-label").innerText = backend.Item_Name;
-            calculate();
-
-        } catch(e) {
-            statusText.innerText = "OFFLINE";
-            statusText.className = "font-bold text-red-500";
-            document.getElementById("error-msg").innerText = e.message;
-            document.getElementById("error-msg").classList.remove("hidden");
-        }
-    };
-
-    function optimizeSheet(w, h, qty, mat) {
-        const sizes = [{ id: '4x8', sw: 48, sh: 96 }, { id: '5x10', sw: 60, sh: 120 }];
-        if(mat === '3mm') sizes.push({ id: '4x10', sw: 48, sh: 120 });
-        let bestOption = { id: 'N/A', cost: Infinity, sheets: 0, yield: 0 };
-        
-        sizes.forEach(stock => {
-            const fit1 = Math.floor(stock.sw / w) * Math.floor(stock.sh / h);
-            const fit2 = Math.floor(stock.sw / h) * Math.floor(stock.sh / w);
-            const yieldPerSheet = Math.max(fit1, fit2);
-            
-            if (yieldPerSheet > 0) {
-                const sheetsNeeded = Math.ceil(qty / yieldPerSheet);
-                const key = `Cost_Stock_${mat}_${stock.id}`;
-                let unitCost = parseFloat(backend[key] || 100);
-                const totalRunCost = sheetsNeeded * unitCost;
-                if (totalRunCost < bestOption.cost) bestOption = { id: stock.id, cost: totalRunCost, sheets: sheetsNeeded, yield: yieldPerSheet };
-            }
-        });
-        return bestOption;
-    }
-
-    function calculate() {
-        if(!backend.Item_Name) return;
-        validateInputs(); 
-
-        const w = parseFloat(document.getElementById('width').value)||0;
-        const h = parseFloat(document.getElementById('height').value)||0;
-        const qty = parseFloat(document.getElementById('qty').value)||1;
-        const files = parseFloat(document.getElementById('files').value)||1;
-        const sides = parseInt(document.getElementById('sides').value);
-        const mat = document.getElementById('material').value;
-        const cutType = document.getElementById('cut-type').value;
-        const lamType = document.getElementById('lam-type').value;
-        const hasLam = lamType !== 'None';
-        const isRounded = document.getElementById('is-rounded').checked;
-        const incDesign = document.getElementById('inc-design').checked;
-        const setupPerFile = document.getElementById('setup-per-file').checked;
-
-        const sqft = (w*h)/144;
-        const totalSqFt = sqft * qty;
-
-        const maxD = Math.max(w, h); const minD = Math.min(w, h);
-        if (maxD > 120 || minD > 60) {
-            document.getElementById('size-warn').classList.remove('hidden');
-            document.getElementById('tab-cost').classList.add('blur-section');
-        } else {
-            document.getElementById('size-warn').classList.add('hidden');
-            document.getElementById('tab-cost').classList.remove('blur-section');
+            if(el.id.includes('sim')) updateSim();
+            else runCalc();
         }
 
-        // --- 1. RETAIL ---
-        let baseRate = mat === '3mm' ? parseFloat(backend.Retail_Price_3mm_Base||14) : parseFloat(backend.Retail_Price_6mm_Base||16.5);
-        if(sides===2) baseRate += (mat === '3mm' ? parseFloat(backend.Retail_Adder_DS_3mm||7) : parseFloat(backend.Retail_Adder_DS_6mm||8.25));
-
-        const unitRate = baseRate;
-        let retailPrint = unitRate * totalSqFt;
-        let retailContour = 0;
-        let retailShear = 0;
-        let retailRounded = 0;
-        let retailLam = 0;
-        const rateMinute = parseFloat(backend.Retail_Rate_Minute || 1.25);
-
-        if(cutType === 'Square') {
-            const isFullSheet = (w===48&&h===96) || (w===96&&h===48) || (w===60&&h===120) || (w===120&&h===60) || (w===48&&h===120) || (w===120&&h===48);
-            if (!isFullSheet) {
-                const shearMins = parseFloat(backend.Time_Shear_Base || 5) + (qty * parseFloat(backend.Time_Shear_Add || 3));
-                retailShear = shearMins * rateMinute;
-            }
+        function toggleNesting() {
+            document.getElementById('nest-container').classList.toggle('hidden');
         }
 
-        if(cutType === 'Contour') {
-            retailContour = retailPrint * parseFloat(backend.Retail_Adder_Contour_Pct || 0.35);
-        }
-
-        if(isRounded) {
-            retailRounded = qty * parseFloat(backend.Retail_Price_Rounded || 5.00);
-        }
-
-        if(hasLam) retailLam = qty * parseFloat(backend.Retail_Price_Lam || 8.00);
-
-        let productTotal = retailPrint + retailContour + retailShear + retailRounded + retailLam;
-        const minOrder = parseFloat(backend.Retail_Min_Order || 50);
-        if(productTotal < minOrder) { 
-            productTotal = minOrder; 
-            document.getElementById('min-badge').classList.remove('hidden');
-        } else {
-            document.getElementById('min-badge').classList.add('hidden');
-        }
-
-        let feeDesign = incDesign ? parseFloat(backend.Retail_Fee_Design || 45) : 0;
-        let setupMins = parseFloat(backend.Time_Setup_Base || 5);
-        if (setupPerFile && files > 1) {
-            setupMins += ((files - 1) * parseFloat(backend.Time_Setup_Add || 3));
-        }
-        const feeSetup = setupMins * rateMinute;
-
-        const grandTotal = productTotal + feeDesign + feeSetup;
-
-        const fmt = (n) => "$" + n.toFixed(2);
-        const pct = (n) => (n * 100).toFixed(1) + "%";
-        const fmtTime = (h) => { const mins = Math.round(h*60); return h >= 1 ? h.toFixed(1)+"h" : mins+"m"; };
-
-        document.getElementById('lbl-mat').innerText = mat;
-        document.getElementById('ret-print').innerText = fmt(retailPrint);
-        document.getElementById('unit-price').innerText = fmt(productTotal/qty);
-        document.getElementById('total-price').innerText = fmt(grandTotal);
-        document.getElementById('ret-setup').innerText = fmt(feeSetup);
-        document.getElementById('lbl-setup-type').innerText = setupPerFile ? `${files} Files` : "Flat";
-
-        if(retailLam > 0) { document.getElementById('row-ret-lam').classList.remove('hidden'); document.getElementById('ret-lam').innerText = fmt(retailLam); } else document.getElementById('row-ret-lam').classList.add('hidden');
-        if(retailContour > 0) { document.getElementById('row-ret-contour').classList.remove('hidden'); document.getElementById('ret-contour').innerText = fmt(retailContour); } else document.getElementById('row-ret-contour').classList.add('hidden');
-        if(retailShear > 0) { document.getElementById('row-ret-shear').classList.remove('hidden'); document.getElementById('ret-shear').innerText = fmt(retailShear); } else document.getElementById('row-ret-shear').classList.add('hidden');
-        if(retailRounded > 0) { document.getElementById('row-ret-round').classList.remove('hidden'); document.getElementById('ret-round').innerText = fmt(retailRounded); } else document.getElementById('row-ret-round').classList.add('hidden');
-        if(feeDesign > 0) { document.getElementById('row-ret-design').classList.remove('hidden'); document.getElementById('ret-design').innerText = fmt(feeDesign); } else document.getElementById('row-ret-design').classList.add('hidden');
-
-        // --- 2. IN-HOUSE COST ---
-        let totalCost = 0;
-        const optimization = optimizeSheet(w, h, qty, mat);
-
-        if(optimization.id !== 'N/A') {
-            document.getElementById('opt-stock-size').innerText = optimization.id.toUpperCase();
-            document.getElementById('opt-yield').innerText = optimization.yield;
-            
-            const costMatRaw = optimization.cost * parseFloat(backend.Waste_Factor || 1.2);
-            document.getElementById('cost-mat').innerText = fmt(costMatRaw);
-            
-            const costInk = totalSqFt * parseFloat(backend.Cost_Ink_Latex || 0.16) * sides;
-            document.getElementById('cost-ink').innerText = fmt(costInk);
-            
-            const costLam = hasLam ? (totalSqFt * parseFloat(backend.Cost_Lam_SqFt || 0.36)) : 0;
-            document.getElementById('cost-lam').innerText = fmt(costLam);
-
-            const rateOp = parseFloat(backend.Rate_Operator || 25);
-            const rateShop = parseFloat(backend.Rate_Shop_Labor || 20);
-            const rateCNC = parseFloat(backend.Rate_CNC_Labor || 35);
-            const rateMachPrint = parseFloat(backend.Rate_Machine_Print || 45);
-            const rateMachCNC = parseFloat(backend.Rate_Machine_CNC || 35);
-
-            const timeSetup = setupMins/60;
-            const costSetup = timeSetup * rateOp;
-
-            const speedPrint = parseFloat(backend.Speed_Print_LF || 25);
-            const feedLen = (h/12);
-            const runTime = (feedLen * qty * sides) / speedPrint;
-            const costRun = runTime * rateMachPrint;
-
-            let timeCNC = 0, costCNC = 0;
-            let timeShear = 0, costShear = 0;
-            let timeRound = 0, costRound = 0;
-
-            if(cutType === 'Contour') {
-                const timeSetupCNC = parseFloat(backend.Time_Setup_CNC || 10)/60;
-                const runTimeCNC = (parseFloat(backend.Time_Cut_Contour||8) * qty) / 60;
-                timeCNC = timeSetupCNC + runTimeCNC;
-                costCNC = timeCNC * (rateMachCNC + rateCNC);
-                document.getElementById('row-lab-cnc').classList.remove('hidden');
-                document.getElementById('row-lab-shear').classList.add('hidden');
+        function updateShapeOptions() {
+            const shape = document.getElementById('shape').value;
+            const subOpt = document.getElementById('sub-shape-opt');
+            if(shape === 'Rectangle') {
+                subOpt.classList.remove('hidden');
             } else {
-                const isFullSheet = (w===48&&h===96) || (w===96&&h===48) || (w===60&&h===120) || (w===120&&h===60) || (w===48&&h===120) || (w===120&&h===48);
-                if(!isFullSheet) {
-                    const shearMins = parseFloat(backend.Time_Shear_Base || 5) + (qty * parseFloat(backend.Time_Shear_Add || 3));
-                    timeShear = shearMins / 60;
-                    costShear = timeShear * rateShop;
+                subOpt.classList.add('hidden');
+                document.getElementById('rounded').checked = false;
+            }
+            runCalc();
+        }
+
+        function updateDesignOptions() {
+            const incDesign = document.getElementById('design').checked;
+            const subOpt = document.getElementById('sub-design-opt');
+            if(incDesign) subOpt.classList.remove('hidden');
+            else {
+                subOpt.classList.add('hidden');
+                document.getElementById('design-per-file').checked = false;
+            }
+            runCalc();
+        }
+
+        // --- 2. LIGHTBOX & SANDBOX ---
+        function openLightbox() {
+            document.getElementById('sim-qty').value = document.getElementById('qty').value;
+            document.getElementById('sim-w').value = document.getElementById('width').value;
+            document.getElementById('sim-h').value = document.getElementById('height').value;
+            
+            updateSim();
+            document.getElementById('lightbox').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+        }
+
+        function updateSim() {
+            const simInputs = {
+                qty: parseFloat(document.getElementById('sim-qty').value) || 1,
+                w: parseFloat(document.getElementById('sim-w').value) || 24,
+                h: parseFloat(document.getElementById('sim-h').value) || 18,
+                thickness: document.getElementById('material').value,
+                sides: 1, lam: "None", shape: "Square", incDesign: false, setupPerFile: false, files: 1
+            };
+
+            const res = calculateACM(simInputs, backendData);
+            const stock = res.cost.stock;
+            
+            // Inject SVG Logic
+            document.getElementById('lightbox-svg').innerHTML = stock.svg;
+
+            // Updated Footer Logic (v6.12)
+            if(stock.stats) {
+                // Use the new pre-formatted string from Logic v2.9.2
+                document.getElementById('sim-stock').innerText = stock.stats.formattedStock;
+                document.getElementById('sim-inv').innerText = `${stock.stats.full} FULL / ${stock.stats.partial} OPEN`;
+                document.getElementById('sim-waste').innerText = `${stock.stats.waste}%`;
+            } else {
+                document.getElementById('sim-stock').innerText = "N/A";
+                document.getElementById('sim-inv').innerText = "---";
+                document.getElementById('sim-waste').innerText = "---%";
+            }
+        }
+
+        // --- 3. INITIALIZATION ---
+        window.onload = async function() {
+            const u = sessionStorage.getItem('signos_user') || 'Guest';
+            const r = sessionStorage.getItem('signos_role') || 'VIEW';
+            if(document.getElementById('auth-user')) document.getElementById('auth-user').innerText = u;
+            if(document.getElementById('auth-role')) document.getElementById('auth-role').innerText = r;
+
+            const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Request Timed Out")), 5000));
+
+            try {
+                if (typeof calculateACM === 'undefined') throw new Error("Logic File Missing");
+                
+                const fetchPromise = fetch(`${SCRIPT_URL}?tab=PROD_ACM_Signs&ip=${clientIP}&user=${u}&role=${r}&req=view_module`);
+                const res = await Promise.race([fetchPromise, timeout]);
+                const data = await res.json();
+                if(data.error) throw new Error(data.error);
+                backendData = data;
+
+                document.getElementById("status-text").innerText = "ONLINE";
+                document.getElementById("status-text").className = "font-bold text-green-500";
+                document.getElementById("status-dot").className = "w-2 h-2 rounded-full bg-green-500";
+                document.getElementById("status-dot").classList.remove("animate-pulse");
+
+                const isDev = window.location.href.includes('mode=dev');
+                const ver = isDev ? (data.Sys_Version_Dev || 'v6.12') : (data.Sys_Version_Live || 'v6.12');
+                if(document.getElementById("version-display")) {
+                    document.getElementById("version-display").innerText = isDev ? `(Beta ${ver})` : `Live ${ver}`;
+                    document.getElementById("version-display").classList.remove('hidden');
                 }
-                document.getElementById('row-lab-cnc').classList.add('hidden');
-                document.getElementById('row-lab-shear').classList.remove('hidden');
-            }
 
-            if(isRounded) {
-                timeRound = (qty * parseFloat(backend.Time_Round_Corn || 2)) / 60;
-                costRound = timeRound * rateShop;
-                document.getElementById('row-lab-round').classList.remove('hidden');
+                updateShapeOptions();
+                runCalc();
+
+            } catch(e) {
+                console.error("Critical Error:", e);
+                const statusText = document.getElementById("status-text");
+                if(statusText) {
+                    statusText.innerText = "OFFLINE";
+                    statusText.className = "font-bold text-red-500";
+                }
+                alert("System Error: " + e.message);
+            }
+        };
+
+        // --- 4. CALCULATION ENGINE ---
+        function runCalc() {
+            if(!backendData.Item_Name) return;
+
+            const inputs = {
+                w: parseFloat(document.getElementById('width').value) || 24,
+                h: parseFloat(document.getElementById('height').value) || 18,
+                qty: parseFloat(document.getElementById('qty').value) || 1,
+                thickness: document.getElementById('material').value,
+                sides: parseInt(document.getElementById('sides').value),
+                lam: document.getElementById('lam').value,
+                shape: document.getElementById('shape').value,
+                rounded: document.getElementById('rounded').checked,
+                incDesign: document.getElementById('design').checked,
+                setupPerFile: document.getElementById('setup-per-file').checked,
+                designPerFile: document.getElementById('design-per-file').checked,
+                files: parseFloat(document.getElementById('files').value) || 1
+            };
+
+            const result = calculateACM(inputs, backendData);
+            const ret = result.retail;
+            const cost = result.cost;
+
+            const warn = document.getElementById('size-warn');
+            if(ret.isOversized) warn.classList.remove('hidden'); else warn.classList.add('hidden');
+
+            const fmt = (n) => "$" + n.toFixed(2);
+
+            document.getElementById('ui-unit').innerText = ret.isOversized ? "CUSTOM" : fmt(ret.unitPrice);
+            document.getElementById('ui-total').innerText = ret.isOversized ? "CONTACT US" : fmt(ret.grandTotal);
+
+            document.getElementById('li-mat').innerText = fmt(ret.breakdown.material);
+            document.getElementById('li-lam').innerText = fmt(ret.breakdown.laminate);
+
+            const finishVal = ret.breakdown.finish;
+            const rowFinish = document.getElementById('row-finish');
+            if(finishVal > 0) {
+                rowFinish.classList.remove('hidden');
+                document.getElementById('li-finish').innerText = fmt(finishVal);
+                document.getElementById('lbl-finish').innerText = inputs.shape === 'Contour' ? 'CNC Shape' : 'Rounded Corners';
             } else {
-                document.getElementById('row-lab-round').classList.add('hidden');
+                rowFinish.classList.add('hidden');
             }
 
-            totalCost = costMatRaw + costInk + costLam + costSetup + costRun + costCNC + costShear + costRound;
-            const prof = grandTotal - totalCost;
+            document.getElementById('ui-setup').innerText = fmt(ret.fees.setup);
+            document.getElementById('lbl-setup').innerText = inputs.setupPerFile ? `${inputs.files} Files` : 'Flat';
 
-            document.getElementById('time-setup').innerText = fmtTime(timeSetup); document.getElementById('cost-lab-setup').innerText = fmt(costSetup);
-            document.getElementById('time-run').innerText = fmtTime(runTime); document.getElementById('cost-run').innerText = fmt(costRun);
-            document.getElementById('time-cnc').innerText = fmtTime(timeCNC); document.getElementById('cost-cnc').innerText = fmt(costCNC);
-            document.getElementById('time-shear').innerText = fmtTime(timeShear); document.getElementById('cost-shear').innerText = fmt(costShear);
-            document.getElementById('time-round').innerText = fmtTime(timeRound); document.getElementById('cost-round').innerText = fmt(costRound);
-            
-            document.getElementById('cost-total').innerText = fmt(totalCost);
-            document.getElementById('profit-inhouse').innerText = fmt(prof);
-            if(grandTotal>0) document.getElementById('margin-inhouse').innerText = pct(prof/grandTotal);
+            const rowDesign = document.getElementById('row-design');
+            if(ret.fees.design > 0) {
+                rowDesign.classList.remove('hidden');
+                document.getElementById('ui-design').innerText = fmt(ret.fees.design);
+                document.getElementById('lbl-design').innerText = inputs.designPerFile ? `${inputs.files} Files` : 'Flat';
+            } else {
+                rowDesign.classList.add('hidden');
+            }
 
-        } else {
-            document.getElementById('opt-stock-size').innerText = "TOO LARGE";
-            totalCost = Infinity;
+            document.getElementById('min-badge').classList.toggle('hidden', !ret.isMinApplied);
+
+            const badge = document.getElementById('opt-badge');
+            if (cost.stock && cost.stock.name !== "N/A" && !ret.isOversized) {
+                badge.classList.remove('hidden');
+                document.getElementById('opt-stock').innerText = `${cost.stock.name} (${cost.stock.sheets} shts)`;
+                
+                // Inject Main View SVG
+                currentSVG = cost.stock.svg;
+                document.getElementById('nest-svg').innerHTML = currentSVG;
+            } else {
+                badge.classList.add('hidden');
+                document.getElementById('nest-container').classList.add('hidden');
+            }
+
+            const cutTxt = inputs.shape === 'Contour' ? 'CNC Custom Shape' : (inputs.rounded ? 'Shear Cut with Rounded Corners' : 'Shear Cut');
+            const desc = `(x${inputs.qty}) ${inputs.w}" x ${inputs.h}" ${inputs.thickness} ACM Signs, ${inputs.lam} Laminated, ${cutTxt}.\nPrinted full color on ${inputs.sides === 1 ? "ONE side" : "TWO sides"}.`;
+            document.getElementById('job-desc').value = desc;
         }
-
-        // --- 3. VENDED COST ---
-        const vKeySqFt = `S365_${mat}_${sides===1?'SS':'DS'}_SqFt`;
-        const rateSqFt = parseFloat(backend[vKeySqFt] || 0);
-        let vendPrint = totalSqFt * rateSqFt;
-        
-        let vendExtras = 0;
-        if(hasLam) vendExtras += (qty * parseFloat(backend.S365_Gloss_Rate || 4));
-        if(cutType === 'Contour') vendExtras += (vendPrint * parseFloat(backend.S365_Contour_Pct || 0.1));
-        if(isRounded) vendExtras += parseFloat(backend.S365_Rounded_Fee || 5);
-
-        const sheetsNeededVended = Math.ceil(totalSqFt / 32);
-        const maxDim = Math.max(w,h);
-        const minDim = Math.min(w,h);
-        const freightCost = parseFloat(backend.Ship_Freight_Cost || 199);
-        
-        let vendShip = 0;
-        let shipTier = "T1";
-
-        if (maxDim === 96 && minDim === 48) { vendShip = freightCost; shipTier = "Freight (Full)"; }
-        else if (maxDim <= parseFloat(backend.Ship_T1_Max_Long || 36) && minDim <= parseFloat(backend.Ship_T1_Max_Short || 24)) {
-            if (sheetsNeededVended >= parseFloat(backend.Ship_T1_Freight_Trigger || 58)) { vendShip = freightCost; shipTier = "Freight"; }
-            else { vendShip = parseFloat(backend.Ship_T1_Rate || 10); shipTier = "T1"; }
-        }
-        else { vendShip = parseFloat(backend.Ship_T5_Rate_Low || 75); shipTier = "T5"; }
-
-        const totalVend = vendPrint + vendExtras + vendShip;
-        const profVend = grandTotal - totalVend;
-
-        document.getElementById('vend-print').innerText = fmt(vendPrint);
-        document.getElementById('vend-extras').innerText = fmt(vendExtras);
-        document.getElementById('vend-ship').innerText = fmt(vendShip);
-        document.getElementById('vend-ship-tier').innerText = shipTier;
-        document.getElementById('vend-total').innerText = fmt(totalVend);
-        document.getElementById('profit-vend').innerText = fmt(profVend);
-        if(grandTotal>0) document.getElementById('margin-vend').innerText = pct(profVend/grandTotal);
-
-        const profitWarn = document.getElementById('profit-warn');
-        if((grandTotal-totalCost) < 0 && profVend < 0) { profitWarn.classList.remove('hidden'); profitWarn.classList.add('warn-pulse'); }
-        else { profitWarn.classList.add('hidden'); profitWarn.classList.remove('warn-pulse'); }
-
-        // Description Generator
-        const sideTxt = sides === 1 ? "ONE side" : "TWO sides";
-        let lamTxt = "";
-        if(hasLam) lamTxt = ` and ${lamType.toLowerCase()} UV protective overlaminate`;
-        
-        let cutTxt = "";
-        if(cutType === 'Square') cutTxt = "shear cut";
-        else if(cutType === 'Contour') cutTxt = "CNC contour cut shape";
-        
-        let extraTxt = "";
-        if(isRounded) extraTxt = " with rounded corners";
-
-        const desc = `(x${qty}) ${w}" x ${h}" ${mat} ACM sign with full color digital print${lamTxt} on ${sideTxt} ${cutTxt}${extraTxt}.`;
-        document.getElementById('job-desc').value = desc;
-    }
-</script>
+    </script>
 </body>
 </html>
