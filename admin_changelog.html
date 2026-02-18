@@ -2,420 +2,327 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Activity v1.8 | SignOS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>System Activity v2.1 | SignOS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
     <style>
-        .timeline-line::before { content: ''; position: absolute; left: 23px; top: 40px; bottom: -20px; width: 2px; background: #e5e7eb; z-index: 0; }
+        .timeline-line::before { content: ''; position: absolute; left: 19px; top: 40px; bottom: -20px; width: 2px; background: #e5e7eb; z-index: 0; }
         .timeline-item:last-child .timeline-line::before { display: none; }
-        .custom-scroll::-webkit-scrollbar { width: 8px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Smooth Scrolling */
+        html { scroll-behavior: smooth; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Active State Styles for Buttons */
+        /* Filter Buttons */
+        .btn-filter { transition: all 0.2s ease; }
         .btn-filter.active-all { background-color: #1f2937; color: white; border-color: #1f2937; }
         .btn-filter.active-live { background-color: #16a34a; color: white; border-color: #16a34a; }
         .btn-filter.active-dev { background-color: #f97316; color: white; border-color: #f97316; }
 
-        /* Graph Bar Animation */
+        /* Graph Animations */
         .graph-bar { transition: height 0.5s ease-out; }
         .graph-bar:hover { opacity: 0.8; }
-
-        /* Tooltip */
-        .tooltip-container:hover .tooltip { display: block; }
+        .tooltip { display: none; }
+        .graph-bar:hover .tooltip { display: block; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans flex flex-col">
+<body class="bg-gray-50 min-h-screen font-sans flex flex-col">
 
-    <div class="bg-gray-900 text-white px-6 py-4 flex justify-between items-center shadow-md z-30 sticky top-0">
-        <div class="flex items-center gap-3">
-            <h1 class="text-xl font-black tracking-tight">System Activity Log</h1>
+    <div class="bg-gray-900 text-white px-4 py-3 flex justify-between items-center shadow-md shrink-0 sticky top-0 z-50">
+        <div class="flex flex-col">
+            <span class="text-[10px] uppercase text-gray-400 tracking-wider">System Activity</span>
+            <span class="font-bold text-sm text-white" id="auth-user">---</span>
         </div>
-
-        <div class="flex gap-4 text-xs font-bold items-center">
-            <span class="text-gray-400">USER: <span class="text-white uppercase" id="auth-user">---</span></span>
-            <span class="text-gray-600">|</span>
-            <a href="#" onclick="goBack()" class="text-gray-300 hover:text-white uppercase">Exit to Menu</a>
-        </div>
+        <a href="menu.html" class="text-xs font-bold text-gray-300 border border-gray-600 px-3 py-1.5 rounded hover:bg-gray-800 transition active:scale-95">
+            EXIT
+        </a>
     </div>
 
-    <div class="max-w-4xl mx-auto w-full p-8 flex-1">
+    <div class="w-full max-w-3xl mx-auto px-4 py-6 flex-1">
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                <div class="text-xs font-bold text-gray-400 uppercase">Total Commits</div>
-                <div class="text-2xl font-black text-gray-800" id="stat-total">0</div>
-            </div>
-
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 col-span-2 relative group cursor-pointer" onclick="openCalendar()">
-                <div class="flex justify-between items-start mb-2">
-                    <div class="text-xs font-bold text-gray-400 uppercase">Activity (Last 7 Days)</div>
-                    <div class="text-[9px] text-blue-500 font-bold opacity-0 group-hover:opacity-100 transition">View Calendar 📅</div>
-                </div>
-                <div id="mini-graph" class="flex items-end justify-between h-12 gap-1 px-2 pb-1 border-b border-gray-100">
-                    </div>
-
-                <div id="calendar-view" class="absolute top-0 left-0 w-full bg-white z-20 rounded-xl shadow-xl border border-blue-200 p-4 hidden" onclick="event.stopPropagation()">
-                    <div class="flex justify-between items-center mb-4">
-                        <button onclick="changeMonth(-1)" class="p-1 hover:bg-gray-100 rounded text-gray-500 font-bold">&lt;</button>
-                        <h3 class="font-bold text-gray-800 text-sm" id="cal-month-label">Month Year</h3>
-                        <div class="flex gap-2">
-                            <button onclick="changeMonth(1)" class="p-1 hover:bg-gray-100 rounded text-gray-500 font-bold">&gt;</button>
-                            <button class="text-gray-400 hover:text-red-500 font-bold ml-2" onclick="toggleCalendar()">✕</button>
-                        </div>
-                    </div>
-                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center"></div>
+        <div class="mb-6 flex flex-col gap-4">
+            <div class="flex justify-between items-end border-b border-gray-200 pb-4">
+                <h1 class="text-2xl font-black text-gray-800 tracking-tight">Changelog</h1>
+                <div class="text-right">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">Recent Activity</span>
+                    <div class="text-xl font-black text-blue-600 leading-none" id="stat-count">0</div>
                 </div>
             </div>
 
-            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-center">
-                <div class="text-[10px] font-bold text-gray-400 uppercase mb-2 text-center">Filter Environment</div>
-                <div class="flex gap-2">
-                    <button onclick="setFilter('ALL')" id="btn-all" class="btn-filter active-all flex-1 text-[10px] font-bold py-2 rounded border border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 transition uppercase">All</button>
-                    <button onclick="setFilter('LIVE')" id="btn-live" class="btn-filter flex-1 text-[10px] font-bold py-2 rounded border border-gray-200 bg-gray-50 text-gray-500 hover:bg-green-50 hover:text-green-600 transition uppercase">Live</button>
-                    <button onclick="setFilter('DEV')" id="btn-dev" class="btn-filter flex-1 text-[10px] font-bold py-2 rounded border border-gray-200 bg-gray-50 text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition uppercase">Dev</button>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-2">
+                <div class="flex justify-between items-end h-24 gap-2" id="activity-graph">
+                    <div class="w-full text-center text-xs text-gray-400 self-center">Loading Activity...</div>
+                </div>
+                <div class="flex justify-between mt-2 text-[9px] font-bold text-gray-400 uppercase tracking-wider" id="graph-labels">
                 </div>
             </div>
-
         </div>
 
-        <div id="date-filter-status" class="hidden mb-4 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg flex justify-between items-center">
-            <span class="text-xs font-bold">📅 Viewing Activity for: <span id="active-date-label">---</span></span>
-            <button onclick="clearDateFilter()" class="text-[10px] font-bold uppercase hover:text-blue-900 underline">Clear Filter</button>
-        </div>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 space-y-3">
+            <div class="relative">
+                <input type="text" id="inp-search" onkeyup="renderTimeline()" placeholder="Search commits, authors, or hashes..." 
+                    class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 focus:outline-none focus:border-blue-500 transition">
+                <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
 
-        <div id="feed-container" class="space-y-0 pb-6">
-            <div class="text-center py-12">
-                <div class="inline-block w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-2"></div>
-                <p class="text-gray-400 text-xs font-bold uppercase">Loading History...</p>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[9px] font-bold text-gray-400 uppercase ml-1">Start Date</label>
+                    <input type="date" id="date-start" onchange="renderTimeline()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs font-bold text-gray-700 outline-none">
+                </div>
+                <div>
+                    <label class="text-[9px] font-bold text-gray-400 uppercase ml-1">End Date</label>
+                    <input type="date" id="date-end" onchange="renderTimeline()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs font-bold text-gray-700 outline-none">
+                </div>
             </div>
         </div>
 
-        <div class="text-center pb-10">
-            <button id="btn-load-more" onclick="loadMore()" class="hidden bg-white border border-gray-300 text-gray-500 hover:text-gray-800 hover:border-gray-400 px-6 py-2 rounded-full text-xs font-bold shadow-sm transition">
-                Load Older Items ↓
+        <div class="grid grid-cols-3 gap-2 mb-8">
+            <button onclick="setFilter('ALL')" id="btn-all" class="btn-filter active-all px-2 py-3 rounded-lg border bg-white text-gray-500 font-bold text-xs uppercase tracking-wide shadow-sm active:scale-95">All</button>
+            <button onclick="setFilter('LIVE')" id="btn-live" class="btn-filter px-2 py-3 rounded-lg border bg-white text-gray-500 font-bold text-xs uppercase tracking-wide shadow-sm active:scale-95">Live</button>
+            <button onclick="setFilter('DEV')" id="btn-dev" class="btn-filter px-2 py-3 rounded-lg border bg-white text-gray-500 font-bold text-xs uppercase tracking-wide shadow-sm active:scale-95">Dev</button>
+        </div>
+
+        <div id="loader" class="text-center py-10 text-gray-400 animate-pulse tracking-widest text-xs font-bold">FETCHING HISTORY...</div>
+        
+        <div id="timeline-container" class="space-y-6 pb-12 relative"></div>
+
+        <div class="text-center pb-8">
+            <button id="btn-load-more" onclick="loadMore()" class="hidden w-full bg-gray-200 text-gray-600 font-bold py-3 rounded-lg text-xs uppercase tracking-widest hover:bg-gray-300 active:scale-95 transition">
+                Load Older Items
             </button>
         </div>
 
     </div>
 
     <script>
-        // --- GLOBAL STATE ---
         let allData = [];
-        let commitCounts = {}; // Key: "YYYY-MM-DD" (Local Time)
         let currentFilter = 'ALL';
-        let filterDate = null; // "YYYY-MM-DD"
-        
-        // Pagination
-        let visibleCount = 20; 
-        const LOAD_INCREMENT = 20;
+        let visibleCount = 20;
+        const PAGE_SIZE = 20;
 
-        // Calendar State
-        let calendarDate = new Date(); // Controls which month is visible
-
-        // --- INIT ---
-        window.onload = function() {
-            const u = sessionStorage.getItem('signos_user') || 'Evan Z.';
-            document.getElementById('auth-user').innerText = u;
-            
-            // Safety check for SCRIPT_URL
-            if (typeof SCRIPT_URL === 'undefined') {
-                console.warn("SCRIPT_URL missing. Ensure signos-core.js is loaded.");
-                // For demo purposes, if SCRIPT_URL is missing, you might want to mock data here
-            }
-            
-            loadHistory();
-        };
-
-        function goBack() { window.history.back(); }
-
-        // Helper: Get Local Date String "YYYY-MM-DD" to prevent UTC timezone bugs
-        function getLocalYMD(dateObj) {
-            const offset = dateObj.getTimezoneOffset();
-            const localDate = new Date(dateObj.getTime() - (offset * 60 * 1000));
-            return localDate.toISOString().split('T')[0];
-        }
-
+        // --- HELPER: Safe Data Retrieval ---
         function val(obj, key) {
             if (!obj) return "";
             return obj[key] || obj[key.toUpperCase()] || obj[key.toLowerCase()] || "";
         }
 
-        // --- DATA FETCHING ---
-        async function loadHistory() {
+        // --- INIT ---
+        window.onload = async function() {
+            const user = sessionStorage.getItem('signos_user');
+            if (!user) { window.location.href = 'index.html'; return; }
+            document.getElementById('auth-user').innerText = user;
+
             try {
-                // Check if clientIP is defined, else default
-                const ip = typeof clientIP !== 'undefined' ? clientIP : '0.0.0.0';
-                const url = typeof SCRIPT_URL !== 'undefined' 
-                    ? `${SCRIPT_URL}?req=table&tab=SYS_Changelog&ip=${ip}`
-                    : ''; 
+                const response = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Changelog&ip=${clientIP}&user=${user}`);
+                const json = await response.json();
+                
+                if (json.error) throw new Error(json.error);
 
-                if(!url) throw new Error("API Configuration Missing");
+                // Sort Newest First (Safe Sort)
+                allData = json.sort((a, b) => new Date(val(b, 'Timestamp')) - new Date(val(a, 'Timestamp')));
 
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (!data || data.length === 0) {
-                    document.getElementById('feed-container').innerHTML = '<div class="text-center text-gray-400">No records found.</div>';
-                    return;
-                }
-
-                // Sort: Newest First
-                data.sort((a, b) => new Date(val(b, 'Timestamp')) - new Date(val(a, 'Timestamp')));
-
-                allData = data;
-                document.getElementById('stat-total').innerText = data.length;
-
-                processGraphData(data);
+                document.getElementById('loader').classList.add('hidden');
+                
+                // 1. Render Visuals
+                renderGraph();
                 renderTimeline();
 
             } catch (e) {
-                // If fetch fails, show error or mock data for UI testing
-                document.getElementById('feed-container').innerHTML = `<div class="bg-red-50 text-red-500 p-4 rounded text-center text-xs font-bold">Error: ${e.message}</div>`;
+                document.getElementById('loader').innerText = "FAILED TO LOAD HISTORY";
+                document.getElementById('loader').classList.add('text-red-500');
+                console.error(e);
             }
-        }
+        };
 
-        // --- GRAPH & CALENDAR LOGIC ---
-
-        function processGraphData(data) {
-            commitCounts = {};
-            data.forEach(d => {
-                const dateObj = new Date(val(d, 'Timestamp'));
-                if(isNaN(dateObj)) return;
-                const key = getLocalYMD(dateObj); // Group by LOCAL date
-                commitCounts[key] = (commitCounts[key] || 0) + 1;
-            });
-
-            renderMiniGraph();
-            renderCalendar(); // Render initial view
-        }
-
-        function renderMiniGraph() {
-            const container = document.getElementById('mini-graph');
-            container.innerHTML = "";
-
-            // Last 7 Days (Inclusive of today)
-            const dates = [];
-            for (let i=6; i>=0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                dates.push(d);
-            }
-
-            const maxVal = Math.max(...Object.values(commitCounts)) || 5; // Default max scale to 5 if empty
-
-            dates.forEach(dateObj => {
-                const dateKey = getLocalYMD(dateObj);
-                const count = commitCounts[dateKey] || 0;
-                
-                // Visuals
-                const heightPct = count > 0 ? Math.max((count / maxVal) * 100, 15) : 10; 
-                const dayName = dateObj.toLocaleDateString('en-US', {weekday:'narrow'});
-                const colorClass = count > 0 ? "bg-blue-500" : "bg-gray-200";
-                
-                container.innerHTML += `
-                    <div class="flex-1 flex flex-col justify-end items-center h-full relative tooltip-container" onclick="event.stopPropagation(); filterByDate('${dateKey}')">
-                        <div class="tooltip absolute bottom-full mb-1 hidden bg-gray-900 text-white text-[9px] font-bold px-2 py-1 rounded whitespace-nowrap z-30 shadow-lg">
-                            ${count} Changes<br>${dateObj.toLocaleDateString()}
-                        </div>
-                        <div class="w-2 rounded-t ${colorClass} graph-bar cursor-pointer" style="height: ${heightPct}%"></div>
-                        <div class="text-[8px] text-gray-400 mt-1 cursor-default">${dayName}</div>
-                    </div>
-                `;
-            });
-        }
-
-        // --- CALENDAR UI ---
-
-        function toggleCalendar() {
-            const el = document.getElementById('calendar-view');
-            el.classList.toggle('hidden');
-        }
-
-        function openCalendar() {
-            document.getElementById('calendar-view').classList.remove('hidden');
-        }
-
-        function changeMonth(offset) {
-            calendarDate.setMonth(calendarDate.getMonth() + offset);
-            renderCalendar();
-        }
-
-        function renderCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = "";
-
-            const year = calendarDate.getFullYear();
-            const month = calendarDate.getMonth();
-            
-            // Label
-            document.getElementById('cal-month-label').innerText = calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-            const firstDayIndex = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            // Headers
-            ['S','M','T','W','T','F','S'].forEach(d => grid.innerHTML += `<div class="text-[9px] font-bold text-gray-400 py-1">${d}</div>`);
-
-            // Empty Slots
-            for(let i=0; i<firstDayIndex; i++) { grid.innerHTML += `<div></div>`; }
-
-            // Days
-            for(let d=1; d<=daysInMonth; d++) {
-                // Construct Date Key safely
-                // Note: d is 1-based. 
-                const currentDayObj = new Date(year, month, d);
-                const dateKey = getLocalYMD(currentDayObj);
-                const count = commitCounts[dateKey] || 0;
-
-                let bgClass = "hover:bg-gray-100 text-gray-600";
-                if(count > 0) bgClass = "bg-blue-100 text-blue-800 font-bold hover:bg-blue-200 ring-1 ring-blue-200";
-                if(count > 5) bgClass = "bg-blue-500 text-white font-bold hover:bg-blue-600 shadow-md";
-
-                // Highlight today
-                const isToday = getLocalYMD(new Date()) === dateKey;
-                const borderClass = isToday ? "border border-blue-500" : "border border-transparent";
-
-                const clickAttr = count > 0 ? `onclick="filterByDate('${dateKey}')"` : "";
-                const cursor = count > 0 ? "cursor-pointer" : "cursor-default opacity-50";
-
-                grid.innerHTML += `
-                    <div class="p-0.5">
-                        <div ${clickAttr} class="w-7 h-7 mx-auto flex items-center justify-center rounded-full text-[10px] transition ${bgClass} ${borderClass} ${cursor}" title="${count} changes">
-                            ${d}
-                        </div>
-                    </div>`;
-            }
-        }
-
-        // --- FILTERING ---
-
+        // --- FILTER LOGIC ---
         function setFilter(mode) {
             currentFilter = mode;
-            // Update Buttons
+            
             document.querySelectorAll('.btn-filter').forEach(b => {
-                b.className = "btn-filter flex-1 text-[10px] font-bold py-2 rounded border border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 transition uppercase";
+                b.className = "btn-filter px-2 py-3 rounded-lg border bg-white text-gray-500 font-bold text-xs uppercase tracking-wide shadow-sm active:scale-95";
             });
-            const btn = document.getElementById('btn-' + mode.toLowerCase());
-            if(mode === 'ALL') btn.classList.add('active-all');
-            if(mode === 'LIVE') btn.classList.add('active-live');
-            if(mode === 'DEV') btn.classList.add('active-dev');
 
-            visibleCount = LOAD_INCREMENT; 
-            renderTimeline();
-        }
+            const activeClass = mode === 'ALL' ? 'active-all' : (mode === 'LIVE' ? 'active-live' : 'active-dev');
+            document.getElementById('btn-' + mode.toLowerCase()).classList.add(activeClass);
+            document.getElementById('btn-' + mode.toLowerCase()).classList.remove('bg-white', 'text-gray-500');
 
-        function filterByDate(dateStr) {
-            filterDate = dateStr;
-            const dateObj = new Date(dateStr + "T00:00:00"); // Force local parsing
-            
-            document.getElementById('active-date-label').innerText = dateObj.toLocaleDateString(undefined, { weekday:'long', month:'short', day:'numeric'});
-            document.getElementById('date-filter-status').classList.remove('hidden');
-            document.getElementById('calendar-view').classList.add('hidden'); // Close calendar
-            
-            visibleCount = LOAD_INCREMENT;
-            renderTimeline();
-        }
-
-        function clearDateFilter() {
-            filterDate = null;
-            document.getElementById('date-filter-status').classList.add('hidden');
-            visibleCount = LOAD_INCREMENT;
             renderTimeline();
         }
 
         function loadMore() {
-            visibleCount += LOAD_INCREMENT;
+            visibleCount += PAGE_SIZE;
             renderTimeline();
         }
 
-        // --- RENDER TIMELINE ---
+        // --- GRAPH RENDERER (FIXED) ---
+        function renderGraph() {
+            const graphContainer = document.getElementById('activity-graph');
+            const labelContainer = document.getElementById('graph-labels');
+            graphContainer.innerHTML = "";
+            labelContainer.innerHTML = "";
 
+            // 1. Generate Last 7 Days Keys
+            const days = [];
+            for(let i=6; i>=0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                try {
+                    // BUG FIX: Added [0] to ensure we get a String "YYYY-MM-DD", not an Array
+                    days.push(d.toISOString().split('T')[0]); 
+                } catch(e) { continue; }
+            }
+
+            // 2. Count Commits per Day
+            const counts = {};
+            days.forEach(d => counts[d] = 0);
+
+            allData.forEach(row => {
+                const ts = val(row, 'Timestamp');
+                if(!ts) return;
+                try {
+                    const dateKey = new Date(ts).toISOString().split('T')[0];
+                    if (counts[dateKey] !== undefined) counts[dateKey]++;
+                } catch(e) {}
+            });
+
+            // 3. Find Max for Scaling
+            const maxVal = Math.max(...Object.values(counts), 1); // Avoid div/0
+
+            // 4. Draw Bars
+            days.forEach(day => {
+                const count = counts[day] || 0;
+                const heightPct = (count / maxVal) * 100;
+                
+                // Day Label (e.g., "Mon")
+                const dayName = new Date(day).toLocaleDateString('en-US', { weekday: 'short' });
+                const isToday = day === new Date().toISOString().split('T')[0];
+                const barColor = isToday ? "bg-blue-600" : "bg-blue-300";
+
+                // Bar HTML
+                const bar = document.createElement('div');
+                bar.className = `w-full ${barColor} rounded-t-sm relative graph-bar`;
+                bar.style.height = (heightPct < 10 ? 10 : heightPct) + "%"; // Min height 10%
+                bar.innerHTML = `<div class="tooltip absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-[9px] font-bold px-2 py-1 rounded shadow-lg z-10">${count} Changes</div>`;
+                graphContainer.appendChild(bar);
+
+                // Label HTML
+                const lbl = document.createElement('div');
+                lbl.className = `w-full text-center ${isToday ? "text-blue-600" : ""}`;
+                lbl.innerText = dayName;
+                labelContainer.appendChild(lbl);
+            });
+            
+            // Update Stat Count
+            const todayKey = new Date().toISOString().split('T')[0];
+            document.getElementById('stat-count').innerText = counts[todayKey] || 0;
+        }
+
+        // --- TIMELINE RENDERER (SEARCH & RANGE FIXED) ---
         function renderTimeline() {
-            const container = document.getElementById('feed-container');
+            const container = document.getElementById('timeline-container');
             const loadBtn = document.getElementById('btn-load-more');
-
             container.innerHTML = "";
 
-            // 1. Filter
-            const filtered = allData.filter(row => {
-                const env = val(row, 'Environment') || "DEV";
-                
-                // Env Filter
-                if (currentFilter !== 'ALL' && env !== currentFilter) return false;
+            // Inputs
+            const searchVal = document.getElementById('inp-search').value.toLowerCase();
+            const startVal = document.getElementById('date-start').value;
+            const endVal = document.getElementById('date-end').value;
 
-                // Date Filter
-                if (filterDate) {
-                    const rowDateKey = getLocalYMD(new Date(val(row, 'Timestamp')));
-                    if (rowDateKey !== filterDate) return false;
+            // Filter Data
+            const filtered = allData.filter(row => {
+                // 1. Environment Filter
+                const env = val(row, 'Environment') || "DEV";
+                if (currentFilter !== 'ALL') {
+                    if (currentFilter === 'LIVE' && env !== 'LIVE') return false;
+                    if (currentFilter === 'DEV' && env === 'LIVE') return false;
                 }
+
+                // 2. Search Filter
+                if (searchVal) {
+                    const text = (val(row, 'Message') + val(row, 'Author') + val(row, 'Commit Hash')).toLowerCase();
+                    if (!text.includes(searchVal)) return false;
+                }
+
+                // 3. Date Range Filter
+                if (startVal || endVal) {
+                    const rowDate = new Date(val(row, 'Timestamp')).toISOString().split('T')[0];
+                    if (startVal && rowDate < startVal) return false;
+                    if (endVal && rowDate > endVal) return false;
+                }
+
                 return true;
             });
 
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="text-center py-10 text-gray-400 text-xs uppercase font-bold">No matching records found.</div>';
+                container.innerHTML = '<div class="text-center text-gray-400 py-10">No matching activity found.</div>';
                 loadBtn.classList.add('hidden');
                 return;
             }
 
-            // 2. Slice (Pagination)
+            // Pagination Slicing
             const slicedData = filtered.slice(0, visibleCount);
 
-            // 3. Render
+            // Toggle Load More
+            if (visibleCount >= filtered.length) loadBtn.classList.add('hidden');
+            else loadBtn.classList.remove('hidden');
+
+            // Render Items
             slicedData.forEach(row => {
                 const ts = val(row, 'Timestamp');
                 const author = val(row, 'Author');
                 const msg = val(row, 'Message');
-                const hash = val(row, 'Commit Hash');
+                const hash = val(row, 'Commit Hash').substring(0,7);
                 const link = val(row, 'GitHub Link');
                 const env = val(row, 'Environment') || "DEV";
 
                 const d = new Date(ts);
-                const dateStr = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+                const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
                 const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 const isLive = env === 'LIVE';
                 const badgeColor = isLive ? "bg-green-100 text-green-800 border-green-200" : "bg-orange-100 text-orange-800 border-orange-200";
                 const icon = isLive ? "🚀" : "🛠️";
-                const borderColor = isLive ? "border-green-500 shadow-green-100" : "border-blue-100";
+                const iconBg = isLive ? "bg-green-50 text-green-600" : "bg-orange-50 text-orange-500";
 
-                // Highlight Jira/Reference Tickets (RMP_123)
-                const fmtMsg = msg.replace(/(RMP_[A-Za-z0-9_]+)/g, '<span class="bg-yellow-100 text-yellow-800 px-1 rounded font-bold border border-yellow-200 text-[10px] ml-1">$1</span>');
+                // Clean Message
+                let fmtMsg = msg.replace(/(https:\/\/github\.com[^\s]+)/g, '').trim(); 
 
                 const item = document.createElement('div');
-                item.className = "timeline-item relative pl-12 py-2";
+                item.className = "timeline-item relative pl-8";
                 item.innerHTML = `
                     <div class="timeline-line"></div>
-                    <div class="absolute left-0 top-3 w-12 flex justify-center z-10">
-                        <div class="w-10 h-10 bg-white border-2 ${borderColor} rounded-full flex items-center justify-center shadow-sm">
-                            <span class="text-lg">${icon}</span>
+                    
+                    <div class="absolute left-0 top-1 w-8 flex justify-center z-10">
+                        <div class="w-6 h-6 ${iconBg} rounded-full flex items-center justify-center text-xs shadow-sm border border-white ring-2 ring-gray-50">
+                            ${icon}
                         </div>
                     </div>
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition group">
+
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition group">
                         <div class="flex justify-between items-start mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-black text-gray-900 uppercase tracking-wide">${author}</span>
-                                <span class="text-[9px] font-bold px-2 py-0.5 rounded border ${badgeColor}">${env}</span>
+                            <div class="flex flex-col">
+                                <span class="text-[10px] font-black text-gray-500 uppercase tracking-wide mb-0.5">${author}</span>
+                                <span class="text-xs font-bold text-gray-800">${dateStr} <span class="text-gray-400 font-normal">at ${timeStr}</span></span>
                             </div>
-                            <div class="text-right">
-                                <span class="text-[10px] font-bold text-gray-400 block">${dateStr} • ${timeStr}</span>
-                            </div>
+                            <span class="text-[9px] font-bold px-2 py-1 rounded border ${badgeColor}">${env}</span>
                         </div>
-                        <p class="text-sm text-gray-700 font-medium leading-relaxed">${fmtMsg}</p>
-                        <div class="mt-3 flex justify-between items-center border-t border-gray-50 pt-2">
-                            <span class="text-[9px] font-mono text-gray-400 bg-gray-50 px-1 rounded">#${hash}</span>
-                            <a href="${link}" target="_blank" class="text-[9px] font-bold text-blue-400 hover:text-blue-600 uppercase hover:underline">View Code ↗</a>
+
+                        <p class="text-sm text-gray-600 leading-snug font-medium mb-3">${fmtMsg}</p>
+
+                        <div class="flex justify-between items-center border-t border-gray-100 pt-3 mt-1">
+                            <span class="font-mono text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">#${hash}</span>
+                            <a href="${link}" target="_blank" class="flex items-center gap-1 text-[10px] font-bold text-blue-500 uppercase tracking-wide hover:text-blue-700">
+                                Code 
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
                         </div>
                     </div>
                 `;
                 container.appendChild(item);
             });
-
-            // Button Visibility
-            if (visibleCount >= filtered.length) loadBtn.classList.add('hidden');
-            else loadBtn.classList.remove('hidden');
         }
     </script>
 </body>
