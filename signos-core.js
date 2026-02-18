@@ -1,5 +1,5 @@
-// SignOS Core System v1.7.1
-// Features: Twin-Engine Env, IP Telemetry, Island Header, Feedback Modal
+// SignOS Core System v1.8
+// Features: Dual-Bar "ACM Style" Header Injection
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzEEf1lQ4xkXdSqcLgfLJ3FmNbLGUyElTzmac7U-t1msxLvJL8iSZ30R3bm5dCpmlKqPA/exec";
 const IS_DEV_ENV = window.location.href.includes('signos-app') || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
@@ -36,37 +36,45 @@ function goBack() {
     window.location.href = `menu.html?mode=${mode}`;
 }
 
-// 5. UI Injection (Island Mode + Status)
+// 5. UI INJECTION (The "ACM Style" Dual Header)
 function injectHeader(title, showMenu = true) {
     const u = sessionStorage.getItem('signos_user') || 'GUEST';
     const r = sessionStorage.getItem('signos_role') || 'VIEW';
     
     // Target the main card to keep the "Island" look
     const container = document.getElementById('main-card') || document.querySelector('.max-w-md') || document.body;
-    const isCard = container !== document.body;
-    const stickyClass = isCard ? "" : "sticky top-0 z-50 shadow-md";
     
     const html = `
-    <div class="bg-gray-900 text-white px-4 py-3 flex justify-between items-center border-b border-gray-800 ${stickyClass} shrink-0">
-        <div class="flex flex-col leading-tight">
-            <span class="text-gray-400 text-[10px] uppercase tracking-wider">SignOS ERP</span>
-            <div class="flex items-center gap-2">
-                <span class="font-bold text-white text-sm">${title}</span>
-                <div class="flex items-center gap-1 ml-2 bg-gray-800 px-2 py-0.5 rounded border border-gray-700">
-                    <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                    <span id="status-text" class="text-[9px] font-mono text-gray-300">CONNECTING</span>
-                </div>
-            </div>
-            <span id="version-display" class="text-[9px] text-gray-500 font-mono hidden">v0.0</span>
+    <!-- TOP UTILITY BAR -->
+    <div class="bg-gray-800 px-4 py-1 flex justify-between items-center text-[10px] text-gray-400 border-b border-gray-700 shrink-0">
+        <div class="flex gap-2">
+            <span>USER: <b class="text-gray-200 uppercase">${u}</b></span>
+            <span>ROLE: <b class="text-blue-400 uppercase">${r}</b></span>
         </div>
-        <div class="flex items-center gap-3">
-            <div class="hidden md:block text-right mr-2">
-                <div class="text-[9px] text-gray-400 uppercase">User</div>
-                <div class="font-bold text-xs">${u} <span class="bg-gray-800 px-1 rounded text-blue-400 border border-gray-700">${r}</span></div>
+        <button onclick="logout()" class="hover:text-white font-bold uppercase transition flex items-center gap-1">
+            Logout
+        </button>
+    </div>
+
+    <!-- MAIN NAV BAR -->
+    <div class="bg-gray-900 px-6 py-4 text-white flex justify-between items-center shrink-0">
+        ${showMenu ? `
+        <a href="#" onclick="goBack()" class="text-gray-400 hover:text-white text-xs font-bold uppercase flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> MENU
+        </a>` : '<div></div>'}
+        
+        <div class="text-center">
+            <h2 class="text-lg font-bold">${title}</h2>
+            <div class="flex items-center justify-center gap-2 text-[10px] mt-0.5">
+                <span id="status-dot" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                <span id="status-text" class="font-bold text-gray-400">CONNECTING...</span>
+                <span id="version-display" class="text-gray-500 font-mono hidden"></span>
             </div>
-            ${showMenu ? `<button onclick="goBack()" class="text-gray-300 hover:text-white text-xs font-bold border border-gray-600 px-3 py-1.5 rounded transition">MENU</button>` : ''}
-            <button onclick="logout()" class="text-red-400 hover:text-white text-[10px] font-bold border border-red-900/50 bg-red-900/10 px-3 py-1.5 rounded transition">EXIT</button>
         </div>
+        
+        <button onclick="location.reload()" class="text-gray-400 hover:text-white" title="Refresh Data">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
     </div>`;
     
     container.insertAdjacentHTML('afterbegin', html);
