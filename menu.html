@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SignOS Menu v5.9 (Mobile)</title>
+    <title>SignOS Menu v5.10 (Mobile)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
 </head>
@@ -122,12 +122,24 @@
 
             data.filter(i => val(i, 'Category') === cat).forEach(mod => {
                 
-                // Permission Check
-                const isAllowed = (val(mod, 'Live_PROD') === true && role === 'PROD') ||
-                                (val(mod, 'Live_SALES') === true && role === 'SALES') ||
-                                (role === 'ADMIN' || role === 'SUPER');
+                // 1. Determine Environment Prefix (Live_ or Dev_)
+                const prefix = IS_DEV_ENV ? 'Dev' : 'Live';
+        
+                // 2. Dynamic Permission Check
+                // Checks: Live_ADMIN, Dev_SALES, etc. based on current Role and Env.
+                // SUPER users always bypass this check.
+                let isAllowed = false;
+        
+                if (role === 'SUPER') {
+                    isAllowed = true;
+                } else {
+                    // Construct column name: e.g., "Live_ADMIN"
+                    const colName = `${prefix}_${role}`;
+                    isAllowed = val(mod, colName) === true;
+                }
 
-                if (!isAllowed && role !== 'SUPER') return; 
+                // 3. Final Gate
+                if (!isAllowed) return;
 
                 // Version Logic
                 const liveVer = val(mod, 'Live_Ver');
@@ -266,3 +278,4 @@
 </script>
 </body>
 </html>
+
