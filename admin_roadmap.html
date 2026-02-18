@@ -3,39 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dev Roadmap v3.2 | SignOS</title>
+    <title>Dev Roadmap v3.4 | SignOS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
-    
+
     <style>
         .kanban-col { height: 100%; overflow-y: auto; padding-right: 4px; }
         .kanban-col::-webkit-scrollbar { width: 6px; }
         .kanban-col::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .kanban-col::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Card Borders */
         .card-high { border-left: 4px solid #ef4444; }
         .card-med { border-left: 4px solid #f59e0b; }
         .card-low { border-left: 4px solid #3b82f6; }
+        
         .drop-active { background-color: #e0f2fe !important; border: 2px dashed #3b82f6 !important; }
         .slide-panel { transition: transform 0.3s ease-in-out; }
         .slide-panel.closed { transform: translateX(100%); }
         .modal { transition: opacity 0.25s ease; }
         body.modal-active { overflow: hidden; }
+        
         .timeline-line::before { content: ''; position: absolute; left: 19px; top: 30px; bottom: -10px; width: 2px; background: #e5e7eb; z-index: 0; }
         .timeline-item:last-child .timeline-line::before { display: none; }
     </style>
 
     <style type="text/tailwindcss">
-        .filter-chip { @apply px-3 py-1 rounded-full text-[10px] font-bold border transition-all duration-200 uppercase tracking-wide cursor-pointer select-none flex items-center justify-center; }
+        .filter-chip { @apply px-3 py-1 rounded-full text-[10px] font-bold border transition-all duration-200 uppercase tracking-wide cursor-pointer select-none flex items-center justify-center whitespace-nowrap; }
+        
         .chip-user { @apply bg-white border-gray-300 text-gray-500 hover:bg-gray-50 hover:border-gray-400; }
         .chip-user.active { @apply bg-gray-800 border-gray-800 text-white shadow-md transform scale-105; }
-        
+
+        /* Context Chips (New) */
+        .chip-ctx { @apply bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100; }
+        .chip-ctx.active { @apply bg-teal-600 border-teal-600 text-white shadow-md; }
+
         .chip-feat { @apply bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100; }
         .chip-feat.active { @apply bg-blue-600 border-blue-600 text-white shadow-md; }
+        
         .chip-bug { @apply bg-red-50 border-red-200 text-red-600 hover:bg-red-100; }
         .chip-bug.active { @apply bg-red-600 border-red-600 text-white shadow-md; }
+        
         .chip-goal { @apply bg-purple-50 border-purple-200 text-purple-600 hover:bg-purple-100; }
         .chip-goal.active { @apply bg-purple-600 border-purple-600 text-white shadow-md; }
-        
+
         /* Target Chips */
         .chip-app { @apply bg-orange-50 border-orange-200 text-orange-600 hover:bg-orange-100; }
         .chip-app.active { @apply bg-orange-500 border-orange-500 text-white shadow-md; }
@@ -76,9 +87,9 @@
                 <button onclick="resetFilters()" class="text-[10px] text-gray-400 hover:text-red-500 font-bold uppercase transition">Reset All Filters ✕</button>
             </div>
         </div>
-        
-        <div class="flex items-center gap-6 overflow-x-auto pb-1 no-scrollbar">
-            <!-- TARGET FILTER -->
+
+        <div class="flex items-center gap-6 overflow-x-auto pb-1 custom-scroll">
+            <!-- TARGET -->
             <div class="flex items-center gap-2 shrink-0">
                 <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">TARGET</span>
                 <div class="flex gap-1">
@@ -86,9 +97,10 @@
                     <button class="filter-chip chip-live" onclick="toggleFilter('target', 'LIVE', this)">Live</button>
                 </div>
             </div>
-            
+
             <div class="w-px h-6 bg-gray-200 shrink-0"></div>
 
+            <!-- TYPE -->
             <div class="flex items-center gap-2 shrink-0">
                 <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">TYPE</span>
                 <div class="flex gap-1">
@@ -97,17 +109,33 @@
                     <button class="filter-chip chip-goal" onclick="toggleFilter('cat', 'Content', this)">Content</button>
                 </div>
             </div>
-            
+
             <div class="w-px h-6 bg-gray-200 shrink-0"></div>
             
-            <div class="flex items-center gap-2 shrink-0"><span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">TEAM</span><div id="filter-users" class="flex gap-1"><span class="text-xs text-gray-400 italic px-2">Loading...</span></div></div>
+            <!-- CONTEXT (NEW) -->
+            <div class="flex items-center gap-2 shrink-0">
+                <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">CONTEXT</span>
+                <div id="filter-contexts" class="flex gap-1">
+                    <span class="text-xs text-gray-400 italic px-2">Loading...</span>
+                </div>
+            </div>
+
+            <div class="w-px h-6 bg-gray-200 shrink-0"></div>
+
+            <!-- TEAM -->
+            <div class="flex items-center gap-2 shrink-0">
+                <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">TEAM</span>
+                <div id="filter-users" class="flex gap-1">
+                    <span class="text-xs text-gray-400 italic px-2">Loading...</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- KANBAN BOARD -->
     <div class="flex-1 overflow-x-auto overflow-y-hidden p-6 bg-gray-100">
-        <div class="flex gap-6 h-full min-w-[1000px]">
-            <!-- PENDING (Triage) -->
+        <div class="flex gap-6 h-full min-w-[1200px]">
+            <!-- PENDING -->
             <div class="flex-1 flex flex-col bg-gray-200 rounded-xl border border-gray-300 shadow-sm" ondragover="allowDrop(event)" ondrop="drop(event, 'Pending')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
                 <div class="p-3 border-b border-gray-300 font-bold text-gray-600 text-xs uppercase tracking-wider flex justify-between shrink-0 bg-gray-200 rounded-t-xl z-10"><span>Triage / Pending</span><span id="count-pending" class="bg-gray-300 px-2 rounded-full text-gray-700">0</span></div>
                 <div id="col-pending" class="kanban-col p-3 space-y-3"></div>
@@ -117,10 +145,15 @@
                 <div class="p-3 border-b border-blue-200 font-bold text-blue-800 text-xs uppercase tracking-wider flex justify-between shrink-0 bg-blue-50 rounded-t-xl z-10"><span>In Development</span><span id="count-progress" class="bg-blue-200 px-2 rounded-full text-blue-800">0</span></div>
                 <div id="col-progress" class="kanban-col p-3 space-y-3"></div>
             </div>
-            <!-- COMPLETE -->
-            <div class="flex-1 flex flex-col bg-green-50 rounded-xl border border-green-200 shadow-sm" ondragover="allowDrop(event)" ondrop="drop(event, 'Complete')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
-                <div class="p-3 border-b border-green-200 font-bold text-green-800 text-xs uppercase tracking-wider flex justify-between shrink-0 bg-green-50 rounded-t-xl z-10"><span>Completed / Live</span><span id="count-done" class="bg-green-200 px-2 rounded-full text-green-800">0</span></div>
-                <div id="col-done" class="kanban-col p-3 space-y-3"></div>
+            <!-- STAGING -->
+            <div class="flex-1 flex flex-col bg-orange-50 rounded-xl border border-orange-200 shadow-sm" ondragover="allowDrop(event)" ondrop="drop(event, 'Staging')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+                <div class="p-3 border-b border-orange-200 font-bold text-orange-800 text-xs uppercase tracking-wider flex justify-between shrink-0 bg-orange-50 rounded-t-xl z-10"><span>Staging (Merged)</span><span id="count-staging" class="bg-orange-200 px-2 rounded-full text-orange-800">0</span></div>
+                <div id="col-staging" class="kanban-col p-3 space-y-3"></div>
+            </div>
+            <!-- LIVE -->
+            <div class="flex-1 flex flex-col bg-green-50 rounded-xl border border-green-200 shadow-sm" ondragover="allowDrop(event)" ondrop="drop(event, 'Live')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+                <div class="p-3 border-b border-green-200 font-bold text-green-800 text-xs uppercase tracking-wider flex justify-between shrink-0 bg-green-50 rounded-t-xl z-10"><span>Live (Prod)</span><span id="count-live" class="bg-green-200 px-2 rounded-full text-green-800">0</span></div>
+                <div id="col-live" class="kanban-col p-3 space-y-3"></div>
             </div>
         </div>
     </div>
@@ -154,26 +187,31 @@
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
             <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-start shrink-0"><div><div class="flex items-center gap-2 mb-1"><span id="t-id" class="text-[9px] font-bold bg-gray-200 text-gray-600 px-1.5 rounded border border-gray-300 font-mono">ID</span><span id="t-cat" class="text-[9px] font-bold uppercase tracking-wide">CAT</span></div><h2 id="t-title" class="text-xl font-black text-gray-900 leading-tight">Ticket Title</h2></div><button onclick="closeTicket()" class="text-gray-400 hover:text-red-500 text-2xl font-bold leading-none">&times;</button></div>
             <div class="flex-1 overflow-y-auto p-6 space-y-6"><div><h4 class="text-xs font-bold text-gray-400 uppercase mb-1">Description</h4><p id="t-desc" class="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded border border-gray-100"></p></div><div><h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Activity History</h4><div id="t-history" class="space-y-3"></div></div></div>
-            <div class="bg-gray-100 px-6 py-4 border-t border-gray-200 shrink-0"><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Add Update / Change Status</label><div class="flex gap-2"><select id="t-new-status" class="bg-white border border-gray-300 text-xs font-bold rounded px-2 py-2 w-32"><option value="">No Change</option><option value="Pending">Move: Triage</option><option value="In Progress">Move: Doing</option><option value="Complete">Move: Done</option></select><input type="text" id="t-comment" placeholder="Add a note..." class="flex-1 border border-gray-300 rounded px-3 text-sm focus:border-blue-500 outline-none"><button onclick="postUpdate()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded text-xs">POST</button></div></div>
+            <div class="bg-gray-100 px-6 py-4 border-t border-gray-200 shrink-0">
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Add Update / Change Status</label>
+                <div class="flex gap-2">
+                    <select id="t-new-status" class="bg-white border border-gray-300 text-xs font-bold rounded px-2 py-2 w-32"><option value="">No Change</option><option value="Pending">Move: Pending</option><option value="In Progress">Move: Doing</option><option value="Staging">Move: Staging</option><option value="Live">Move: Live</option></select>
+                    <input type="text" id="t-comment" placeholder="Add a note..." class="flex-1 border border-gray-300 rounded px-3 text-sm focus:border-blue-500 outline-none">
+                    <button onclick="postUpdate()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 rounded text-xs">POST</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- CHANGELOG PANEL -->
+    <!-- CHANGELOG -->
     <div id="changelog-panel" class="fixed inset-y-0 right-0 w-[500px] max-w-full bg-white shadow-2xl border-l border-gray-200 z-50 slide-panel closed flex flex-col font-sans transition-transform duration-300 ease-in-out">
-        <div class="p-6 bg-gray-900 text-white flex justify-between items-center shrink-0 shadow-md">
-            <div><h2 class="font-bold text-lg">System Changelog</h2><p class="text-[10px] text-gray-400 uppercase tracking-wider">Live Sync: GitHub Repository</p></div>
-            <button onclick="toggleChangelog()" class="text-gray-400 hover:text-white text-xl">×</button>
-        </div>
+        <div class="p-6 bg-gray-900 text-white flex justify-between items-center shrink-0 shadow-md"><div><h2 class="font-bold text-lg">System Changelog</h2><p class="text-[10px] text-gray-400 uppercase tracking-wider">Live Sync: GitHub Repository</p></div><button onclick="toggleChangelog()" class="text-gray-400 hover:text-white text-xl">×</button></div>
         <div id="changelog-list" class="flex-1 overflow-y-auto bg-gray-100 p-4 space-y-4 custom-scroll"><div class="text-center p-10 text-gray-400 italic text-xs">Loading history...</div></div>
     </div>
 
 <script>
     const user = sessionStorage.getItem('signos_user') || 'Guest';
-    const role = sessionStorage.getItem('signos_role'); // Check Role for security lock
-    
+    const role = sessionStorage.getItem('signos_role'); 
+
     let currentTicketId = null;
     let allRoadmapData = [];
-    let activeFilters = { users: [], cats: [], prios: [], targets: [] };
+    // NEW: added 'contexts' to active filters
+    let activeFilters = { users: [], cats: [], prios: [], targets: [], contexts: [] };
 
     window.onload = function() { loadData(); };
     function toggleForm() { document.getElementById('side-form').classList.toggle('closed'); }
@@ -187,6 +225,7 @@
             if(data.error) throw new Error(data.error);
             allRoadmapData = data;
             initUserFilters(data);
+            initContextFilters(data); // NEW
             applyFilters();
         } catch(e) { console.error(e); }
     }
@@ -204,8 +243,22 @@
         });
     }
 
+    // NEW: DYNAMIC CONTEXT GENERATOR
+    function initContextFilters(data) {
+        const contexts = [...new Set(data.map(i => val(i, 'Context')))].filter(Boolean).sort();
+        const container = document.getElementById('filter-contexts');
+        container.innerHTML = "";
+        contexts.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = "filter-chip chip-ctx";
+            btn.innerText = c;
+            btn.onclick = (e) => toggleFilter('contexts', c, e.target);
+            container.appendChild(btn);
+        });
+    }
+
     function toggleFilter(type, value, btnElement) {
-        const map = { 'cat': activeFilters.cats, 'prio': activeFilters.prios, 'users': activeFilters.users, 'target': activeFilters.targets };
+        const map = { 'cat': activeFilters.cats, 'prio': activeFilters.prios, 'users': activeFilters.users, 'target': activeFilters.targets, 'contexts': activeFilters.contexts };
         const arr = map[type];
         const idx = arr.indexOf(value);
         if(idx === -1) { arr.push(value); btnElement.classList.add('active'); }
@@ -214,7 +267,7 @@
     }
 
     function resetFilters() {
-        activeFilters = { users: [], cats: [], prios: [], targets: [] };
+        activeFilters = { users: [], cats: [], prios: [], targets: [], contexts: [] };
         document.getElementById('filter-search').value = "";
         document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
         applyFilters();
@@ -222,10 +275,10 @@
 
     function applyFilters() {
         const search = document.getElementById('filter-search').value.toLowerCase();
-        
+
         const filtered = allRoadmapData.filter(item => {
             const txt = (val(item,'Title') + " " + val(item,'Description') + " " + val(item,'ID')).toLowerCase();
-            
+
             if(search && !txt.includes(search)) return false;
             if(activeFilters.users.length > 0 && !activeFilters.users.includes(val(item,'User'))) return false;
             if(activeFilters.cats.length > 0 && !activeFilters.cats.includes(val(item,'Category'))) return false;
@@ -234,43 +287,33 @@
             const itemTarget = val(item, 'Target_Env') || 'APP';
             if(activeFilters.targets.length > 0 && !activeFilters.targets.includes(itemTarget)) return false;
 
+            // NEW: Context Logic
+            if(activeFilters.contexts.length > 0 && !activeFilters.contexts.includes(val(item, 'Context'))) return false;
+
             return true;
         });
         renderBoard(filtered);
     }
 
     function renderBoard(data) {
-        // SECURITY LOCK: Only SUPER users can move cards
         const isSuper = (role === 'SUPER');
-
-        const cols = { pending: document.getElementById('col-pending'), progress: document.getElementById('col-progress'), done: document.getElementById('col-done') };
+        const cols = { pending: document.getElementById('col-pending'), progress: document.getElementById('col-progress'), staging: document.getElementById('col-staging'), live: document.getElementById('col-live') };
         Object.values(cols).forEach(el => el.innerHTML = "");
-        let counts = { pending:0, progress:0, done:0 };
+        let counts = { pending:0, progress:0, staging:0, live:0 };
 
         data.forEach(item => {
             const id = val(item, 'ID');
             if(!id) return;
             const card = document.createElement('div');
-            
-            // Priority Styling
             const prio = val(item, 'Priority');
             let borderClass = prio === 'High' ? 'card-high' : (prio === 'Low' ? 'card-low' : 'card-med');
-            
-            // Category Styling (Updated)
             const cat = val(item, 'Category');
             let catColor = cat === 'Bug' ? "bg-red-100 text-red-800" : (cat === 'Content' ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800");
-            
-            // Context Badge (New)
             const context = val(item, 'Context') || 'General';
-            const ctxBadge = `<span class="text-[8px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded border border-gray-200 truncate max-w-[80px]" title="${context}">${context}</span>`;
-
-            // Environment Badge
+            const ctxBadge = `<span class="text-[8px] bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded border border-teal-200 truncate max-w-[80px]" title="${context}">${context}</span>`;
             const target = val(item, 'Target_Env') || 'APP';
-            const targetBadge = target === 'LIVE' 
-                ? '<span class="text-[8px] bg-green-100 text-green-800 px-1 rounded border border-green-200">LIVE</span>' 
-                : '<span class="text-[8px] bg-orange-100 text-orange-800 px-1 rounded border border-orange-200">APP</span>';
+            const targetBadge = target === 'LIVE' ? '<span class="text-[8px] bg-green-100 text-green-800 px-1 rounded border border-green-200">LIVE</span>' : '<span class="text-[8px] bg-orange-100 text-orange-800 px-1 rounded border border-orange-200">APP</span>';
 
-            // Drag Lock Logic
             if (isSuper) {
                 card.className = `draggable-card bg-white p-4 rounded shadow-sm hover:shadow-md transition cursor-grab ${borderClass} border-l-4 group relative mb-3`;
                 card.draggable = true;
@@ -278,18 +321,18 @@
             } else {
                 card.className = `bg-white p-4 rounded shadow-sm transition border-l-4 ${borderClass} group relative mb-3 opacity-90 cursor-default`;
             }
-            
+
             card.id = `card-${id}`;
             card.onclick = (e) => { if(!card.classList.contains('dragging')) openTicket(id); };
 
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-2">
-                    <div class="flex gap-1 items-center">
+                    <div class="flex gap-1 items-center flex-wrap">
                         <span class="text-[9px] font-bold uppercase ${catColor} px-1.5 py-0.5 rounded">${cat}</span>
                         ${ctxBadge}
                         ${targetBadge}
                     </div>
-                    <span class="text-[9px] text-gray-400 group-hover:text-blue-500">View →</span>
+                    <span class="text-[9px] text-gray-400 group-hover:text-blue-500 shrink-0">View →</span>
                 </div>
                 <h3 class="font-bold text-sm text-gray-900 leading-tight mb-1 pointer-events-none">${val(item, 'Title')}</h3>
                 <p class="text-xs text-gray-500 line-clamp-2 pointer-events-none">${val(item, 'Description')}</p>
@@ -300,59 +343,49 @@
 
             const status = String(val(item, 'Status')).toLowerCase().trim();
             if(status.includes('progress') || status.includes('doing')) { cols.progress.appendChild(card); counts.progress++; }
-            else if(status.includes('complete') || status.includes('done')) { cols.done.appendChild(card); counts.done++; }
+            else if(status.includes('staging')) { cols.staging.appendChild(card); counts.staging++; }
+            else if(status.includes('live') || status.includes('complete') || status.includes('done')) { cols.live.appendChild(card); counts.live++; }
             else { cols.pending.appendChild(card); counts.pending++; }
         });
-        
+
         document.getElementById('count-pending').innerText = counts.pending;
         document.getElementById('count-progress').innerText = counts.progress;
-        document.getElementById('count-done').innerText = counts.done;
+        document.getElementById('count-staging').innerText = counts.staging;
+        document.getElementById('count-live').innerText = counts.live;
     }
 
+    // ... [KEEP DRAG/DROP, TICKET MODAL, SUBMIT, AND CHANGELOG FUNCTIONS SAME AS V3.3] ...
     function drag(ev, id) { ev.dataTransfer.setData("text", id); ev.target.classList.add('dragging'); }
     function allowDrop(ev) { ev.preventDefault(); }
     function dragEnter(ev) { ev.preventDefault(); ev.currentTarget.classList.add('drop-active'); }
     function dragLeave(ev) { ev.currentTarget.classList.remove('drop-active'); }
-    
     async function drop(ev, newStatusLabel) {
         ev.preventDefault(); ev.currentTarget.classList.remove('drop-active');
         const cardId = ev.dataTransfer.getData("text");
         const cardEl = document.getElementById(`card-${cardId}`);
         if (!cardEl) return;
-        
         cardEl.classList.remove('dragging');
         ev.currentTarget.querySelector('.kanban-col').prepend(cardEl);
-        
         try {
             const comment = `Status changed to ${newStatusLabel} (Drag & Drop)`;
             await fetch(`${SCRIPT_URL}?req=add_action&id=${cardId}&user=${user}&type=Status Update&msg=${encodeURIComponent(comment)}&new_status=${newStatusLabel}`);
             const item = allRoadmapData.find(i => val(i,'ID') === cardId); if(item) item.Status = newStatusLabel; applyFilters();
         } catch(e) { alert("Sync Failed"); applyFilters(); }
     }
-
     async function openTicket(id) {
-        currentTicketId = id;
-        document.getElementById('ticket-modal').classList.remove('hidden');
-        document.body.classList.add('modal-active');
-        document.getElementById('t-title').innerText = "Loading...";
-        document.getElementById('t-history').innerHTML = '<div class="text-center text-gray-400 text-xs py-4">Fetching details...</div>';
+        currentTicketId = id; document.getElementById('ticket-modal').classList.remove('hidden'); document.body.classList.add('modal-active');
+        document.getElementById('t-title').innerText = "Loading..."; document.getElementById('t-history').innerHTML = '<div class="text-center text-gray-400 text-xs py-4">Fetching details...</div>';
         try {
-            const res = await fetch(`${SCRIPT_URL}?req=get_ticket&id=${id}`);
-            const data = await res.json();
+            const res = await fetch(`${SCRIPT_URL}?req=get_ticket&id=${id}`); const data = await res.json();
             if(data.status === 'success') {
-                const t = data.ticket;
-                document.getElementById('t-title').innerText = val(t, 'Title');
-                document.getElementById('t-desc').innerText = val(t, 'Description') || "No description.";
-                document.getElementById('t-id').innerText = val(t, 'ID');
-                document.getElementById('t-cat').innerText = val(t, 'Category');
-                const histDiv = document.getElementById('t-history');
-                histDiv.innerHTML = "";
+                const t = data.ticket; document.getElementById('t-title').innerText = val(t, 'Title'); document.getElementById('t-desc').innerText = val(t, 'Description') || "No description."; document.getElementById('t-id').innerText = val(t, 'ID'); document.getElementById('t-cat').innerText = val(t, 'Category');
+                const currentStatus = val(t, 'Status'); const sel = document.getElementById('t-new-status');
+                for(let i=0; i<sel.options.length; i++) { if (currentStatus.includes(sel.options[i].value) && sel.options[i].value !== "") { sel.selectedIndex = i; break; } }
+                const histDiv = document.getElementById('t-history'); histDiv.innerHTML = "";
                 if(!data.history || data.history.length === 0) histDiv.innerHTML = '<div class="text-center text-gray-400 italic text-xs">No updates yet.</div>';
                 else {
                     data.history.forEach(act => {
-                        const d = new Date(val(act, 'Timestamp')).toLocaleString();
-                        const row = document.createElement('div');
-                        row.className = "flex gap-3 text-xs";
+                        const d = new Date(val(act, 'Timestamp')).toLocaleString(); const row = document.createElement('div'); row.className = "flex gap-3 text-xs";
                         row.innerHTML = `<div class="font-bold text-gray-600 w-24 shrink-0 text-right">${val(act, 'User')}<br><span class="font-normal text-[9px] text-gray-400">${d}</span></div><div class="flex-1 bg-gray-50 p-2 rounded border border-gray-100 text-gray-700"><p>${val(act, 'Details')}</p>${val(act, 'Type')!=='Comment'?`<span class="bg-yellow-100 text-yellow-800 px-1 rounded text-[9px] font-bold mt-1 inline-block">${val(act, 'Type')}</span>`:''}</div>`;
                         histDiv.appendChild(row);
                     });
@@ -361,67 +394,24 @@
         } catch(e) { alert("Error: " + e.message); closeTicket(); }
     }
     function closeTicket() { document.getElementById('ticket-modal').classList.add('hidden'); document.body.classList.remove('modal-active'); }
-    
     async function postUpdate() {
-        const msg = document.getElementById('t-comment').value;
-        const newStatus = document.getElementById('t-new-status').value;
+        const msg = document.getElementById('t-comment').value; const newStatus = document.getElementById('t-new-status').value;
         if(!msg && !newStatus) return;
-        const type = newStatus ? "Status Update" : "Comment";
-        const txt = newStatus ? `${msg} (Moved to ${newStatus})` : msg;
-        try {
-            await fetch(`${SCRIPT_URL}?req=add_action&id=${currentTicketId}&user=${user}&type=${type}&msg=${encodeURIComponent(txt)}&new_status=${newStatus}`);
-            document.getElementById('t-comment').value = ""; document.getElementById('t-new-status').value = "";
-            openTicket(currentTicketId);
-            if(newStatus) { const item = allRoadmapData.find(i => val(i,'ID') === currentTicketId); if(item) item.Status = newStatus; applyFilters(); }
-        } catch(e) { alert("Post failed"); }
+        const type = newStatus ? "Status Update" : "Comment"; const txt = newStatus ? `${msg} (Moved to ${newStatus})` : msg;
+        try { await fetch(`${SCRIPT_URL}?req=add_action&id=${currentTicketId}&user=${user}&type=${type}&msg=${encodeURIComponent(txt)}&new_status=${newStatus}`); document.getElementById('t-comment').value = ""; document.getElementById('t-new-status').value = ""; openTicket(currentTicketId); if(newStatus) { const item = allRoadmapData.find(i => val(i,'ID') === currentTicketId); if(item) item.Status = newStatus; applyFilters(); } } catch(e) { alert("Post failed"); }
     }
-    
     async function submitItem() {
-        const title = document.getElementById('inp-title').value; 
-        const desc = document.getElementById('inp-desc').value; 
-        const prio = document.getElementById('inp-prio').value; 
-        const cat = document.querySelector('input[name="cat"]:checked').value; 
-        const target = document.querySelector('input[name="target"]:checked').value;
-        const btn = document.getElementById('btn-submit');
-        
+        const title = document.getElementById('inp-title').value; const desc = document.getElementById('inp-desc').value; const prio = document.getElementById('inp-prio').value; const cat = document.querySelector('input[name="cat"]:checked').value; const target = document.querySelector('input[name="target"]:checked').value; const btn = document.getElementById('btn-submit');
         if(!title) { alert("Title Required"); return; } btn.disabled = true;
-        try {
-            // Updated to default Source to 'Internal' and Context to 'Roadmap_Tool'
-            const res = await fetch(`${SCRIPT_URL}?req=add_roadmap&user=${user}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}&prio=${prio}&cat=${cat}&target=${target}&source=Internal&context=Roadmap_Tool`);
-            const data = await res.json();
-            if(data.status === 'success') { toggleForm(); document.getElementById('inp-title').value = ""; document.getElementById('inp-desc').value = ""; loadData(); }
-        } catch(e) { alert("Error"); } finally { btn.disabled = false; }
+        try { const res = await fetch(`${SCRIPT_URL}?req=add_roadmap&user=${user}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}&prio=${prio}&cat=${cat}&target=${target}&source=Internal&context=Roadmap_Tool`); const data = await res.json(); if(data.status === 'success') { toggleForm(); document.getElementById('inp-title').value = ""; document.getElementById('inp-desc').value = ""; loadData(); } } catch(e) { alert("Error"); } finally { btn.disabled = false; }
     }
-
     async function toggleChangelog() {
-        const panel = document.getElementById('changelog-panel');
-        panel.classList.toggle('closed');
+        const panel = document.getElementById('changelog-panel'); panel.classList.toggle('closed');
         if (!panel.classList.contains('closed')) {
             const list = document.getElementById('changelog-list');
-            try {
-                const response = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Changelog&ip=${clientIP}&user=${user}`);
-                const data = await response.json();
-                if(!data || data.length === 0) { list.innerHTML = '<div class="text-center p-10 text-gray-400 italic text-xs">No history found.</div>'; return; }
+            try { const response = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Changelog&ip=${clientIP}&user=${user}`); const data = await response.json(); if(!data || data.length === 0) { list.innerHTML = '<div class="text-center p-10 text-gray-400 italic text-xs">No history found.</div>'; return; }
                 data.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
-                list.innerHTML = data.map((row, index) => {
-                    const d = new Date(row.Timestamp);
-                    const dateStr = d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                    const msg = row.Message.replace(/(RMP_[A-Za-z0-9_]+)/g, '<span class="bg-yellow-100 text-yellow-800 px-1 rounded font-bold border border-yellow-200">$1</span>');
-                    return `
-                        <div class="timeline-item relative pl-8 pb-6">
-                            <div class="timeline-line absolute left-0 top-0 bottom-0 w-8 flex justify-center"><div class="w-2.5 h-2.5 rounded-full bg-blue-400 border-2 border-white shadow mt-3 z-10"></div></div>
-                            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 transition group relative">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div class="flex flex-col"><span class="text-[10px] font-black text-gray-900 uppercase">${row.Author}</span><span class="text-[9px] font-mono text-gray-400">${dateStr}</span></div>
-                                    <span class="text-[9px] font-mono text-gray-400 bg-gray-100 px-1.5 rounded border border-gray-200">#${row['Commit Hash']}</span>
-                                </div>
-                                <p class="text-xs text-gray-700 font-medium leading-relaxed">${msg}</p>
-                                <div class="mt-3 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <a href="${row['GitHub Link']}" target="_blank" class="text-[10px] font-bold text-blue-500 hover:text-blue-700 uppercase flex items-center gap-1">View Code ↗</a>
-                                </div>
-                            </div>
-                        </div>`;
-                }).join('');
+                list.innerHTML = data.map((row) => { const d = new Date(row.Timestamp); const dateStr = d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); const msg = row.Message.replace(/(RMP_[A-Za-z0-9_]+)/g, '<span class="bg-yellow-100 text-yellow-800 px-1 rounded font-bold border border-yellow-200">$1</span>'); return `<div class="timeline-item relative pl-8 pb-6"><div class="timeline-line absolute left-0 top-0 bottom-0 w-8 flex justify-center"><div class="w-2.5 h-2.5 rounded-full bg-blue-400 border-2 border-white shadow mt-3 z-10"></div></div><div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 transition group relative"><div class="flex justify-between items-start mb-2"><div class="flex flex-col"><span class="text-[10px] font-black text-gray-900 uppercase">${row.Author}</span><span class="text-[9px] font-mono text-gray-400">${dateStr}</span></div><span class="text-[9px] font-mono text-gray-400 bg-gray-100 px-1.5 rounded border border-gray-200">#${row['Commit Hash']}</span></div><p class="text-xs text-gray-700 font-medium leading-relaxed">${msg}</p><div class="mt-3 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity"><a href="${row['GitHub Link']}" target="_blank" class="text-[10px] font-bold text-blue-500 hover:text-blue-700 uppercase flex items-center gap-1">View Code ↗</a></div></div></div>`; }).join('');
             } catch (e) { list.innerHTML = `<div class="p-4 text-red-500 text-xs text-center border border-red-200 bg-red-50 rounded">Error: ${e.message}</div>`; }
         }
     }
