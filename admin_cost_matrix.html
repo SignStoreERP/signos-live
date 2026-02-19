@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost Matrix v1.7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="signos-core.js"></script>
+    <style>
+        .matrix-cell { transition: all 0.2s; }
+        .matrix-cell:hover { background-color: #f8fafc; }
+        
+        /* Staged Change Highlighting */
+        .staged-change { background-color: #fef9c3 !important; position: relative; }
+        .staged-change::after { content: ''; position: absolute; top: 0; right: 0; width: 0; height: 0; border-top: 6px solid #eab308; border-left: 6px solid transparent; }
+
+        /* Freeze Header and First Column */
+        .sticky-col { position: sticky; left: 0; z-index: 10; background-color: white; border-right: 2px solid #e5e7eb; box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.05); }
+        .sticky-header { position: sticky; top: 0; z-index: 20; background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; }
+        .z-30-corner { z-index: 30 !important; }
+
+        .toggle-checkbox:checked { right: 0; border-color: #2563EB; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #2563EB; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col font-sans overflow-hidden">
+
+    <div id="main-card" class="flex-1 flex flex-col min-h-0 bg-white shadow-xl m-4 rounded-xl border border-gray-200 overflow-hidden relative">
+        
+        <div class="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center shrink-0">
+            <div>
+                <h2 class="text-lg font-bold text-gray-800">Production Cost Matrix</h2>
+                <p class="text-xs text-gray-500">Toggle active cost variables per product line.</p>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="loadData()" class="bg-gray-50 hover:bg-gray-100 text-gray-600 px-3 py-1.5 rounded text-xs font-bold border border-gray-200 transition">RESET VIEW</button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-auto relative pb-20">
+            <table class="w-full text-left border-collapse">
+                <thead class="text-xs text-gray-500 font-bold uppercase bg-gray-50">
+                    <tr id="matrix-header"></tr>
+                </thead>
+                <tbody id="matrix-body" class="text-xs font-medium text-gray-700 divide-y divide-gray-100"></tbody>
+            </table>
+            
+            <div id="loader" class="absolute inset-0 flex items-center justify-center bg-white/80 z-50">
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span class="text-xs font-bold text-gray-400 mt-2 tracking-widest">LOADING MATRIX...</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="commit-bar" class="absolute bottom-0 left-0 right-0 bg-gray-900 text-white p-4 transform translate-y-full transition-transform duration-300 shadow-2xl flex justify-between items-center z-40">
+            <div class="flex items-center gap-3">
+                <div class="bg-yellow-500 text-black font-bold text-xs px-2 py-1 rounded">UNSAVED CHANGES</div>
+                <div class="text-sm text-gray-300"><span id="change-count" class="font-bold text-white">0</span> pending updates queued.</div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="discardChanges()" class="text-gray-400 hover:text-white text-xs font-bold uppercase px-3">Discard</button>
+                <button onclick="commitChanges()" id="btn-commit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded text-xs uppercase tracking-wide shadow-lg flex items-center gap-2">
+                    <span>COMMIT & BACKUP</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    let definitions = [];
+    let matrix = [];
+    let pendingChanges = {}; // Stores { "PROD_X|COST_Y": newValue }
+
+    window.onload = function() {
+        if (typeof injectHeader === "function") {
+            injectHeader("Cost Matrix");
+        } else {
+            console.warn("Update signos-core.js to v1.8 for dynamic headers.");
+        }
+        loadData();
+    };
+
+    // --- FETCH ---
+    async function loadData() {
+        document.getElementById('loader').classList.remove('hidden');
+        pendingChanges = {}; // Reset queue
+        updateCommitBar();
+        
+        try {
+            const [defRes, matRes] = await Promise.all([
+                fetch(`${SCRIPT_URL}?req=table&tab=REF_Cost_Definitions`),
+                fetch(`${SCRIPT_URL}?req=table&tab=SYS_Cost_Matrix`)
+            ]);
+            definitions = await defRes.json();
+            const matRaw = await matRes.json();
+            matrix = matRaw; 
+            
+            if(matRaw.error) throw new Error(matRaw.error);
+
+            renderMatrix();
+            document.getElementById('loader').classList.add('hidden');
+
+            // --- FIX 1: UPDATE HEADER STATUS ---
+            const statusText = document.getElementById("status-text");
+            const statusDot = document.getElementById("status-dot");
+            if(statusText) {
+                statusText.innerText = "ONLINE";
+                statusText.className = "text-xs font-bold text-green-500";
+                if(statusDot) {
+                    statusDot.classList.remove("animate-pulse", "bg-yellow-400");
+                    statusDot.classList.add("bg-green-500");
+                }
+            }
+
+        } catch(e) {
+            console.error(e);
+            alert("Error: " + e.message);
+            document.getElementById('loader').classList.add('hidden');
+            
+            // Set Offline Status on Error
+            const statusText = document.getElementById("status-text");
+            const statusDot = document.getElementById("status-dot");
+            if(statusText) {
+                statusText.innerText = "OFFLINE";
+                statusText.className = "text-xs font-bold text-red-500";
+                if(statusDot) statusDot.classList.add("bg-red-500");
+            }
+        }
+    }
+
+    // --- RENDER ---
+    function renderMatrix() {
+        const thead = document.getElementById('matrix-header');
+        const tbody = document.getElementById('matrix-body');
+        
+        if(matrix.length === 0) return;
+        
+        const firstRow = matrix[0]; 
+        const products = Object.keys(firstRow).filter(k => k !== 'Cost_ID');
+        
+        let headerHTML = `<th class="p-4 sticky-col z-30-corner min-w-[350px] border-b border-r border-gray-200 bg-gray-50">COST VARIABLE</th>`;
+        products.forEach(prod => {
+            const label = prod.replace('PROD_', '').replace('_', ' ');
+            headerHTML += `<th class="p-4 sticky-header min-w-[100px] text-center border-l border-gray-200">${label}</th>`;
+        });
+        thead.innerHTML = headerHTML;
+
+        tbody.innerHTML = "";
+        definitions.forEach(def => {
+            const costID = def.Cost_ID;
+            const matrixRow = matrix.find(r => r.Cost_ID === costID);
+            if(!matrixRow) return;
+
+            let defaultVal = def.Default_Source_Ref;
+            if (typeof defaultVal === 'number' && def.Unit && (def.Unit.includes('$') || defaultVal > 1)) {
+                defaultVal = `$${defaultVal.toFixed(2)}`;
+            }
+
+            let rowHTML = `
+                <td class="p-3 sticky-col bg-white border-r border-gray-100 group min-w-[350px]">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <div class="font-bold text-gray-800 text-sm whitespace-nowrap">${def.Display_Name || costID}</div>
+                        <div class="text-[10px] text-gray-400 font-mono select-all pt-0.5">${costID}</div>
+                        <div class="ml-auto text-[10px] font-mono bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100 font-bold shrink-0">
+                            ${def.Unit || '-'}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-start text-[11px] text-gray-500 leading-tight">
+                        <div class="mr-2">${def.Notes || 'No description available.'}</div>
+                        <div class="whitespace-nowrap font-bold text-gray-600 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 shrink-0">
+                            Base: ${defaultVal}
+                        </div>
+                    </div>
+                </td>`;
+
+            products.forEach(prod => {
+                const val = matrixRow[prod];
+                rowHTML += renderCell(prod, costID, val);
+            });
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = rowHTML;
+            tr.className = "hover:bg-gray-50 transition";
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderCell(prod, cost, val) {
+        const isBool = (val === true || val === false || String(val).toUpperCase() === 'TRUE' || String(val).toUpperCase() === 'FALSE');
+        const cellKey = `${prod}|${cost}`;
+        
+        let inputHTML = "";
+        if(isBool) {
+            const checked = (val === true || String(val).toUpperCase() === 'TRUE') ? 'checked' : '';
+            inputHTML = `
+                <div class="flex justify-center items-center h-full">
+                    <div class="relative inline-block w-9 align-middle select-none">
+                        <input type="checkbox" ${checked} onchange="stageChange('${prod}', '${cost}', this.checked, this)" 
+                            class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300"/>
+                        <label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer transition-all duration-300"></label>
+                    </div>
+                </div>`;
+        } else {
+            inputHTML = `
+                <div class="flex justify-center items-center h-full">
+                    <input type="number" value="${val}" onchange="stageChange('${prod}', '${cost}', this.value, this)"
+                        class="w-20 text-center border border-yellow-300 bg-yellow-50 rounded text-sm py-1 font-bold text-yellow-800 focus:border-yellow-500 outline-none shadow-sm hover:bg-white transition-colors">
+                </div>`;
+        }
+        return `<td class="p-3 border-l border-gray-100 matrix-cell align-middle" id="cell-${cellKey}">${inputHTML}</td>`;
+    }
+
+    // --- STAGING LOGIC ---
+    function stageChange(prod, cost, value, el) {
+        const key = `${prod}|${cost}`;
+        pendingChanges[key] = { product: prod, cost: cost, value: value };
+        
+        const cell = document.getElementById(`cell-${key}`);
+        if(cell) cell.classList.add('staged-change');
+        
+        updateCommitBar();
+    }
+
+    function updateCommitBar() {
+        const count = Object.keys(pendingChanges).length;
+        const bar = document.getElementById('commit-bar');
+        
+        document.getElementById('change-count').innerText = count;
+        
+        if (count > 0) bar.classList.remove('translate-y-full');
+        else bar.classList.add('translate-y-full');
+    }
+
+    function discardChanges() {
+        if(confirm("Discard all unsaved changes?")) loadData();
+    }
+
+    // --- COMMIT LOGIC ---
+    async function commitChanges() {
+        const btn = document.getElementById('btn-commit');
+        btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> BACKING UP...`;
+        btn.disabled = true;
+        
+        const payload = Object.values(pendingChanges);
+        const user = sessionStorage.getItem('signos_user') || 'Admin';
+
+        try {
+            const payloadStr = encodeURIComponent(JSON.stringify(payload));
+            const url = `${SCRIPT_URL}?req=commit_matrix&user=${user}&payload=${payloadStr}`;
+            
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if(data.status === 'success') {
+                alert(`✅ Success!\n\nBackup Created: ${data.backup}\nUpdated ${data.count} values.`);
+                
+                // --- FIX 2: RESET BUTTON STATE BEFORE RELOAD ---
+                btn.innerHTML = `<span>COMMIT & BACKUP</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>`;
+                btn.disabled = false;
+                
+                loadData(); 
+            } else {
+                throw new Error(data.message);
+            }
+
+        } catch(e) {
+            alert("Commit Failed: " + e.message);
+            btn.innerHTML = `RETRY COMMIT`;
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
