@@ -1,5 +1,5 @@
 // ==========================================
-// SignOS API v6.27 - Added Backup Folder for Cost Matrix
+// SignOS API v6.28 - split backend reference to SignOS_LIVE
 // ==========================================
 
 // MASTER 1: The Data Backend (READ/WRITE)
@@ -278,7 +278,7 @@ function processArchive(isDestructive) {
     let content = "Timestamp | IP | User | Role | Action | Target | Meta\n=================================================\n";
     data.forEach(r => content += r.join(" | ") + "\n");
     
-    const name = `SignOS_Log_${isDestructive ? 'AUTO' : 'MANUAL'}_${Date.now()}.txt`;
+    const name = `SignOS_DEV_Log_${isDestructive ? 'AUTO' : 'MANUAL'}_${Date.now()}.txt`;
     const folder = DriveApp.getFolderById(ARCHIVE_FOLDER_ID);
     const file = folder.createFile(name, content);
     
