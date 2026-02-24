@@ -104,7 +104,9 @@
             const isAdmin = (role === 'ADMIN' || role === 'SUPER');
 
             const cats = [...new Set(data.map(i => val(i, 'Category')))].filter(c => c);
-            const sortOrder = ["Rigid Signs", "Roll Media", "Specialty", "Services"];
+            
+            // Added 'Documents' to the end of the explicit sort array
+            const sortOrder = ["Rigid Signs", "Roll Media", "Specialty", "Services", "Documents"];
             
             cats.sort((a, b) => {
                 const idxA = sortOrder.indexOf(a);
