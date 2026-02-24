@@ -3,245 +3,356 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignOS User Manual v4.1</title>
+    <title>SignOS News & Docs v5.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
     <style>
-        .tab-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; background: #eff6ff; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .guide-card { transition: all 0.2s; }
-        .guide-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        details > summary { list-style: none; }
-        details > summary::-webkit-details-marker { display: none; }
+        .newsletter-section { border-top: 1px solid #e5e7eb; padding-top: 3rem; margin-top: 3rem; }
+        .feature-card { transition: all 0.2s; border: 1px solid #e5e7eb; background: white; cursor: pointer; }
+        .feature-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .badge-new { background: #ef4444; color: white; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 999; text-transform: uppercase; letter-spacing: 0.05em; }
+        .roadmap-tag { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .tag-done { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .tag-sprint { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        
+        /* Article Overlay Logic */
+        #article-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 100; overflow-y: auto; }
+        #article-overlay.active { display: block; }
+        
+        .hide-scroll::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans p-4 md:p-8">
+<body class="bg-gray-100 min-h-screen font-sans flex flex-col">
 
-<div class="max-w-6xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
-
-    <!-- HEADER -->
-    <div class="bg-gray-900 px-8 py-6 text-white flex justify-between items-center">
-        <div>
-            <h1 class="text-2xl font-black tracking-tight">User Manual</h1>
-            <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Knowledge Base & Standard Operating Procedures</p>
+    <!-- STANDARD ERP HEADER -->
+    <div class="bg-gray-900 text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="flex flex-col">
+            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest leading-none mb-1">SignOS Knowledge Base</span>
+            <div class="flex items-center gap-2">
+                <h1 class="text-sm font-black leading-tight" id="module-title">News & Docs v5.1</h1>
+                <span id="env-badge" class="px-1.5 py-0.5 rounded text-[8px] font-black bg-blue-600 text-white uppercase tracking-tighter">ONLINE</span>
+            </div>
         </div>
-        <div class="text-right">
-            <div class="text-xs font-bold text-gray-400">VIEWING AS: <span id="view-role" class="text-blue-400">---</span></div>
-            <a href="#" onclick="goBack()" class="text-[10px] text-gray-500 hover:text-white mt-2 block underline">← Back to Dashboard</a>
-        </div>
-    </div>
-
-    <!-- TABS -->
-    <div class="flex border-b border-gray-200 sticky top-0 bg-white z-20 shadow-sm">
-        <button onclick="switchTab('sales')" class="flex-1 py-4 text-xs font-bold text-gray-500 hover:bg-gray-50 tab-btn" id="btn-sales">SALES GUIDES</button>
-        <button onclick="switchTab('prod')" class="flex-1 py-4 text-xs font-bold text-gray-500 hover:bg-gray-50 tab-btn" id="btn-prod">PRODUCTION SOP</button>
-        <button onclick="switchTab('admin')" class="flex-1 py-4 text-xs font-bold text-gray-500 hover:bg-gray-50 tab-btn hidden" id="btn-admin">ADMIN / TECH</button>
-    </div>
-
-    <!-- TAB: SALES -->
-    <div id="tab-sales" class="tab-content p-8 space-y-6">
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6">
-            <h3 class="text-blue-800 font-bold text-sm">💰 How to Quote</h3>
-            <p class="text-xs text-blue-600 mt-1">Remember: "Retail" is what the customer pays. "Vended" is your fallback if our machines are full.</p>
-        </div>
-
-        <!-- YARD SIGNS -->
-        <details class="group bg-white border border-gray-200 rounded-lg open:shadow-md transition">
-            <summary class="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50">
-                <span class="font-bold text-gray-700">🛡️ Rigid Signs (Coro, ACM, Yard)</span>
-                <span class="text-gray-400 text-lg group-open:rotate-180 transition">▼</span>
-            </summary>
-            <div class="p-4 border-t border-gray-100 text-sm text-gray-600 space-y-3 bg-gray-50/50">
-                <p><strong class="text-gray-900">Yard Signs:</strong> Price breaks happen automatically at Qty 10, 50, and 100. If a customer needs 1000+, the calculator will show "CONTACT US" because that requires a custom offset quote.</p>
-                <p><strong class="text-gray-900">ACM (Metal):</strong> Always ask if they need "Rectangle" (Cheaper) or "Contour Shape" (Expensive). Contour cuts require CNC time and add 35% to the cost.</p>
-                <p><strong class="text-gray-900">Double Sided:</strong> Always use the "Sides" dropdown. Never just double the quantity, or you will overcharge them for setup fees.</p>
+        
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex flex-col items-end">
+                <span class="text-[10px] font-bold text-gray-300 uppercase tracking-tight" id="auth-user">---</span>
+                <span class="text-[9px] text-blue-500 font-bold uppercase tracking-tighter" id="auth-role">---</span>
             </div>
-        </details>
-
-        <!-- ROLL MEDIA -->
-        <details class="group bg-white border border-gray-200 rounded-lg open:shadow-md transition">
-            <summary class="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50">
-                <span class="font-bold text-gray-700">🖨️ Roll Media (Banners, Decals)</span>
-                <span class="text-gray-400 text-lg group-open:rotate-180 transition">▼</span>
-            </summary>
-            <div class="p-4 border-t border-gray-100 text-sm text-gray-600 space-y-3 bg-gray-50/50">
-                <p><strong class="text-gray-900">Banners:</strong> Hems and Grommets are included by default. If a customer wants "Pole Pockets," select that option; it adds labor cost per linear foot.</p>
-                <p><strong class="text-gray-900">Decals:</strong> "Weeding" refers to picking out the background vinyl. <br>• <em>Simple:</em> Circles, Squares, Large Text.<br>• <em>Complex:</em> Small text, script fonts, distressed logos (Charges extra).</p>
-            </div>
-        </details>
-
-        <!-- VENDOR -->
-        <details class="group bg-white border border-gray-200 rounded-lg open:shadow-md transition">
-            <summary class="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50">
-                <span class="font-bold text-gray-700">🚚 Shipping & Outsourcing</span>
-                <span class="text-gray-400 text-lg group-open:rotate-180 transition">▼</span>
-            </summary>
-            <div class="p-4 border-t border-gray-100 text-sm text-gray-600 space-y-3 bg-gray-50/50">
-                <p>If you use the <strong>VENDED</strong> tab, the price shown includes shipping to our shop.</p>
-                <ul class="list-disc list-inside ml-4 space-y-1">
-                    <li><strong>Small Box:</strong> $10 (Up to 24x36)</li>
-                    <li><strong>Large Box:</strong> $35 (Up to 36x48)</li>
-                    <li><strong>Freight:</strong> $199 (Any dimension over 48" or Qty > 50)</li>
-                </ul>
-                <p class="text-red-500 font-bold text-xs mt-2">⚠️ Never quote a Vended price if the customer needs it same-day.</p>
-            </div>
-        </details>
-    </div>
-
-    <!-- TAB: PRODUCTION -->
-    <div id="tab-prod" class="tab-content p-8 space-y-6">
-        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded mb-6">
-            <h3 class="text-yellow-800 font-bold text-sm">🏗️ Production SOP</h3>
-            <p class="text-xs text-yellow-600 mt-1">These guides cover machine settings, material handling, and finishing standards.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-5 rounded border border-gray-200 shadow-sm">
-                <h4 class="font-bold text-gray-800 mb-2">HP R1000 (Rigid)</h4>
-                <ul class="text-xs text-gray-600 space-y-2">
-                    <li>• <strong>Coro (Yard Signs):</strong> Use "Outdoor Low Pass". Do not use High Quality unless specified (wastes ink).</li>
-                    <li>• <strong>Acrylic (2nd Surf):</strong> Always print "White Flood" on top of color. Mirror the image in Onyx RIP.</li>
-                    <li>• <strong>Bed Alignment:</strong> Always register to Origin A (Left Front).</li>
-                </ul>
-            </div>
-
-            <div class="bg-white p-5 rounded border border-gray-200 shadow-sm">
-                <h4 class="font-bold text-gray-800 mb-2">CNC Router (MultiCam)</h4>
-                <ul class="text-xs text-gray-600 space-y-2">
-                    <li>• <strong>ACM:</strong> Use 1/8" Single Flute Up-Cut bit. Speed: 200 IPM.</li>
-                    <li>• <strong>Acrylic:</strong> Use "O Flute" Polishing bit. Speed: 120 IPM.</li>
-                    <li>• <strong>Hold Down:</strong> Ensure vacuum zones are active for the specific quadrant you are cutting.</li>
-                </ul>
-            </div>
-
-            <div class="bg-white p-5 rounded border border-gray-200 shadow-sm">
-                <h4 class="font-bold text-gray-800 mb-2">Vinyl & Laminating</h4>
-                <ul class="text-xs text-gray-600 space-y-2">
-                    <li>• <strong>Cast Vinyl (Wraps):</strong> Must outgas for 24 hours before laminating to prevent bubbling.</li>
-                    <li>• <strong>Floor Graphics:</strong> Use the textured anti-slip laminate (UL 410 rated).</li>
-                    <li>• <strong>Mounting:</strong> Use the Big Squeegee for Coro. Use the Roll Laminator for ACM.</li>
-                </ul>
-            </div>
+            <div class="h-8 w-[1px] bg-gray-700 hidden md:block"></div>
+            <button onclick="goBack()" class="text-gray-300 hover:text-white text-[10px] font-bold border border-gray-600 px-3 py-1.5 rounded transition uppercase tracking-widest">Menu</button>
+            <button onclick="logout()" class="text-red-400 hover:text-red-300 text-[10px] font-bold border border-red-900/50 bg-red-950/20 px-3 py-1.5 rounded transition uppercase tracking-widest">Logout</button>
         </div>
     </div>
 
-    <!-- TAB: ADMIN (Previous Content) -->
-    <div id="tab-admin" class="tab-content p-8">
-        <div class="mb-6 flex items-center justify-between">
-            <h2 class="text-lg font-bold text-gray-800">System Architecture (Technical)</h2>
-            <button onclick="window.open('https://github.com/SignStoreERP/signos-app','_blank')" class="bg-gray-800 text-white text-[10px] font-bold px-3 py-1 rounded hover:bg-black">View GitHub Repo</button>
-        </div>
+    <!-- MAIN NEWSLETTER BODY -->
+    <main class="max-w-4xl mx-auto w-full p-4 md:p-12 space-y-16 bg-white shadow-xl my-8 rounded-2xl border border-gray-200">
+        
+        <!-- HEADER SECTION -->
+        <header class="text-center space-y-4">
+            <div class="flex justify-center"><span class="badge-new">Release: Feb 23, 2026</span></div>
+            <h2 class="text-4xl font-black text-gray-900 tracking-tighter italic uppercase">The SignOS Dispatch</h2>
+            <div class="h-1 w-24 bg-blue-600 mx-auto rounded-full"></div>
+            <p class="text-gray-500 text-sm max-w-md mx-auto">Modernizing production and quoting for The Sign Store team.</p>
+        </header>
 
-        <section class="mb-8">
-            <h3 class="text-sm font-bold text-blue-600 uppercase border-b border-blue-100 pb-1 mb-3">Backend Keys (SKU Index)</h3>
-            <div class="overflow-x-auto rounded border border-gray-200 max-h-[400px] overflow-y-auto bg-white">
-                <table class="min-w-full text-xs text-left" id="sku-table">
-                    <thead class="bg-gray-50 text-gray-500 font-bold uppercase sticky top-0 shadow-sm">
-                        <tr><th class="px-4 py-2">Category</th><th class="px-4 py-2">Backend Key</th><th class="px-4 py-2">Description</th></tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 font-mono text-gray-600" id="sku-body">
-                        <tr><td class="px-4 py-2">Rigid</td><td class="px-4 py-2 text-blue-600">CUT_SUB_COR_04W</td><td>4mm Coroplast Sheet</td></tr>
-                        <tr><td class="px-4 py-2">Rigid</td><td class="px-4 py-2 text-blue-600">SUB_ACM_3MM_4X8</td><td>3mm ACM 4x8</td></tr>
-                        <tr><td class="px-4 py-2">Roll</td><td class="px-4 py-2 text-indigo-600">VIN_ROL_BAN_13</td><td>13oz Scrim Banner</td></tr>
-                        <tr><td class="px-4 py-2">Roll</td><td class="px-4 py-2 text-indigo-600">VIN_ROL_PRT_IJ180</td><td>3M Cast Wrap Vinyl</td></tr>
-                        <tr><td class="px-4 py-2">Labor</td><td class="px-4 py-2 text-purple-600">LAB_DES</td><td>Graphic Design Rate</td></tr>
-                    </tbody>
-                </table>
+        <!-- SECTION 1: TOP STORY (Grid Layout) -->
+        <section id="top-story" class="relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50" onclick="openArticle('release')">
+            <div class="grid md:grid-cols-2 gap-8 items-center p-8">
+                <div class="space-y-4">
+                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Grand Release Article</span>
+                    <h3 class="text-2xl font-bold text-slate-900 leading-tight">Sales Empowerment: 8 Production Modules Activated</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">The Sign Store catalog is now active. Learn how our new retail logic automates pricing across our core product lines.</p>
+                    <div class="flex gap-4">
+                        <button class="bg-blue-600 text-white px-6 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition shadow-lg">Read Article</button>
+                    </div>
+                </div>
+                
+                <!-- GIF Column (Shrinks vertically, stacks on mobile) -->
+                <div class="flex items-center justify-center overflow-hidden rounded-xl border border-slate-200 shadow-inner bg-white max-h-[400px]">
+                     <img src="https://i.imgur.com/2XcoCY4.gif" alt="SignOS Release Demo" class="w-full h-auto object-contain transition-transform group-hover:scale-105 duration-700">
+                </div>
             </div>
         </section>
 
-        <section class="bg-gray-50 p-4 rounded border border-gray-200">
-            <h3 class="text-sm font-bold text-gray-700 uppercase mb-2">Twin-Engine Deployment</h3>
-            <p class="text-xs text-gray-600 mb-2">Code is deployed to two separate repositories to ensure stability.</p>
-            <div class="grid grid-cols-2 gap-4 text-xs">
-                <div><span class="font-bold text-orange-600">DEV (signos-app):</span> Sandbox for testing new features. Updates here log as [DEV].</div>
-                <div><span class="font-bold text-green-600">LIVE (signos-live):</span> Production environment. Only stable files are copied here manually.</div>
+        <!-- SECTION 2: APPROVED CALCULATORS GRID -->
+        <section id="active-modules" class="bg-blue-50/50 rounded-3xl p-8 border border-blue-100">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-[11px] font-black text-blue-900 uppercase tracking-[0.2em]">Retail Ready: Active Modules</h3>
+                <span class="badge-new">NEW</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <a href="Calculator_YardSign.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black">YR</div>
+                    <span class="text-[10px] font-black text-gray-900 uppercase">Yard Signs</span>
+                </a>
+                <a href="Calculator_Coro.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-black">CR</div>
+                    <span class="text-[10px] font-black text-gray-900 uppercase">Coroplast</span>
+                </a>
+                <a href="Calculator_ACM.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-black">AM</div>
+                    <span class="text-[10px] font-black text-gray-900 uppercase">ACM Signs</span>
+                </a>
+                <a href="Calculator_PVC.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-black">PV</div>
+                    <span class="text-[10px] font-black text-gray-900 uppercase">PVC Signs</span>
+                </a>
+                <a href="Calculator_Foam.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-black">FM</div>
+                    <span class="text-[10px] font-black text-gray-900 uppercase">Foam Core</span>
+                </a>
+                <a href="Calculator_Banner.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-black">BN</div>
+                    <span class="text-[10px] font-black text-gray-900 uppercase">Banners</span>
+                </a>
+                <a href="Calculator_Decal.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center font-black">DC</div>
+                    <span class="text-[10px] font-black text-gray-900 uppercase">Digital Print</span>
+                </a>
+                <a href="Calculator_CutVinyl.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center font-black">CV</div>
+                    <span class="text-[10px] font-black text-gray-900 uppercase">Cut Vinyl</span>
+                </a>
             </div>
         </section>
-    </div>
 
-</div>
+        <!-- SECTION 3: HOW TO USE / HOW IT WORKS -->
+        <section class="newsletter-section">
+            <div class="grid md:grid-cols-2 gap-16">
+                <div class="space-y-6">
+                    <h3 class="text-xl font-black text-gray-900 uppercase tracking-tighter">Sales Quoting Guide</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">Sales representatives have exclusive access to the **Retail Interface**. Your workflow is simplified to focus on high-speed customer service.</p>
+                    <ul class="space-y-4">
+                        <li class="flex gap-4">
+                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center shrink-0 font-bold">1</span>
+                            <div class="text-[11px]">
+                                <b class="block text-gray-900 uppercase">Select Product</b>
+                                <p class="text-gray-500">Pick the correct module above to load substrate-specific logic.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center shrink-0 font-bold">2</span>
+                            <div class="text-[11px]">
+                                <b class="block text-gray-900 uppercase">Enter Variables</b>
+                                <p class="text-gray-500">Input dimensions, quantity, and finishes. All variables must be set for accuracy.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center shrink-0 font-bold">3</span>
+                            <div class="text-[11px]">
+                                <b class="block text-gray-900 uppercase">Get Price</b>
+                                <p class="text-gray-500">The total updates instantly. You only see the market-based Retail total.</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <button onclick="openArticle('guide')" class="text-blue-600 font-black text-[10px] uppercase tracking-widest hover:underline flex items-center gap-2">View Detailed Tutorial &rarr;</button>
+                </div>
+                <div class="bg-gray-50 rounded-2xl p-8 border border-dashed border-gray-300">
+                    <h3 class="text-xs font-black text-gray-400 uppercase mb-6 tracking-widest">How it Works</h3>
+                    <div class="space-y-6">
+                        <div class="flex gap-4 items-start">
+                            <div class="p-2 rounded bg-orange-100 text-orange-600 font-black text-[10px]">SYNC</div>
+                            <div>
+                                <h4 class="text-[10px] font-black text-gray-900 uppercase">Master Data Engine</h4>
+                                <p class="text-[10px] text-gray-500 leading-tight mt-1">A central Master Data sheet feeds all retail pricing curves and estimation costs. One update here syncs the whole shop.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start">
+                            <div class="p-2 rounded bg-orange-100 text-orange-600 font-black text-[10px]">AUTH</div>
+                            <div>
+                                <h4 class="text-[10px] font-black text-gray-900 uppercase">Permissions Control</h4>
+                                <p class="text-[10px] text-gray-500 leading-tight mt-1">Defined users and roles control what you see. Admins can toggle modules or update logic globally via the Cloud Matrix.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start">
+                            <div class="p-2 rounded bg-orange-100 text-orange-600 font-black text-[10px]">BOM</div>
+                            <div>
+                                <h4 class="text-[10px] font-black text-gray-900 uppercase">The Physics Basis</h4>
+                                <p class="text-[10px] text-gray-500 leading-tight mt-1">Every calculation considers raw material cost and specialized labor tasks (weeding, routing, printing).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: PROJECT PROGRESS -->
+        <section class="newsletter-section bg-slate-900 rounded-3xl p-10 text-white">
+            <header class="flex justify-between items-center mb-10">
+                <div>
+                    <h3 class="text-2xl font-black tracking-tighter uppercase italic">Registry Status</h3>
+                    <p class="text-slate-400 text-xs">Progress derived from SYS_Roadmap & Actions.</p>
+                </div>
+                <span class="text-[10px] bg-slate-800 px-3 py-1 rounded-full text-slate-400 font-mono tracking-widest uppercase">Sync: Online</span>
+            </header>
+
+            <div class="grid md:grid-cols-2 gap-12">
+                <div>
+                    <h4 class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-6">Upcoming Features</h4>
+                    <div class="space-y-4">
+                        <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                            <div class="flex justify-between mb-2">
+                                <span class="roadmap-tag tag-sprint">Analytics</span>
+                                <span class="text-[9px] text-slate-500 font-mono">#1002</span>
+                            </div>
+                            <h5 class="text-xs font-bold uppercase text-slate-100 italic">Profit Heatmap Engine</h5>
+                            <p class="text-[10px] text-slate-400 mt-1 leading-normal">Charting pricing "sweet spots" to maximize margins on high-volume runs.</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                            <div class="flex justify-between mb-2">
+                                <span class="roadmap-tag tag-sprint">Manufacturing</span>
+                                <span class="text-[9px] text-slate-500 font-mono">#1003</span>
+                            </div>
+                            <h5 class="text-xs font-bold uppercase text-slate-100 italic">Channel Letter Core</h5>
+                            <p class="text-[10px] text-slate-400 mt-1 leading-normal">Calculating Coil, Trim Cap, and LEDs for custom fabricated signage.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-[10px] font-black text-green-400 uppercase tracking-widest mb-6">Recent Completions</h4>
+                    <div class="space-y-4">
+                        <div class="flex gap-4 items-start bg-slate-800/20 p-4 rounded-xl">
+                            <span class="roadmap-tag tag-done">DONE</span>
+                            <div>
+                                <h5 class="text-xs font-bold uppercase text-slate-200">The Cloud Matrix Engine</h5>
+                                <p class="text-[10px] text-slate-500 mt-1 leading-tight">Deployed admin override system for global material pricing management.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start bg-slate-800/20 p-4 rounded-xl">
+                            <span class="roadmap-tag tag-done">DONE</span>
+                            <div>
+                                <h5 class="text-xs font-bold uppercase text-slate-200">Auth & Telemetry v2</h5>
+                                <p class="text-[10px] text-slate-500 mt-1 leading-tight">Standardized PIN-based login and session tracking for all calculators.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ARTICLE OVERLAY -->
+    <div id="article-overlay" onclick="closeArticleOnClickAway(event)">
+        <div class="max-w-3xl mx-auto my-20 p-8 md:p-16 bg-white rounded-3xl shadow-2xl relative" onclick="event.stopPropagation()">
+            <button onclick="closeArticle()" class="absolute top-8 right-8 text-gray-400 hover:text-gray-900 transition font-black text-xl">✕</button>
+            <div id="article-content" class="prose prose-slate prose-sm max-w-none">
+                <!-- Content Injected via JS -->
+            </div>
+        </div>
+    </div>
 
 <script>
-    // 1. Role-Based View Logic
+    // --- CONTENT DATABASE ---
+    const ARTICLES = {
+        release: `
+            <span class="text-blue-600 font-black uppercase text-[10px] tracking-widest">Official Release - Feb 23, 2026</span>
+            <h1 class="text-3xl font-black text-slate-900 mb-6">Sales Floor Empowerment: 8 Core Modules Live</h1>
+            <p class="text-slate-600 leading-relaxed text-base">We have activated 8 product families for production-ready retail quoting. This marks our shift from manual calculations to an automated, market-driven logic system.</p>
+            
+            <div class="grid gap-4 mt-8">
+                <div class="border-l-4 border-blue-600 pl-4 bg-gray-50 p-3 rounded-r-lg">
+                    <h4 class="text-xs font-black text-gray-900 uppercase">Yard Signs</h4>
+                    <p class="text-[11px] text-gray-500 leading-relaxed">Standard 18x24 signage with automated H-Stake bundling and tiered bulk discounts.</p>
+                </div>
+                <div class="border-l-4 border-purple-500 pl-4 bg-gray-50 p-3 rounded-r-lg">
+                    <h4 class="text-xs font-black text-gray-900 uppercase">Custom Coroplast</h4>
+                    <p class="text-[11px] text-gray-500 leading-relaxed">Calculates 4mm and 10mm sizes, routing automatically between direct and vinyl print methods.</p>
+                </div>
+                <div class="border-l-4 border-slate-600 pl-4 bg-gray-50 p-3 rounded-r-lg">
+                    <h4 class="text-xs font-black text-gray-900 uppercase">ACM Signs</h4>
+                    <p class="text-[11px] text-gray-500 leading-relaxed">Aluminum composite panels. Automatically distinguishes Shear cuts from CNC Routing fees.</p>
+                </div>
+                <div class="border-l-4 border-indigo-600 pl-4 bg-gray-50 p-3 rounded-r-lg">
+                    <h4 class="text-xs font-black text-gray-900 uppercase">PVC Signs</h4>
+                    <p class="text-[11px] text-gray-500 leading-relaxed">Retail Sintra boards. Logic includes a 10% deduction if no lamination is selected.</p>
+                </div>
+                <div class="border-l-4 border-orange-600 pl-4 bg-gray-50 p-3 rounded-r-lg">
+                    <h4 class="text-xs font-black text-gray-900 uppercase">Foam Core</h4>
+                    <p class="text-[11px] text-gray-500 leading-relaxed">Temporary indoor display boards. Automatically respects the global $50 shop minimum.</p>
+                </div>
+                <div class="border-l-4 border-green-600 pl-4 bg-gray-50 p-3 rounded-r-lg">
+                    <h4 class="text-xs font-black text-gray-900 uppercase">Banners</h4>
+                    <p class="text-[11px] text-gray-500 leading-relaxed">13oz-18oz scrim vinyl with finishing math for pole pockets and wind slits.</p>
+                </div>
+                <div class="border-l-4 border-pink-600 pl-4 bg-gray-50 p-3 rounded-r-lg">
+                    <h4 class="text-xs font-black text-gray-900 uppercase">Digital Print</h4>
+                    <p class="text-[11px] text-gray-500 leading-relaxed">Standard decals on IJ35 or IJ180, calculating Die-cut vs Kiss-cut production time.</p>
+                </div>
+                <div class="border-l-4 border-yellow-500 pl-4 bg-gray-50 p-3 rounded-r-lg">
+                    <h4 class="text-xs font-black text-gray-900 uppercase">Cut Vinyl</h4>
+                    <p class="text-[11px] text-gray-500 leading-relaxed">Solid color lettering. Uses "Intricate Weeding" labor multipliers for small/complex text.</p>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 my-12 text-center">
+                <p class="text-blue-800 text-xs font-bold leading-relaxed">NOTE: Laying the groundwork to shift The Sign Store from static, sheet based pricing to agile, market based pricing.</p>
+            </div>
+        `,
+        guide: `
+            <span class="text-blue-600 font-black uppercase text-[10px] tracking-widest">Training Tutorial</span>
+            <h1 class="text-3xl font-black text-slate-900 mb-6 italic">Mastering the Quoting Flow</h1>
+            
+            <div class="space-y-16">
+                <div>
+                    <img src="https://i.imgur.com/s66wweQ.jpeg" class="rounded-2xl shadow-lg border border-slate-200 mb-6">
+                    <h3 class="font-black text-slate-900 uppercase text-xs tracking-widest">Step 1: Size and Quantity</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">Input the width and height of the finished product. Set the quantity. The system instantly begins mapping the order to the Master Retail Curve.</p>
+                </div>
+                <div>
+                    <img src="https://i.imgur.com/hSz9t6d.jpeg" class="rounded-2xl shadow-lg border border-slate-200 mb-6">
+                    <h3 class="font-black text-slate-900 uppercase text-xs tracking-widest">Step 2: Define Product Variables</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">Select options such as material thickness, sides, or custom cuts. These selections trigger background labor multipliers (e.g. CNC setup fees).</p>
+                </div>
+                <div>
+                    <img src="https://i.imgur.com/QLcIduk.jpeg" class="rounded-2xl shadow-lg border border-slate-200 mb-6">
+                    <h3 class="font-black text-slate-900 uppercase text-xs tracking-widest">Step 3: Check Retail Price</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">Review the calculated total. This is your market-competitive price. Note that quantity discounts apply automatically as you increase volume.</p>
+                </div>
+                <div>
+                    <img src="https://i.imgur.com/IJkq0g5.jpeg" class="rounded-2xl shadow-lg border border-slate-200 mb-6">
+                    <h3 class="font-black text-slate-900 uppercase text-xs tracking-widest">Step 4: Sync with Workflow</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">Click 'Copy Description' to grab the technical specs. Paste this directly into QuickBooks or Freshdesk to maintain data integrity for the production team.</p>
+                </div>
+            </div>
+        `
+    };
+
+    const openArticle = (id) => {
+        document.getElementById('article-content').innerHTML = ARTICLES[id] || 'Content not found.';
+        const overlay = document.getElementById('article-overlay');
+        overlay.classList.add('active');
+        overlay.scrollTop = 0; // Ensure article starts at the top
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeArticle = () => {
+        document.getElementById('article-overlay').classList.remove('active');
+        document.body.style.overflow = 'auto';
+    };
+
+    const closeArticleOnClickAway = (event) => {
+        if (event.target.id === 'article-overlay') {
+            closeArticle();
+        }
+    };
+
+    // --- AUTH & INITIALIZATION ---
     window.onload = function() {
-        const u = sessionStorage.getItem('signos_user') || 'Guest';
-        const r = sessionStorage.getItem('signos_role') || 'VIEW';
+        const u = sessionStorage.getItem('signos_user') || 'GUEST';
+        const r = sessionStorage.getItem('signos_role') || 'SALES';
         
-        document.getElementById('view-role').innerText = r;
+        document.getElementById('auth-user').innerText = u;
+        document.getElementById('auth-role').innerText = r;
 
-        // Default Tab Selection
-        if (r === 'SALES') {
-            switchTab('sales');
-            document.getElementById('btn-prod').classList.add('hidden'); // Hide Prod tab for pure sales? Optional.
-        } else if (r === 'PROD') {
-            switchTab('prod');
-            document.getElementById('btn-sales').classList.remove('hidden'); // Prod might need Sales info
-        } else if (r === 'ADMIN') {
-            switchTab('admin');
-            document.getElementById('btn-admin').classList.remove('hidden');
+        if (window.location.href.includes('signos-app')) {
+            const badge = document.getElementById('env-badge');
+            badge.innerText = "DEV MODE";
+            badge.className = "px-1.5 py-0.5 rounded text-[8px] font-black bg-orange-500 text-white uppercase tracking-tighter";
         }
-
-        // Telemetry
-        fetch(`${SCRIPT_URL}?tab=SYS_Docs&ip=${clientIP}&user=${u}&role=${r}&req=view_module`, {mode: 'no-cors'});
     };
-
-    function switchTab(id) {
-        // Hide all tabs
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        
-        // Show selected
-        document.getElementById('tab-'+id).classList.add('active');
-        document.getElementById('btn-'+id).classList.add('active');
-    }
-
-    function goBack() { window.history.back(); }
-
-   window.onload = async function() {
-        const u = sessionStorage.getItem('signos_user') || 'Guest';
-        const r = sessionStorage.getItem('signos_role') || 'VIEW';
-        
-        document.getElementById('view-role').innerText = r;
-
-        // Role-Based Tabs
-        if (r === 'SALES') {
-            switchTab('sales');
-            document.getElementById('btn-prod').classList.add('hidden'); 
-        } else if (r === 'PROD') {
-            switchTab('prod');
-            document.getElementById('btn-sales').classList.remove('hidden');
-        } else if (r === 'ADMIN') {
-            switchTab('admin');
-            document.getElementById('btn-admin').classList.remove('hidden');
-        }
-
-        // --- VERSION SYNC ---
-        // New logic to display correct version based on Environment
-        try {
-            const response = await fetch(`${SCRIPT_URL}?tab=SYS_Modules&ip=${clientIP}&user=${u}&role=${r}&req=table`);
-            const modules = await response.json();
-            
-            // Find Myself (SYS_Docs)
-            const myModule = modules.find(m => m.Module_ID === 'SYS_Docs' || m.File_Link === 'docs.html');
-            
-            if (myModule) {
-                const ver = IS_DEV_ENV ? (myModule.Dev_Ver || 'v0.0') : (myModule.Live_Ver || 'v0.0');
-                
-                // Update Header UI (You need to add IDs to your header elements)
-                // For now, we will inject it into the title since the DOM structure varies
-                document.title = `SignOS User Manual ${ver}`;
-                
-                // Optional: Update the "ONLINE" badge text
-                const statusText = IS_DEV_ENV ? "DEV MODE" : "ONLINE";
-                // Assuming you add ids="status-text" to the "ONLINE" span in the HTML
-            }
-        } catch(e) { console.log("Ver Check Fail"); }
-    };
-
-
 </script>
-
 </body>
 </html>
