@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Health Monitor v1.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="signos-core.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans flex flex-col">
+
+<div class="max-w-4xl mx-auto my-8 w-full px-4">
+    <div class="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+        
+        <div class="bg-gray-900 px-6 py-4 flex justify-between items-center text-white">
+            <div>
+                <h1 class="text-xl font-black tracking-widest uppercase flex items-center gap-3">
+                    <span class="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></span>
+                    Automated Health Monitor
+                </h1>
+                <p class="text-[10px] text-gray-400 mt-1">Diagnostic ping running against all active HTML modules.</p>
+            </div>
+            <button onclick="runDiagnostics()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded text-xs shadow-lg transition uppercase tracking-wide border border-blue-400">Run Diagnostics</button>
+        </div>
+
+        <div class="p-6">
+            <div id="status-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Injected Results -->
+            </div>
+            <div id="loader" class="text-center py-8">
+                <div class="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-widest">Initializing Ping...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.onload = function() {
+    if(typeof injectHeader === 'function') injectHeader("Health Diagnostics");
+    runDiagnostics();
+};
+
+async function runDiagnostics() {
+    const grid = document.getElementById('status-grid');
+    const loader = document.getElementById('loader');
+    grid.innerHTML = '';
+    loader.classList.remove('hidden');
+
+    try {
+        // Fetch registry from backend
+        const res = await fetch(`${SCRIPT_URL}?req=table&tab=SYS_Modules`);
+        const modules = await res.json();
+        
+        loader.classList.add('hidden');
+
+        // Only test Production modules
+        const prodModules = modules.filter(m => m.Module_ID && m.Module_ID.startsWith('PROD_') && m.File_Link);
+
+        prodModules.forEach(mod => {
+            // Create UI Card
+            const card = document.createElement('div');
+            card.className = "flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm";
+            card.id = `card-${mod.Module_ID}`;
+            
+            card.innerHTML = `
+                <div class="flex items-center gap-4">
+                    <div id="dot-${mod.Module_ID}" class="w-4 h-4 rounded-full bg-gray-300"></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm">${mod.Display_Name}</h3>
+                        <p class="text-[10px] text-gray-500 font-mono">${mod.File_Link}</p>
+                    </div>
+                </div>
+                <div id="res-${mod.Module_ID}" class="text-xs font-black text-gray-400 uppercase tracking-widest">Testing...</div>
+            `;
+            grid.appendChild(card);
+
+            // Test the file using a hidden iframe to catch rendering errors
+            testModule(mod);
+        });
+
+    } catch(e) {
+        loader.innerHTML = `<span class="text-red-500 font-bold">Failed to load registry: ${e.message}</span>`;
+    }
+}
+
+function testModule(mod) {
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+
+    // Add timestamp to break browser cache
+    iframe.src = `${mod.File_Link}?t=${Date.now()}`;
+
+    iframe.onload = function() {
+        let attempts = 0;
+        const maxAttempts = 20; // 10 seconds total (20 attempts * 500ms)
+
+        // Smart Polling: Check the iframe every 500ms for the ONLINE signal
+        const checkInterval = setInterval(() => {
+            attempts++;
+            try {
+                const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const statusEl = innerDoc.getElementById('status-text');
+
+                // If we detect a successful data bind
+                if (statusEl && statusEl.innerText === 'ONLINE') {
+                    clearInterval(checkInterval);
+                    document.getElementById(`dot-${mod.Module_ID}`).className = "w-4 h-4 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]";
+                    document.getElementById(`res-${mod.Module_ID}`).innerHTML = "<span class='text-green-600 font-bold'>PASS</span>";
+                    document.getElementById(`card-${mod.Module_ID}`).classList.replace('bg-gray-50', 'bg-green-50/30');
+                    document.getElementById(`card-${mod.Module_ID}`).classList.replace('border-gray-200', 'border-green-200');
+                    
+                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
+                } 
+                // If it explicitly fails the backend fetch
+                else if (statusEl && statusEl.innerText === 'OFFLINE') {
+                    throw new Error("Backend Offline");
+                } 
+                // If we wait 10 full seconds and it's still connecting
+                else if (attempts >= maxAttempts) {
+                    throw new Error("Timeout");
+                }
+            } catch(e) {
+                // Only trigger the visual failure if it explicitly crashed or timed out
+                if (e.message === "Timeout" || e.message === "Backend Offline" || attempts >= maxAttempts) {
+                    clearInterval(checkInterval);
+                    document.getElementById(`dot-${mod.Module_ID}`).className = "w-4 h-4 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.6)] animate-pulse";
+                    document.getElementById(`res-${mod.Module_ID}`).innerHTML = "<span class='text-red-600 font-bold'>CRASH / TIMEOUT</span>";
+                    document.getElementById(`card-${mod.Module_ID}`).classList.replace('bg-gray-50', 'bg-red-50');
+                    document.getElementById(`card-${mod.Module_ID}`).classList.replace('border-gray-200', 'border-red-200');
+                    
+                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
+                }
+            }
+        }, 500); 
+    };
+
+    iframe.onerror = function() {
+        document.getElementById(`dot-${mod.Module_ID}`).className = "w-4 h-4 rounded-full bg-gray-800";
+        document.getElementById(`res-${mod.Module_ID}`).innerHTML = "<span class='text-gray-800 font-bold'>404 NOT FOUND</span>";
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+    };
+
+    document.body.appendChild(iframe);
+}
+</script>
+</body>
+</html>
