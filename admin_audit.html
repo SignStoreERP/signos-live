@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retail Price Auditor v1.1</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="signos-core.js"></script>
+
+<!-- HEADLESS PHYSICS ENGINES -->
+<script src="logic_coro.js"></script>
+<script src="logic_acm.js"></script>
+<script src="logic_pvc.js"></script>
+<script src="logic_foam.js"></script>
+<script src="logic_acrylic.js"></script>
+<script src="logic_banner.js"></script>
+
+<style>
+.custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.sticky-header { position: sticky; top: 0; background: #f8fafc; z-index: 10; border-bottom: 2px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+</style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col font-sans overflow-hidden">
+
+<div id="main-card" class="flex-1 flex flex-col min-h-0 max-w-7xl mx-auto w-full bg-white shadow-xl sm:my-6 sm:rounded-xl border border-gray-200 overflow-hidden relative">
+
+    <!-- STANDARD CORE HEADER INJECTS HERE -->
+
+    <!-- STATS & CONTROL BAR -->
+    <div class="bg-white border-b border-gray-200 p-4 flex flex-col sm:flex-row justify-between items-center shrink-0 gap-4 z-20 shadow-sm">
+        <div class="flex gap-4 divide-x divide-gray-200">
+            <div class="px-2 text-center">
+                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Rows Tested</div>
+                <div class="text-xl font-black text-gray-800" id="stat-tested">0</div>
+            </div>
+            <div class="px-4 text-center">
+                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Exact Matches</div>
+                <div class="text-xl font-black text-green-600" id="stat-pass">0</div>
+            </div>
+            <div class="px-4 text-center">
+                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Discrepancies</div>
+                <div class="text-xl font-black text-red-600" id="stat-fail">0</div>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="exportAudit()" id="btn-export" class="hidden bg-white hover:bg-gray-50 text-gray-700 font-bold py-2 px-4 rounded text-xs uppercase tracking-widest border border-gray-300 transition shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Export CSV
+            </button>
+            <button onclick="runAudit()" id="btn-run" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded text-xs uppercase tracking-widest shadow transition">
+                Run Audit
+            </button>
+        </div>
+    </div>
+
+    <!-- TABLE AREA -->
+    <div class="flex-1 overflow-auto custom-scroll relative bg-gray-50 pb-10">
+        <div id="loader" class="absolute inset-0 bg-white/80 z-20 flex flex-col items-center justify-center hidden">
+            <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <div class="text-xs font-bold text-gray-500 tracking-widest uppercase">Fetching Backend Data & Processing...</div>
+        </div>
+
+        <table class="w-full text-left text-xs whitespace-nowrap border-collapse">
+            <thead class="text-[10px] text-gray-500 uppercase tracking-wider bg-gray-50 sticky-header">
+                <tr>
+                    <th class="p-3 pl-6">Product / SKU</th>
+                    <th class="p-3 text-center">Sides</th>
+                    <th class="p-3 text-center border-l border-gray-200">Target Qty 1</th>
+                    <th class="p-3 text-center bg-blue-50/50">Calc Qty 1</th>
+                    <th class="p-3 text-center border-l border-gray-200">Target Qty 10+</th>
+                    <th class="p-3 text-center bg-blue-50/50">Calc Qty 10+</th>
+                    <th class="p-3 text-center border-l border-gray-200">Status</th>
+                </tr>
+            </thead>
+            <tbody id="audit-body" class="divide-y divide-gray-100 text-gray-700 bg-white">
+                <tr><td colspan="7" class="p-12 text-center text-gray-400 font-bold uppercase tracking-widest">Click "Run Audit" to begin comparison</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+let auditResults = []; // Stores the data globally for the CSV export
+
+window.onload = function() {
+    if(typeof injectHeader === 'function') injectHeader("Pricing Auditor");
+
+    // Initialize Status
+    const statusText = document.getElementById("status-text");
+    const statusDot = document.getElementById("status-dot");
+    if (statusText) {
+        statusText.innerText = "READY";
+        statusText.className = "font-bold text-blue-500";
+        if (statusDot) {
+            statusDot.className = "w-2 h-2 rounded-full bg-blue-500";
+            statusDot.classList.remove("animate-pulse");
+        }
+    }
+};
+
+async function runAudit() {
+    document.getElementById('loader').classList.remove('hidden');
+    document.getElementById('btn-run').disabled = true;
+    document.getElementById('btn-export').classList.add('hidden');
+    auditResults = []; // Reset Array
+    
+    try {
+        const u = sessionStorage.getItem('signos_user') || 'Admin';
+        
+        // Fetch data
+        const [blueRes, coroRes, acmRes, pvcRes, foamRes, banRes] = await Promise.all([
+            fetch(`${SCRIPT_URL}?req=table&tab=Master_Retail_Blue_Sheet&user=${u}`),
+            fetch(`${SCRIPT_URL}?req=view_module&tab=PROD_Coroplast_Signs&user=${u}`),
+            fetch(`${SCRIPT_URL}?req=view_module&tab=PROD_ACM_Signs&user=${u}`),
+            fetch(`${SCRIPT_URL}?req=view_module&tab=PROD_PVC_Signs&user=${u}`),
+            fetch(`${SCRIPT_URL}?req=view_module&tab=PROD_Foam_Signs&user=${u}`),
+            fetch(`${SCRIPT_URL}?req=view_module&tab=PROD_Vinyl_Banners&user=${u}`)
+        ]);
+
+        const blueData = await blueRes.json();
+        const configMap = {
+            'Coro': await coroRes.json(),
+            'ACM': await acmRes.json(),
+            'PVC': await pvcRes.json(),
+            'Foam': await foamRes.json(),
+            'Banner': await banRes.json()
+        };
+
+        if(blueData.error) throw new Error(blueData.error);
+        
+        processAudit(blueData, configMap);
+
+    } catch (e) {
+        alert("Error during audit: " + e.message);
+        console.error(e);
+    } finally {
+        document.getElementById('loader').classList.add('hidden');
+        document.getElementById('btn-run').disabled = false;
+    }
+}
+
+function processAudit(blueSheet, configs) {
+    const tbody = document.getElementById('audit-body');
+    tbody.innerHTML = '';
+
+    let tested = 0;
+    let passed = 0;
+    let failed = 0;
+
+    blueSheet.forEach(row => {
+        const id = row.Retail_Key || row.RETAIL_KEY;
+        if (!id) return;
+
+        const pLine = row.Product_Line;
+        const dims = row.Dimensions.toLowerCase().split('x');
+        if (dims.length !== 2) return;
+
+        let w = parseFloat(dims);
+        let h = parseFloat(dims[1]);
+        if (pLine.includes('Banner')) { w *= 12; h *= 12; }
+
+        const sides = String(row.Sides).toLowerCase() === 'double' ? 2 : 1;
+        const targetQ1 = parseFloat(row.Price_Qty_1) || 0;
+        const targetQ10 = parseFloat(row.Price_Qty_10_Plus) || 0;
+
+        let calcQ1 = 0;
+        let calcQ10 = 0;
+        let success = false;
+
+        try {
+            let engine = null;
+            let data = null;
+            let inputs = { w: w, h: h, sides: sides, qty: 1, files: 1, incDesign: false, hasStakes: false };
+
+            if (pLine === '4mm Coroplast') {
+                engine = calculateCoro; data = configs.Coro; inputs.thickness = '4mm'; inputs.shape = 'Rectangle';
+            } else if (pLine === '10mm Coroplast') {
+                engine = calculateCoro; data = configs.Coro; inputs.thickness = '10mm'; inputs.shape = 'Rectangle';
+            } else if (pLine === '3mm ACM') {
+                engine = calculateACM; data = configs.ACM; inputs.thickness = '3mm'; inputs.shape = 'Rectangle'; inputs.color = 'White';
+            } else if (pLine === '6mm ACM') {
+                engine = calculateACM; data = configs.ACM; inputs.thickness = '6mm'; inputs.shape = 'Rectangle'; inputs.color = 'White';
+            } else if (pLine === '3mm PVC') {
+                engine = calculatePVC; data = configs.PVC; inputs.thickness = '3mm'; inputs.shape = 'Rectangle';
+            } else if (pLine === '6mm PVC') {
+                engine = calculatePVC; data = configs.PVC; inputs.thickness = '6mm'; inputs.shape = 'Rectangle';
+            } else if (pLine === '3/16" Foam Core') {
+                engine = calculateFoam; data = configs.Foam;
+            } else if (pLine === '13oz Banner') {
+                engine = calculateBanner; data = configs.Banner; inputs.material = '13oz'; inputs.hems = true; inputs.grommets = true; inputs.windSlits = false; inputs.pockets = false;
+            }
+
+            if (engine && data) {
+                inputs.qty = 1;
+                calcQ1 = engine(inputs, data).retail.unitPrice;
+
+                inputs.qty = 10;
+                calcQ10 = engine(inputs, data).retail.unitPrice;
+                
+                success = true;
+                tested++;
+            }
+        } catch(e) {
+            success = false;
+        }
+
+        if(!success) return; 
+
+        // $0.05 tolerance for JS float rounding differences
+        const diffQ1 = Math.abs(calcQ1 - targetQ1);
+        const diffQ10 = Math.abs(calcQ10 - targetQ10);
+        const isMatch = diffQ1 <= 0.05 && diffQ10 <= 0.05;
+        
+        if (isMatch) passed++; else failed++;
+
+        // Log to export array
+        auditResults.push({
+            product: pLine,
+            key: id,
+            sides: sides,
+            targetQ1: targetQ1.toFixed(2),
+            calcQ1: calcQ1.toFixed(2),
+            diffQ1: (calcQ1 - targetQ1).toFixed(2),
+            targetQ10: targetQ10.toFixed(2),
+            calcQ10: calcQ10.toFixed(2),
+            diffQ10: (calcQ10 - targetQ10).toFixed(2),
+            status: isMatch ? "MATCH" : "DISCREPANCY"
+        });
+
+        // Render to UI
+        const tr = document.createElement('tr');
+        tr.className = isMatch ? 'hover:bg-gray-50' : 'bg-red-50/50 hover:bg-red-50';
+        
+        const q1Style = diffQ1 > 0.05 ? 'text-red-600 font-black' : 'text-gray-800 font-bold';
+        const q10Style = diffQ10 > 0.05 ? 'text-red-600 font-black' : 'text-gray-800 font-bold';
+        const badge = isMatch 
+            ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded font-bold text-[9px] uppercase tracking-wider">✅ Match</span>` 
+            : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded font-bold text-[9px] uppercase tracking-wider border border-red-200 shadow-sm">❌ Discrepancy</span>`;
+
+        tr.innerHTML = `
+            <td class="p-3 pl-6">
+                <div class="font-bold text-gray-800">${pLine}</div>
+                <div class="text-[9px] text-gray-400 font-mono tracking-wider">${id} (${row.Dimensions})</div>
+            </td>
+            <td class="p-3 text-center text-gray-500 font-bold">${row.Sides}</td>
+            <td class="p-3 text-center border-l border-gray-200 text-gray-500 font-mono">$${targetQ1.toFixed(2)}</td>
+            <td class="p-3 text-center bg-blue-50/30 ${q1Style} font-mono">$${calcQ1.toFixed(2)}</td>
+            <td class="p-3 text-center border-l border-gray-200 text-gray-500 font-mono">$${targetQ10.toFixed(2)}</td>
+            <td class="p-3 text-center bg-blue-50/30 ${q10Style} font-mono">$${calcQ10.toFixed(2)}</td>
+            <td class="p-3 text-center border-l border-gray-200">${badge}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('stat-tested').innerText = tested;
+    document.getElementById('stat-pass').innerText = passed;
+    document.getElementById('stat-fail').innerText = failed;
+    
+    // Reveal Export Button
+    if (auditResults.length > 0) document.getElementById('btn-export').classList.remove('hidden');
+}
+
+// --- EXPORT TO CSV ---
+function exportAudit() {
+    if (auditResults.length === 0) return;
+    
+    let csv = "Product Line,Retail Key,Sides,Target Qty 1,Calculated Qty 1,Difference Qty 1,Target Qty 10+,Calculated Qty 10+,Difference Qty 10+,Status\n";
+    
+    auditResults.forEach(r => {
+        csv += `"${r.product}","${r.key}",${r.sides},${r.targetQ1},${r.calcQ1},${r.diffQ1},${r.targetQ10},${r.calcQ10},${r.diffQ10},"${r.status}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SignOS_Price_Audit_${new Date().toISOString().split('T')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
