@@ -1,83 +1,145 @@
 /**
- * PURE PHYSICS ENGINE: ACM Signs (v2.12)
- * Updated for Sandbox Cost Drivers with Gemini Bug Fixes
+ * PURE PHYSICS ENGINE: ACM Signs (v3.5)
+ * Bug Fix: Corrected split array index for dimension parsing.
  */
-
 function calculateACM(inputs, data) {
+    const sqft = (inputs.w * inputs.h) / 144;
+    const totalSqFt = sqft * inputs.qty;
     
-    // 1. Sheet Optimization Logic (Simplified for Headless)
-    // In real app, this has the SVG generation. For Headless Sim, we just need math.
-    const stockSheets = [
-        {name: "4x8", w: 48, h: 96, cost: parseFloat(data.Cost_Sheet_3mm || 52.09)},
-        {name: "4x10", w: 48, h: 120, cost: parseFloat(data.Cost_Stock_3mm_4x10 || 69.44)},
-        {name: "5x10", w: 60, h: 120, cost: parseFloat(data.Cost_Stock_3mm_5x10 || 75.75)}
-    ];
+    // --- 1. RETAIL ENGINE (MARKET VALUE) ---
+    const reqShort = Math.min(inputs.w, inputs.h);
+    const reqLong = Math.max(inputs.w, inputs.h);
+    const sideStr = inputs.sides === 2 ? 'DS' : 'SS';
+    const thickStr = inputs.thickness === '6mm' ? '6' : '3';
     
-    const signArea = inputs.w * inputs.h;
-    const totalArea = signArea * inputs.qty;
-    const sheetArea = 48 * 96; // Standard 4x8 reference
-    const sheetsNeeded = Math.ceil(totalArea / sheetArea); // Crude approx for sim speed
-    
-    // --- RETAIL ---
-    const baseRate = parseFloat(data.Retail_Price_3mm_Base || 14);
-    const unitPrice = (baseRate * (inputs.w * inputs.h / 144));
-    let retailTotal = unitPrice * inputs.qty;
-    
-    const setupFee = parseFloat(data.Retail_Fee_Setup || 25);
-    retailTotal += setupFee;
+    let bestFitArea = Infinity;
+    let bestP1 = null, bestP10 = null, bestLabel = "";
 
-    // --- COST ---
-    const waste = parseFloat(data.Waste_Factor || 1.2);
-    
-    // FIX APPLIED: Added [0] index to pull the cost of the 4x8 sheet
-    const costMat = (sheetsNeeded * stockSheets[0].cost); 
-    
-    const costLam = (totalArea / 144) * parseFloat(data.Cost_Lam_SqFt || 0.36) * waste;
-    
-    // Labor & Machine
-    const speedPrint = parseFloat(data.Speed_Print_LF || 25); 
-    const feedLen = inputs.h < 60 ? inputs.w : inputs.h; // Optimize rotation
-    const runHrs = (feedLen * inputs.qty) / 12 / speedPrint;
-    
-    const rateMach = parseFloat(data.Rate_Machine_Print || 45);
+// Bounding Box Search
+    Object.keys(data).forEach(key => {
+        if (key.startsWith(`RET_ACM${thickStr}_`) && key.endsWith(`_${sideStr}_1`)) {
+            const dimStr = key.split('_')[2]; 
+            const stdShort = parseInt(dimStr.substring(0, 2), 10);
+            const stdLong = parseInt(dimStr.substring(2), 10);
+            const stdArea = stdShort * stdLong;
+
+            if (reqShort <= stdShort && reqLong <= stdLong && stdArea < bestFitArea) {
+                bestFitArea = stdArea;
+                bestP1 = parseFloat(data[key]);
+                bestP10 = parseFloat(data[key.replace(/_1$/, '_10')]) || bestP1;
+                bestLabel = `${stdShort}x${stdLong}`;
+            }
+        }
+    });
+
+    let baseUnitPrice = 0;
+    const t1Qty = parseFloat(data.Tier_1_Qty || 10);
+    const tierLog = [];
+
+    if (bestP1 !== null) {
+        baseUnitPrice = inputs.qty >= t1Qty ? bestP10 : bestP1;
+        tierLog.push({ q: 1, base: bestP1, unit: bestP1 }, { q: t1Qty, base: bestP10, unit: bestP10 });
+    } else {
+        let baseSqFtRate = inputs.thickness === '6mm' ? 16.50 : 14.00;
+        let signMinPrice = 0;
+        let t = 1;
+        const prefix = `ACM${thickStr}`;
+
+        while (data[`${prefix}_T${t}_Max`]) {
+            if (sqft <= parseFloat(data[`${prefix}_T${t}_Max`])) {
+                baseSqFtRate = parseFloat(data[`${prefix}_T${t}_Rate`]);
+                signMinPrice = parseFloat(data[`${prefix}_T${t}_Min`] || 0);
+                break;
+            }
+            t++;
+        }
+
+        let rawBase = baseSqFtRate * sqft;
+        if (rawBase < signMinPrice) rawBase = signMinPrice;
+        if (inputs.sides === 2) rawBase += (rawBase * parseFloat(data.Retail_Adder_DS_Mult || 0.5));
+        
+        const discPct = inputs.qty >= t1Qty ? parseFloat(data.Tier_1_Disc || 0.05) : 0;
+        baseUnitPrice = rawBase * (1 - discPct);
+
+        tierLog.push(
+            { q: 1, base: rawBase, unit: rawBase },
+            { q: t1Qty, base: rawBase, unit: rawBase * (1 - parseFloat(data.Tier_1_Disc || 0.05)) }
+        );
+    }
+
+    if (inputs.color === 'Black' && inputs.thickness === '6mm') {
+        const blkMult = parseFloat(data.Retail_Adder_Black_Mult || 2);
+        baseUnitPrice *= blkMult;
+        tierLog.forEach(t => t.unit *= blkMult);
+    }
+
+    let retailPrint = baseUnitPrice * inputs.qty;
+    let routerFee = 0;
+    if (inputs.shape !== 'Rectangle') {
+        routerFee = inputs.shape === 'Easy' ? parseFloat(data.Retail_Fee_Router_Easy || 30) : parseFloat(data.Retail_Fee_Router_Hard || 50);
+    }
+
+    const feeDesign = inputs.incDesign ? parseFloat(data.Retail_Fee_Design || 45) : 0;
+    const feeSetupBase = parseFloat(data.Retail_Fee_Setup || 15);
+    const feeSetup = inputs.setupPerFile ? (feeSetupBase * inputs.files) : feeSetupBase;
+
+    const grandTotalRaw = retailPrint + routerFee + feeSetup + feeDesign;
+    const minOrder = bestP1 !== null ? 0 : parseFloat(data.Retail_Min_Order || 50);
+    const grandTotal = Math.max(grandTotalRaw, minOrder);
+
+    tierLog.forEach(t => t.unit = (t.unit * t.q + routerFee) / t.q);
+
+    // --- 2. COST ENGINE ---
+    const wasteFactor = parseFloat(data.Waste_Factor || 1.15);
+    const stockSheets = inputs.thickness === '6mm'
+        ? [{w: 48, h: 96, cost: parseFloat(data.Cost_Stock_6mm_4x8 || 72.10)}, {w: 60, h: 120, cost: parseFloat(data.Cost_Stock_6mm_5x10 || 132.39)}]
+        : [{w: 48, h: 96, cost: parseFloat(data.Cost_Stock_3mm_4x8 || 52.09)}, {w: 48, h: 120, cost: parseFloat(data.Cost_Stock_3mm_4x10 || 69.44)}, {w: 60, h: 120, cost: parseFloat(data.Cost_Stock_3mm_5x10 || 75.75)}];
+
+    let lowestCost = Infinity;
+    stockSheets.forEach(sheet => {
+        const sheetsNeeded = Math.ceil((sqft * inputs.qty * wasteFactor) / ((sheet.w * sheet.h)/144));
+        if (sheetsNeeded * sheet.cost < lowestCost) lowestCost = sheetsNeeded * sheet.cost;
+    });
+
+    const rawMat = lowestCost;
+    const wasteCost = rawMat - (rawMat / wasteFactor);
+    const totalInk = totalSqFt * inputs.sides * parseFloat(data.Cost_Ink_Latex || 0.16);
+
+    const speedLF = parseFloat(data.Machine_Speed_LF_Hr || 25);
+    const ratePrintMach = parseFloat(data.Rate_Machine_Flatbed || 10);
     const rateOp = parseFloat(data.Rate_Operator || 25);
-    const rateCNC = parseFloat(data.Rate_CNC_Labor || 45);
-    const rateMachCNC = parseFloat(data.Rate_Machine_CNC || 35);
-    
-    // NEW: Attendance Ratio
-    const attnRatio = parseFloat(data.Labor_Attendance_Ratio || 1.0);
-    
-    const costRunMach = runHrs * rateMach;
-    const costRunOp = runHrs * rateOp * attnRatio;
-    
-    // CNC Time (Full Attention usually, or maybe ratio applies?)
-    // Let's assume CNC needs full attention for loading/unloading
-    const timeCNC = (inputs.qty * 10) / 60; // 10 mins per sheet avg
-    const costCNC = timeCNC * (rateCNC + rateMachCNC);
-    
-    const setupHrs = parseFloat(data.Time_Setup_Base || 5) / 60;
-    const costSetup = setupHrs * rateOp;
+    const printHrs = (totalSqFt / 4) / speedLF;
+    const costPrintMach = printHrs * ratePrintMach;
+    const costPrintOp = printHrs * rateOp * parseFloat(data.Labor_Attendance_Ratio || 0.10);
 
-    const totalCost = costMat + costLam + costRunMach + costRunOp + costCNC + costSetup;
+    let costCutSetup = 0, costCutLabor = 0, costCutMach = 0, costRound = 0, runHrsCNC = 0;
+    if (inputs.shape === 'Rectangle') {
+        costCutSetup = (parseFloat(data.Time_Shear_Setup || 5) / 60) * rateOp;
+        costCutLabor = ((parseFloat(data.Time_Shear_Cut || 1) * inputs.qty) / 60) * rateOp;
+        if (inputs.rounded) {
+            costRound = ((parseFloat(data.Time_Round_Setup || 5) + (parseFloat(data.Time_Round_Corner || 0.5) * 4 * inputs.qty)) / 60) * rateOp;
+        }
+    } else {
+        const rateCNC = parseFloat(data.Rate_CNC_Labor || 25);
+        runHrsCNC = ((inputs.shape === 'Easy' ? parseFloat(data.Time_CNC_Easy_SqFt || 1) : parseFloat(data.Time_CNC_Complex_SqFt || 2)) * totalSqFt) / 60;
+        costCutSetup = (parseFloat(data.Time_Setup_CNC || 10) / 60) * rateCNC;
+        costCutMach = runHrsCNC * parseFloat(data.Rate_Machine_CNC || 10);
+        costCutLabor = runHrsCNC * rateCNC * parseFloat(data.Labor_Attendance_Ratio || 0.10);
+    }
 
-    // FIX APPLIED: Mapped return object values to the actual variables calculated above
+    const subTotal = rawMat + totalInk + costPrintMach + costPrintOp + costCutSetup + costCutLabor + costCutMach + costRound;
+    const riskFactor = parseFloat(data.Factor_Risk || 1.05);
+    const riskBuffer = subTotal * (riskFactor - 1);
+
     return {
         retail: {
-            unitPrice: unitPrice,
-            grandTotal: retailTotal,
-            isOversized: false,
-            breakdown: {
-                material: costMat,    
-                laminate: costLam,    
-                finish: costCNC       
-            },
-            fees: {
-                setup: setupFee,
-                design: 0
-            }
+            unitPrice: (retailPrint + routerFee) / inputs.qty, printTotal: retailPrint, routerFee: routerFee, setupFee: feeSetup, designFee: feeDesign,
+            grandTotal: grandTotal, isMinApplied: grandTotalRaw < minOrder, tiers: tierLog, yieldLabel: bestLabel ? `Yield Box: ${bestLabel}` : "Area Curve"
         },
         cost: {
-            total: totalCost
-        }
+            total: subTotal + riskBuffer,
+            breakdown: { rawBlanks: rawMat, wasteCost: wasteCost, wastePct: (wasteFactor - 1) * 100, totalInk: totalInk, costSetup: costCutSetup, costCut: costCutLabor + costCutMach, costRound: costRound, runHrs: runHrsCNC + printHrs, costMachine: costPrintMach + costCutMach, costOp: costPrintOp + costCutLabor + costRound, riskCost: riskBuffer, riskPct: (riskFactor - 1) * 100 }
+        },
+        metrics: { margin: (grandTotal - (subTotal + riskBuffer)) / grandTotal }
     };
 }
