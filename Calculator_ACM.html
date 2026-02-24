@@ -3,118 +3,182 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ACM Signs v7.0</title>
+<title>ACM Signs v7.3</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="signos-core.js"></script>
 
-<!-- DUAL-TRACK LOGIC ENGINES -->
-<script src="retail_acm.js"></script>
-<script src="cost_acm.js"></script>
+<!-- UNIFIED DUAL-TRACK LOGIC ENGINE -->
+<script src="logic_acm.js"></script>
+
+<style>
+.warn-pulse { animation: pulse-red 2s infinite; }
+@keyframes pulse-red { 0% { background-color: #FECACA; } 50% { background-color: #F87171; } 100% { background-color: #FECACA; } }
+.toggle-checkbox:checked { right: 0; border-color: #2563EB; }
+.toggle-checkbox:checked + .toggle-label { background-color: #2563EB; }
+</style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans flex flex-col">
 
-<!-- Main Card: Island Mode, Perfectly Centered -->
+<!-- Main Card: Island Mode -->
 <div id="main-card" class="max-w-md mx-auto my-4 sm:my-10 w-[calc(100%-2rem)] sm:w-full bg-white shadow-2xl overflow-hidden rounded-xl border border-gray-200">
 
-<!-- INPUTS -->
-<div class="p-6 space-y-4">
-<div class="grid grid-cols-3 gap-3">
-<div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty</label><input type="number" id="qty" value="1" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="runCalc()"></div>
-<div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Width</label><input type="number" id="w" value="24" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="runCalc()"></div>
-<div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Height</label><input type="number" id="h" value="18" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="runCalc()"></div>
-</div>
+    <!-- INPUTS -->
+    <div class="p-6 space-y-4">
+        <div class="grid grid-cols-3 gap-3">
+            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty</label><input type="number" id="qty" value="1" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="runCalc()"></div>
+            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Width</label><input type="number" id="w" value="24" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="runCalc()"></div>
+            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Height</label><input type="number" id="h" value="18" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="runCalc()"></div>
+        </div>
 
-<div class="grid grid-cols-2 gap-4">
-<div>
-<label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Material</label>
-<select id="thickness" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px]" onchange="runCalc()">
-<option value="3mm">3mm Standard</option>
-<option value="6mm">6mm Heavy Duty</option>
-</select>
-</div>
-<div>
-<label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Sides</label>
-<select id="sides" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px]" onchange="runCalc()">
-<option value="1">Single Sided</option>
-<option value="2">Double Sided</option>
-</select>
-</div>
-</div>
+        <!-- SUBTLE CLAMPING WARNING -->
+        <div id="sheet-warn" class="hidden bg-yellow-50 text-yellow-700 text-[10px] font-bold px-3 py-1.5 rounded border border-yellow-200 transition-opacity">
+            ⚠️ Parent sheet size limit reached. Dimensions auto-adjusted.
+        </div>
+        
+        <!-- DYNAMIC PARENT SHEET INDICATOR -->
+        <div id="ui-sheet-indicator" class="text-[9px] font-bold text-gray-400 text-center uppercase tracking-widest bg-gray-50 py-1 rounded border border-gray-100">
+            Nesting on: 4' x 8' Sheet
+        </div>
 
-<div class="grid grid-cols-2 gap-4">
-<div>
-<label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Color</label>
-<select id="color" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px]" onchange="runCalc()">
-<option value="White">White</option>
-<option value="Black">Black (6mm = x2 Cost)</option>
-</select>
-</div>
-<div>
-<label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Cutting Method</label>
-<select id="shape" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px]" onchange="runCalc()">
-<option value="Rectangle">Square / Shear</option>
-<option value="Easy">CNC (Simple Shape)</option>
-<option value="Complex">CNC (Complex Shape)</option>
-</select>
-</div>
-</div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Material</label>
+                <select id="thickness" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px]" onchange="runCalc()">
+                    <option value="3mm">3mm Standard</option>
+                    <option value="6mm">6mm Heavy Duty</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Sides</label>
+                <select id="sides" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px]" onchange="runCalc()">
+                    <option value="1">Single Sided</option>
+                    <option value="2">Double Sided</option>
+                </select>
+            </div>
+        </div>
 
-<p class="text-[9px] text-gray-400 italic text-center">Note: All ACM signs include Laminate by default.</p>
-</div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Color</label>
+                <select id="color" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px]" onchange="runCalc()">
+                    <option value="White">White</option>
+                    <option value="Black">Black</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Cutting Method</label>
+                <select id="shape" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px]" onchange="runCalc()">
+                    <option value="Rectangle">Square / Shear</option>
+                    <option value="Easy">CNC (Simple Shape)</option>
+                    <option value="Complex">CNC (Complex Shape)</option>
+                </select>
+            </div>
+        </div>
 
-<!-- RESULTS -->
-<div class="bg-white p-6 border-t border-gray-200">
-<div class="flex justify-between items-center mb-1">
-<span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Base Unit Price</span>
-<span class="text-2xl font-bold text-gray-900" id="ui-unit">---</span>
-</div>
+        <div class="space-y-2 border-t border-gray-100 pt-2">
+            <div class="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded" id="wrap-rounded">
+                <span class="text-[10px] font-bold text-gray-700 uppercase">Rounded Corners?</span>
+                <div class="relative inline-block w-9 align-middle select-none">
+                    <input type="checkbox" id="rounded" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300" onchange="runCalc()"/>
+                    <label for="rounded" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
+                </div>
+            </div>
 
-<!-- DISCOUNT TABLE -->
-<div class="mb-4 text-right">
-<button onclick="toggleDiscounts()" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wide inline-flex items-center gap-1 ml-auto">
-  Show Volume Discounts
-  <svg id="disc-arrow" class="w-3 h-3 transition-transform duration-200 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-</button>
-<div id="disc-table" class="hidden mt-2 bg-blue-50 rounded p-2 text-xs border border-blue-100">
-<table class="w-full text-right">
-<thead class="text-gray-400 text-[9px] uppercase border-b border-blue-200"><tr><th class="pr-4 pb-1">Qty</th><th class="pr-4 pb-1">Base Sign</th><th class="pb-1 text-blue-600">You Pay</th></tr></thead>
-<tbody id="tier-rows" class="font-bold text-gray-700"></tbody>
-</table>
-</div>
-</div>
+            <div class="grid grid-cols-1 gap-2">
+                <label class="flex items-center gap-2 text-[10px] font-bold text-purple-800 cursor-pointer bg-purple-50 p-2 rounded border border-purple-200 hover:bg-purple-100 transition"><input type="checkbox" id="inc-design" onchange="runCalc()" class="w-4 h-4 text-purple-600 rounded"> Add Design Fee</label>
+            </div>
+            <div class="flex items-center gap-2 mt-2"><label class="block text-[10px] font-bold text-gray-400 uppercase">Total Files:</label><input type="number" id="files" value="1" min="1" class="w-16 border rounded p-1 text-center text-sm font-bold" oninput="runCalc()"></div>
+        </div>
+    </div>
 
-<div class="border-t border-gray-100 my-3"></div>
+    <!-- RESULTS -->
+    <div class="bg-white p-6 border-t border-gray-200">
+        <div class="flex justify-between items-center mb-1">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Base Unit Price</span>
+            <span class="text-2xl font-bold text-gray-900" id="ui-unit">---</span>
+        </div>
 
-<!-- LINE ITEMS -->
-<div class="space-y-1 text-xs text-gray-600 border-t border-dashed border-gray-200 pt-3">
-<div class="flex justify-between"><span>Printed Signs & Lam:</span><span id="ui-print" class="font-bold">$0.00</span></div>
-<div class="flex justify-between text-blue-700 hidden" id="row-router"><span>CNC Router Fee:</span><span id="ui-router" class="font-bold">$0.00</span></div>
-</div>
+        <!-- DISCOUNT TABLE -->
+        <div class="mb-4 text-right">
+            <button onclick="toggleDiscounts()" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wide inline-flex items-center gap-1 ml-auto">
+                Show Volume Discounts
+                <svg id="disc-arrow" class="w-3 h-3 transition-transform duration-200 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div id="disc-table" class="hidden mt-2 bg-blue-50 rounded p-2 text-xs border border-blue-100">
+                <table class="w-full text-right">
+                    <thead class="text-gray-400 text-[9px] uppercase border-b border-blue-200"><tr><th class="pr-4 pb-1">Qty</th><th class="pr-4 pb-1">Base Sign</th><th class="pb-1 text-blue-600">You Pay</th></tr></thead>
+                    <tbody id="tier-rows" class="font-bold text-gray-700"></tbody>
+                </table>
+            </div>
+        </div>
 
-<div class="flex justify-between items-end border-t-2 border-gray-800 my-3 pt-2">
-<div>
-<span class="text-xs font-bold text-gray-400 uppercase block">Total Quote</span>
-<span class="text-[9px] font-bold text-gray-400 uppercase block mt-1" id="ui-min-text">Shop Minimum: $50</span>
-<div id="min-badge" class="hidden bg-red-100 text-red-600 text-[9px] font-bold px-1 rounded inline-block mt-1">MINIMUM APPLIED</div>
-<div id="oversize-badge" class="hidden bg-orange-100 text-orange-800 text-[9px] font-bold px-1 rounded inline-block mt-1 border border-orange-300">⚠️ OVERSIZED STOCK</div>
-</div>
-<span class="text-3xl font-black text-blue-600" id="ui-total">---</span>
-</div>
-</div>
+        <div class="border-t border-gray-100 my-3"></div>
 
-<!-- DESCRIPTION GENERATOR -->
-<div class="bg-gray-50 p-4 border-t border-gray-200">
-<label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
-<textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-20 text-gray-600 font-mono outline-none" readonly></textarea>
-</div>
+        <!-- LINE ITEMS -->
+        <div class="space-y-1 text-xs text-gray-600 border-t border-dashed border-gray-200 pt-3">
+            <div class="flex justify-between"><span>Printed Signs & Lam:</span><span id="ui-print" class="font-bold">$0.00</span></div>
+            <div class="flex justify-between text-orange-700 hidden" id="row-router"><span>CNC Router Fee:</span><span id="ui-router" class="font-bold">$0.00</span></div>
+            <div class="flex justify-between text-purple-700 hidden" id="row-design"><span>Design Fee:</span><span id="ui-design" class="font-bold">$0.00</span></div>
+        </div>
 
+        <div class="flex justify-between items-end border-t-2 border-gray-800 my-3 pt-2">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase block">Total Quote</span>
+                <span class="text-[9px] font-bold text-gray-400 uppercase block mt-1" id="ui-min-text">Shop Minimum: $50</span>
+                <div id="min-badge" class="hidden bg-red-100 text-red-600 text-[9px] font-bold px-1 rounded inline-block mt-1">MINIMUM APPLIED</div>
+                <div id="oversize-badge" class="hidden bg-orange-100 text-orange-800 text-[9px] font-bold px-1 rounded inline-block mt-1 border border-orange-300">⚠️ OVERSIZED STOCK</div>
+            </div>
+            <span class="text-3xl font-black text-blue-600" id="ui-total">---</span>
+        </div>
+    </div>
+
+    <!-- DESCRIPTION GENERATOR -->
+    <div class="bg-gray-50 p-4 border-t border-gray-200">
+        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
+        <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-20 text-gray-600 font-mono outline-none" readonly></textarea>
+    </div>
 </div>
 
 <script>
 let backendData = {};
 
+// --- NEW VALIDATION ENGINE w/ UX WARNING ---
+function enforceSheetLimits(maxShort, maxLong) {
+    let wEl = document.getElementById('w');
+    let hEl = document.getElementById('h');
+    let warnEl = document.getElementById('sheet-warn');
+
+    if (!wEl || !hEl) return;
+
+    let w = parseFloat(wEl.value) || 0;
+    let h = parseFloat(hEl.value) || 0;
+    let didClamp = false;
+
+    if (w > maxLong) { w = maxLong; wEl.value = w; didClamp = true; }
+    if (h > maxLong) { h = maxLong; hEl.value = h; didClamp = true; }
+
+    if (w > maxShort && h > maxShort) {
+        if (w > h) {
+            h = maxShort;
+            hEl.value = h;
+        } else {
+            w = maxShort;
+            wEl.value = w;
+        }
+        didClamp = true;
+    }
+    
+    if (warnEl) {
+        if (didClamp) {
+            warnEl.classList.remove('hidden');
+            clearTimeout(warnEl.timeoutId);
+            warnEl.timeoutId = setTimeout(() => warnEl.classList.add('hidden'), 3000);
+        }
+    }
+}
+
 window.onload = async function() {
-    injectHeader("ACM Signs (ERP)");
+    injectHeader("ACM Signs");
 
     const u = sessionStorage.getItem('signos_user') || 'Guest';
     const r = sessionStorage.getItem('signos_role') || 'VIEW';
@@ -138,7 +202,7 @@ window.onload = async function() {
         }
 
         if(verDisplay) {
-            verDisplay.innerText = `(v1.2)`;
+            verDisplay.innerText = `(v7.3)`;
             verDisplay.classList.remove('hidden');
         }
 
@@ -157,15 +221,30 @@ function toggleDiscounts() {
     const table = document.getElementById('disc-table');
     const arrow = document.getElementById('disc-arrow');
     table.classList.toggle('hidden');
-    if (table.classList.contains('hidden')) {
-        arrow.classList.add('rotate-90');
-    } else {
-        arrow.classList.remove('rotate-90');
-    }
+    if (table.classList.contains('hidden')) arrow.classList.add('rotate-90');
+    else arrow.classList.remove('rotate-90');
 }
 
 function runCalc() {
     if(!backendData.Item_Name) return;
+
+    // Enforce 60x120 parent sheet limits on inputs
+    enforceSheetLimits(60, 120);
+
+    const shapeVal = document.getElementById('shape').value;
+    const roundedToggleWrap = document.getElementById('wrap-rounded');
+    let roundedVal = document.getElementById('rounded').checked;
+
+    // Dynamic UI for Rounded Corners
+    if (shapeVal !== 'Rectangle') {
+        roundedToggleWrap.style.opacity = '0.3';
+        roundedToggleWrap.style.pointerEvents = 'none';
+        roundedVal = false;
+        document.getElementById('rounded').checked = false;
+    } else {
+        roundedToggleWrap.style.opacity = '1';
+        roundedToggleWrap.style.pointerEvents = 'auto';
+    }
 
     const inputs = {
         qty: parseFloat(document.getElementById('qty').value) || 1,
@@ -174,53 +253,64 @@ function runCalc() {
         thickness: document.getElementById('thickness').value,
         sides: parseInt(document.getElementById('sides').value),
         color: document.getElementById('color').value,
-        shape: document.getElementById('shape').value
+        shape: shapeVal,
+        rounded: roundedVal,
+        files: parseFloat(document.getElementById('files').value) || 1,
+        incDesign: document.getElementById('inc-design').checked
     };
 
-    // EXECUTE DUAL-TRACK ARCHITECTURE
-    const ret = calculateRetail(inputs, backendData);
-    const cost = calculateCost(inputs, backendData);
+    // --- Dynamic Parent Sheet Indicator Logic ---
+    let minD = Math.min(inputs.w, inputs.h);
+    let maxD = Math.max(inputs.w, inputs.h);
+    let sheetStr = "4' x 8' Sheet";
+    
+    if (minD <= 48 && maxD <= 96) {
+        sheetStr = "4' x 8' Sheet";
+    } else if (minD <= 48 && maxD <= 120) {
+        sheetStr = (inputs.thickness === '3mm') ? "4' x 10' Sheet" : "5' x 10' Sheet";
+    } else if (minD <= 60 && maxD <= 120) {
+        sheetStr = "5' x 10' Sheet";
+    }
+    document.getElementById('ui-sheet-indicator').innerText = `Producing from: ${sheetStr}`;
+    // --------------------------------------------
 
+    const result = calculateACM(inputs, backendData);
+    const ret = result.retail;
     const fmt = (n) => "$" + n.toFixed(2);
 
     document.getElementById('ui-unit').innerText = fmt(ret.unitPrice);
     document.getElementById('ui-total').innerText = fmt(ret.grandTotal);
     document.getElementById('ui-print').innerText = fmt(ret.printTotal);
-    
+
     if (ret.routerFee > 0) {
         document.getElementById('row-router').classList.remove('hidden');
         document.getElementById('ui-router').innerText = fmt(ret.routerFee);
     } else {
         document.getElementById('row-router').classList.add('hidden');
     }
-    
-    document.getElementById('ui-min-text').innerText = `Shop Minimum: $${ret.minOrderValue}`;
-    document.getElementById('min-badge').classList.toggle('hidden', !ret.isMinApplied);
 
-    // Dynamic UI Oversize Warning
-    const maxW = parseFloat(backendData.Constraint_Max_W || 60);
-    const maxH = parseFloat(backendData.Constraint_Max_H || 120);
-    const isOversize = cost.bom.stock.id === "Oversized";
-    
-    const warnBanner = document.getElementById('oversize-badge');
-    if (isOversize) {
-        warnBanner.innerText = `⚠️ OVERSIZED: EXCEEDS ${maxW}" x ${maxH}"`;
-        warnBanner.classList.remove('hidden');
-        document.getElementById('ui-unit').innerText = "CUSTOM";
-        document.getElementById('ui-total').innerText = "CONTACT US";
+    if (ret.designFee > 0) {
+        document.getElementById('row-design').classList.remove('hidden');
+        document.getElementById('ui-design').innerText = fmt(ret.designFee);
     } else {
-        warnBanner.classList.add('hidden');
+        document.getElementById('row-design').classList.add('hidden');
     }
+
+    const minOrder = parseFloat(backendData.Retail_Min_Order || 50);
+    document.getElementById('ui-min-text').innerText = `Shop Minimum: $${minOrder}`;
+    document.getElementById('min-badge').classList.toggle('hidden', !ret.isMinApplied);
 
     let rowsHtml = "";
     ret.tiers.forEach(tier => {
-        const pctDisplay = `<span class="text-[9px] bg-green-100 text-green-700 px-1 rounded ml-1">-${(tier.pct*100).toFixed(0)}%</span>`;
+        const trPct = (ret.printTotal / (inputs.w * inputs.h / 144 * inputs.qty) - tier.base) / (ret.printTotal / (inputs.w * inputs.h / 144 * inputs.qty));
+        const pctDisplay = trPct > 0 ? `<span class="text-[9px] bg-green-100 text-green-700 px-1 rounded ml-1">-${(trPct*100).toFixed(0)}%</span>` : "";
         rowsHtml += `<tr><td class="pr-4 py-1 text-gray-500">${tier.q}+ ${pctDisplay}</td><td class="pr-4 py-1 text-gray-400">$${(ret.printTotal/inputs.qty).toFixed(2)}</td><td class="py-1 text-blue-600 font-bold">$${tier.unit.toFixed(2)}</td></tr>`;
     });
     document.getElementById('tier-rows').innerHTML = rowsHtml;
 
     const sideTxt = inputs.sides === 1 ? "ONE" : "TWO";
-    const cutTxt = inputs.shape === 'Rectangle' ? 'Shear Cut' : 'CNC Custom Shape';
+    const roundTxt = inputs.rounded ? "with rounded corners" : "square corners";
+    const cutTxt = inputs.shape === 'Rectangle' ? `Shear Cut ${roundTxt}` : 'CNC Custom Shape';
     document.getElementById('job-desc').value = `(x${inputs.qty}) ${inputs.w}" x ${inputs.h}" ${inputs.thickness} ${inputs.color} ACM Signs, Laminated, ${cutTxt}.\nPrinted full color on ${sideTxt} side(s).`;
 }
 </script>
