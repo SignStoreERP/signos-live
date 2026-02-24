@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicle Wraps v4.3</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="signos-core.js"></script>
+
+<!-- UNIFIED DUAL-TRACK LOGIC ENGINE -->
+<script src="logic_wrap.js"></script>
+
+<style>
+.toggle-checkbox:checked { right: 0; border-color: #2563EB; }
+.toggle-checkbox:checked + .toggle-label { background-color: #2563EB; }
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+</style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans flex flex-col">
+
+<!-- Main Card -->
+<div id="main-card" class="max-w-xl mx-auto my-4 sm:my-10 w-[calc(100%-2rem)] sm:w-full bg-white shadow-2xl overflow-hidden rounded-xl border border-gray-200">
+
+    <!-- GLOBAL INPUTS -->
+    <div class="p-6 bg-gray-50 border-b border-gray-200 space-y-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Fleet Qty</label><input type="number" id="qty" value="1" min="1" class="w-full border border-gray-300 p-2 rounded font-bold text-gray-800 text-lg text-center bg-white shadow-inner" oninput="runCalc()"></div>
+            <div class="col-span-2 sm:col-span-3">
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Vehicle Complexity</label>
+                <select id="complexity" class="w-full border border-gray-300 p-2 rounded bg-white font-bold text-sm h-[44px] shadow-inner" onchange="runCalc()">
+                    <option value="simple">Flat / Box Truck (Simple Install)</option>
+                    <option value="complex">Van / Car (Complex Curves & Recesses)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="flex justify-between items-center bg-purple-50 border border-purple-200 p-2 rounded">
+            <label class="flex items-center gap-2 text-[10px] font-bold text-purple-800 cursor-pointer transition"><input type="checkbox" id="inc-design" onchange="runCalc()" class="w-4 h-4 text-purple-600 rounded"> Add Vehicle Template / Design Fee</label>
+            <div class="flex items-center gap-2"><label class="block text-[10px] font-bold text-gray-400 uppercase">Total Files:</label><input type="number" id="files" value="1" min="1" class="w-16 border border-gray-300 rounded p-1 text-center text-sm font-bold bg-white" oninput="runCalc()"></div>
+        </div>
+    </div>
+
+    <!-- DYNAMIC PANEL SECTIONS -->
+    <div class="p-6">
+        <div class="flex justify-between items-end mb-3">
+            <h3 class="text-xs font-black text-gray-800 uppercase tracking-widest">Wrap Sections</h3>
+            <button onclick="addPanel()" class="text-[10px] font-bold bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1.5 rounded transition">+ ADD SECTION</button>
+        </div>
+        
+        <div id="panel-container" class="space-y-3">
+            <!-- Panels injected here -->
+        </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="bg-white p-6 border-t border-gray-200">
+        <div class="flex justify-between items-center mb-1">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Base Fleet Price (Per Vehicle)</span>
+            <span class="text-2xl font-bold text-gray-900" id="ui-unit">---</span>
+        </div>
+
+        <div class="border-t border-gray-100 my-3"></div>
+
+        <!-- DYNAMIC LINE ITEMS -->
+        <div class="space-y-1 text-xs text-gray-600 pt-2" id="dynamic-line-items">
+            <!-- Populated by JS loop -->
+        </div>
+
+        <div class="flex justify-between items-end border-t-2 border-gray-800 my-3 pt-2">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase block">Total Quote</span>
+                <span class="text-[9px] font-bold text-gray-400 uppercase block mt-1" id="ui-min-text">Shop Minimum: $150</span>
+                <div id="min-badge" class="hidden bg-red-100 text-red-600 text-[9px] font-bold px-1 rounded inline-block mt-1">MINIMUM APPLIED</div>
+            </div>
+            <span class="text-3xl font-black text-blue-600" id="ui-total">---</span>
+        </div>
+    </div>
+
+    <!-- DESCRIPTION GENERATOR -->
+    <div class="bg-gray-50 p-4 border-t border-gray-200">
+        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
+        <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-24 text-gray-600 font-mono outline-none" readonly></textarea>
+    </div>
+</div>
+
+<script>
+let backendData = {};
+let panelIdCounter = 0;
+
+window.onload = async function() {
+    injectHeader("Vehicle Wraps");
+
+    const u = sessionStorage.getItem('signos_user') || 'Guest';
+    const r = sessionStorage.getItem('signos_role') || 'VIEW';
+
+    const statusText = document.getElementById("status-text");
+    const statusDot = document.getElementById("status-dot");
+    const verDisplay = document.getElementById("version-display");
+
+    try {
+        const res = await fetch(`${SCRIPT_URL}?tab=PROD_Vinyl_Wraps&ip=${clientIP}&user=${u}&role=${r}&req=view_module`);
+        const data = await res.json();
+
+        if(data.error) throw new Error(data.error);
+        backendData = data;
+
+        if(statusText) {
+            statusText.innerText = "ONLINE";
+            statusText.className = "font-bold text-green-500";
+            statusDot.className = "w-2 h-2 rounded-full bg-green-500";
+            statusDot.classList.remove("animate-pulse");
+        }
+
+        if(verDisplay) {
+            verDisplay.innerText = `(v4.3)`;
+            verDisplay.classList.remove('hidden');
+        }
+
+        // Initialize with one default panel
+        addPanel("Driver Side", "wrap", 1, 120, 60);
+
+    } catch(e) {
+        if(statusText) {
+            statusText.innerText = "OFFLINE";
+            statusText.className = "font-bold text-red-500";
+        }
+        console.error(e);
+    }
+};
+
+function addPanel(defLabel = "", defMat = "wrap", defQty = 1, defW = 0, defH = 0) {
+    const id = panelIdCounter++;
+    const container = document.getElementById('panel-container');
+    
+    const div = document.createElement('div');
+    div.className = "panel-row bg-white border border-gray-200 rounded p-3 shadow-sm relative group";
+    div.id = `panel-${id}`;
+    
+    div.innerHTML = `
+        <button onclick="duplicatePanel(${id})" class="absolute -top-2 right-6 bg-blue-100 text-blue-600 hover:bg-blue-500 hover:text-white w-6 h-6 rounded-full text-xs font-bold shadow opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center" title="Duplicate Row">⧉</button>
+        <button onclick="removePanel(${id})" class="absolute -top-2 -right-2 bg-red-100 text-red-600 hover:bg-red-500 hover:text-white w-6 h-6 rounded-full text-xs font-bold shadow opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center" title="Delete Row">✕</button>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+            <div>
+                <label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Section Name</label>
+                <input type="text" id="lbl-${id}" value="${defLabel}" placeholder="e.g. Rear Glass" class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-gray-700 outline-none focus:border-blue-500" oninput="runCalc()">
+            </div>
+            <div>
+                <label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Material Type</label>
+                <select id="mat-${id}" class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-gray-700 outline-none focus:border-blue-500 bg-white" onchange="handleMaterialChange(${id}); runCalc()">
+                    <option value="wrap" ${defMat === 'wrap' ? 'selected' : ''}>Cast Wrap Vinyl</option>
+                    <option value="perf" ${defMat === 'perf' ? 'selected' : ''}>Window Perf (60/40)</option>
+                    <option value="decal" ${defMat === 'decal' ? 'selected' : ''}>Spot Decals / Cut Vinyl</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-3 items-end">
+            <div><label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Line Qty</label><input type="number" id="p-qty-${id}" value="${defQty}" min="1" class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-center outline-none" oninput="runCalc()"></div>
+            <div><label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Width (in)</label><input type="number" id="w-${id}" value="${defW || ''}" class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-center outline-none" oninput="runCalc()"></div>
+            <div><label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Height (in)</label><input type="number" id="h-${id}" value="${defH || ''}" class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-center outline-none" oninput="runCalc()"></div>
+            <div class="h-[30px] flex items-center">
+                <label id="wrap-inc-${id}" class="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 cursor-not-allowed opacity-50 transition">
+                    <input type="checkbox" id="inc-${id}" class="w-3 h-3 rounded" disabled onchange="runCalc()"> Included
+                </label>
+            </div>
+        </div>
+        
+        <div id="seam-${id}" class="mt-2 text-[9px] font-bold uppercase tracking-widest text-gray-400 text-center bg-gray-50 py-1 rounded">Awaiting Dimensions...</div>
+    `;
+    
+    container.appendChild(div);
+    handleMaterialChange(id); // Init the disabled states
+    runCalc();
+}
+
+function duplicatePanel(id) {
+    const label = document.getElementById(`lbl-${id}`).value;
+    const mat = document.getElementById(`mat-${id}`).value;
+    const qty = document.getElementById(`p-qty-${id}`).value || 1;
+    const w = document.getElementById(`w-${id}`).value;
+    const h = document.getElementById(`h-${id}`).value;
+    addPanel(label + ' (Copy)', mat, qty, w, h);
+}
+
+function removePanel(id) {
+    document.getElementById(`panel-${id}`).remove();
+    runCalc();
+}
+
+function handleMaterialChange(id) {
+    const mat = document.getElementById(`mat-${id}`).value;
+    const wrapInc = document.getElementById(`wrap-inc-${id}`);
+    const checkInc = document.getElementById(`inc-${id}`);
+    
+    if (mat === 'perf') {
+        wrapInc.classList.replace('text-gray-400', 'text-teal-700');
+        wrapInc.classList.replace('opacity-50', 'opacity-100');
+        wrapInc.classList.replace('cursor-not-allowed', 'cursor-pointer');
+        checkInc.disabled = false;
+    } else {
+        wrapInc.classList.replace('text-teal-700', 'text-gray-400');
+        wrapInc.classList.replace('opacity-100', 'opacity-50');
+        wrapInc.classList.replace('cursor-pointer', 'cursor-not-allowed');
+        checkInc.disabled = true;
+        checkInc.checked = false;
+    }
+}
+
+function runCalc() {
+    if(!backendData.Item_Name) return;
+
+    const panels = [];
+    document.querySelectorAll('.panel-row').forEach(row => {
+        const id = row.id.split('-')[1]; // Fixed split index
+        const w = parseFloat(document.getElementById(`w-${id}`).value) || 0;
+        const h = parseFloat(document.getElementById(`h-${id}`).value) || 0;
+        const lineQty = parseFloat(document.getElementById(`p-qty-${id}`).value) || 1;
+        const shortEdge = Math.min(w, h);
+        const seamEl = document.getElementById(`seam-${id}`);
+        
+        // Seam UI Logic
+        if (w === 0 || h === 0) {
+            seamEl.innerText = "Awaiting Dimensions...";
+            seamEl.className = "mt-2 text-[9px] font-bold uppercase tracking-widest text-gray-400 text-center bg-gray-50 py-1 rounded border border-transparent";
+        } else if (shortEdge > 52) {
+            const pCount = Math.ceil((shortEdge - 1) / 51) * lineQty;
+            seamEl.innerText = `⚠️ Tiled: Produces ${pCount} Panels`;
+            seamEl.className = "mt-2 text-[9px] font-bold uppercase tracking-widest text-orange-600 text-center bg-orange-50 py-1 rounded border border-orange-200";
+        } else {
+            seamEl.innerText = `Produces ${1 * lineQty} Panel(s)`;
+            seamEl.className = "mt-2 text-[9px] font-bold uppercase tracking-widest text-gray-500 text-center bg-gray-50 py-1 rounded border border-transparent";
+        }
+
+        panels.push({
+            label: document.getElementById(`lbl-${id}`).value || 'Unnamed Section',
+            material: document.getElementById(`mat-${id}`).value,
+            qty: lineQty,
+            w: w,
+            h: h,
+            included: document.getElementById(`inc-${id}`).checked
+        });
+    });
+
+    const inputs = {
+        qty: parseFloat(document.getElementById('qty').value) || 1,
+        complexity: document.getElementById('complexity').value,
+        panels: panels,
+        files: parseFloat(document.getElementById('files').value) || 1,
+        incDesign: document.getElementById('inc-design').checked
+    };
+
+    const result = calculateWrap(inputs, backendData);
+    const ret = result.retail;
+    const fmt = (n) => "$" + n.toFixed(2);
+
+    let totalArea = 0;
+    panels.forEach(p => totalArea += ((p.w * p.h) / 144) * p.qty); // Included lineQty in total area calculation
+    
+    // Total & Unit Update
+    document.getElementById('ui-unit').innerText = fmt(ret.unitPrice);
+    document.getElementById('ui-total').innerText = fmt(ret.grandTotal);
+
+    // --- DYNAMIC LINE ITEMS ---
+    let lineItemsHTML = `<div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 pb-1 border-b border-gray-100">Wrap Sections (<span id="lbl-sqft">${(totalArea * inputs.qty).toFixed(1)}</span> sqft)</div>`;
+    
+    ret.panels.forEach(p => {
+        if(p.w > 0 && p.h > 0) {
+            let matTxt = p.material === 'wrap' ? 'Cast Wrap' : (p.material === 'perf' ? 'Window Perf' : 'Spot Decal');
+            let priceDisplay = p.included ? '<span class="text-[9px] bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded uppercase tracking-wider border border-teal-200 shadow-inner">INCLUDED</span>' : fmt(p.retail);
+            
+            lineItemsHTML += `
+            <div class="flex justify-between items-end mb-1.5">
+                <span class="truncate pr-2">
+                    <span class="text-gray-800 font-bold">${p.label} (x${p.qty})</span> 
+                    <span class="text-[9px] text-gray-500 ml-1">(${p.w}"x${p.h}" ${matTxt})</span>
+                </span>
+                <span class="font-bold shrink-0">${priceDisplay}</span>
+            </div>`;
+        }
+    });
+
+    lineItemsHTML += `<div class="flex justify-between items-end text-blue-700 mt-2 pt-2 border-t border-dashed border-gray-200">
+        <span>Installation Labor:</span><span class="font-bold">${fmt(ret.installTotal)}</span>
+    </div>`;
+
+    if (ret.designFee > 0) {
+        lineItemsHTML += `<div class="flex justify-between items-end text-purple-700 mt-1">
+            <span>Design Fee:</span><span class="font-bold">${fmt(ret.designFee)}</span>
+        </div>`;
+    }
+
+    document.getElementById('dynamic-line-items').innerHTML = lineItemsHTML;
+    // --------------------------
+
+    const minOrder = parseFloat(backendData.Retail_Min_Order || 150);
+    document.getElementById('ui-min-text').innerText = `Shop Minimum: $${minOrder}`;
+    document.getElementById('min-badge').classList.toggle('hidden', !ret.isMinApplied);
+
+    // Generate Text
+    let descLines = [];
+    descLines.push(`(x${inputs.qty}) Fleet Vehicles (${inputs.complexity === 'complex' ? 'Van/Complex' : 'Flat/Box Truck'})`);
+    panels.forEach(p => {
+        let matTxt = p.material === 'wrap' ? 'Cast Wrap' : (p.material === 'perf' ? 'Window Perf' : 'Spot Decal');
+        let incTxt = p.included ? ' [Included in Base]' : '';
+        if(p.w > 0 && p.h > 0) descLines.push(` - ${p.label} (x${p.qty}): ${p.w}" x ${p.h}" ${matTxt}${incTxt}`);
+    });
+    document.getElementById('job-desc').value = descLines.join('\n');
+}
+</script>
+</body>
+</html>
