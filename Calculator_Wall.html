@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interior Wall Wraps v1.2</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="signos-core.js"></script>
+<script src="logic_wall.js"></script>
+<style>
+.toggle-checkbox:checked { right: 0; border-color: #2563EB; }
+.toggle-checkbox:checked + .toggle-label { background-color: #2563EB; }
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+</style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans flex flex-col">
+
+<div id="main-card" class="max-w-xl mx-auto my-4 sm:my-10 w-[calc(100%-2rem)] sm:w-full bg-white shadow-2xl overflow-hidden rounded-xl border border-gray-200">
+    <!-- GLOBAL INPUTS -->
+    <div class="p-6 bg-gray-50 border-b border-gray-200 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Locations / Qty</label><input type="number" id="qty" value="1" min="1" class="w-full border border-gray-300 p-2 rounded font-bold text-gray-800 text-lg text-center bg-white shadow-inner" oninput="runCalc()"></div>
+            <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Laminate Finish</label>
+                <select id="lam-type" class="w-full border border-gray-300 p-2 rounded bg-white font-bold text-lg h-[44px] shadow-inner text-gray-800" onchange="runCalc()">
+                    <option value="matte" selected>Matte (Standard)</option>
+                    <option value="gloss">Gloss</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="flex justify-between items-center bg-purple-50 border border-purple-200 p-2 rounded">
+            <label class="flex items-center gap-2 text-[10px] font-bold text-purple-800 cursor-pointer transition"><input type="checkbox" id="inc-design" onchange="runCalc()" class="w-4 h-4 text-purple-600 rounded"> Add Design Fee</label>
+            <div class="flex items-center gap-2"><label class="block text-[10px] font-bold text-gray-400 uppercase">Total Files:</label><input type="number" id="files" value="1" min="1" class="w-16 border border-gray-300 rounded p-1 text-center text-sm font-bold bg-white" oninput="runCalc()"></div>
+        </div>
+    </div>
+
+    <!-- DYNAMIC PANEL SECTIONS -->
+    <div class="p-6">
+        <div class="flex justify-between items-end mb-3">
+            <h3 class="text-xs font-black text-gray-800 uppercase tracking-widest">Architectural Sections</h3>
+            <button onclick="addPanel()" class="text-[10px] font-bold bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1.5 rounded transition shadow-sm">+ ADD SECTION</button>
+        </div>
+        <div id="panel-container" class="space-y-3"></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="bg-white p-6 border-t border-gray-200">
+        <div class="flex justify-between items-center mb-1">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Base Location Price</span>
+            <span class="text-2xl font-bold text-gray-900" id="ui-unit">---</span>
+        </div>
+        <div class="border-t border-gray-100 my-3"></div>
+        <div class="space-y-1 text-xs text-gray-600 pt-2" id="dynamic-line-items"></div>
+        <div class="flex justify-between items-end border-t-2 border-gray-800 my-3 pt-2">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase block">Total Quote</span>
+                <span class="text-[9px] font-bold text-gray-400 uppercase block mt-1" id="ui-min-text">Shop Minimum: $150</span>
+                <div id="min-badge" class="hidden bg-red-100 text-red-600 text-[9px] font-bold px-1 rounded inline-block mt-1">MINIMUM APPLIED</div>
+            </div>
+            <span class="text-3xl font-black text-blue-600" id="ui-total">---</span>
+        </div>
+    </div>
+
+    <!-- DESCRIPTION GENERATOR -->
+    <div class="bg-gray-50 p-4 border-t border-gray-200">
+        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
+        <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-24 text-gray-600 font-mono outline-none" readonly></textarea>
+    </div>
+</div>
+
+<script>
+let backendData = {};
+let panelIdCounter = 0;
+
+window.onload = async function() {
+    injectHeader("Interior Wall Wraps");
+    const u = sessionStorage.getItem('signos_user') || 'Guest';
+    const r = sessionStorage.getItem('signos_role') || 'VIEW';
+    const statusText = document.getElementById("status-text");
+    const statusDot = document.getElementById("status-dot");
+    const verDisplay = document.getElementById("version-display");
+
+    try {
+        const res = await fetch(`${SCRIPT_URL}?tab=PROD_Vinyl_Wraps&ip=${clientIP}&user=${u}&role=${r}&req=view_module`);
+        const data = await res.json();
+        if(data.error) throw new Error(data.error);
+        backendData = data;
+
+        if(statusText) { statusText.innerText = "ONLINE"; statusText.className = "font-bold text-green-500"; statusDot.className = "w-2 h-2 rounded-full bg-green-500"; statusDot.classList.remove("animate-pulse"); }
+        if(verDisplay) { verDisplay.innerText = `(v1.2)`; verDisplay.classList.remove('hidden'); }
+
+        addPanel("Lobby Main Wall", "wall", 1, 120, 96);
+    } catch(e) {
+        if(statusText) { statusText.innerText = "OFFLINE"; statusText.className = "font-bold text-red-500"; }
+        console.error(e);
+    }
+};
+
+function addPanel(defLabel = "", defMat = "wall", defQty = 1, defW = 0, defH = 0) {
+    const id = panelIdCounter++;
+    const container = document.getElementById('panel-container');
+    const div = document.createElement('div');
+    div.className = "panel-row bg-white border border-gray-200 rounded p-3 shadow-sm relative group";
+    div.id = `panel-${id}`;
+    
+    div.innerHTML = `
+        <button onclick="duplicatePanel(${id})" class="absolute -top-2 right-6 bg-blue-100 text-blue-600 hover:bg-blue-500 hover:text-white w-6 h-6 rounded-full text-xs font-bold shadow opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center" title="Duplicate Row">⧉</button>
+        <button onclick="removePanel(${id})" class="absolute -top-2 -right-2 bg-red-100 text-red-600 hover:bg-red-500 hover:text-white w-6 h-6 rounded-full text-xs font-bold shadow opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center" title="Delete Row">✕</button>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+            <div><label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Section Identifier</label><input type="text" id="lbl-${id}" value="${defLabel}" placeholder="e.g. North Conf Room" class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-gray-700 outline-none focus:border-blue-500" oninput="runCalc()"></div>
+            <div><label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Material Type</label>
+                <select id="mat-${id}" class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-gray-700 outline-none focus:border-blue-500 bg-white" onchange="runCalc()">
+                    <option value="wall" ${defMat === 'wall' ? 'selected' : ''}>Wall Wrap Vinyl</option>
+                    <option value="perf" ${defMat === 'perf' ? 'selected' : ''}>Storefront Window Perf</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-3 items-end">
+            <div><label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Line Qty</label><input type="number" id="p-qty-${id}" value="${defQty}" min="1" class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-center outline-none" oninput="runCalc()"></div>
+            <div><label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Total Width (in)</label><input type="number" id="w-${id}" value="${defW || ''}" class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-center outline-none" oninput="runCalc()"></div>
+            <div><label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Total Height (in)</label><input type="number" id="h-${id}" value="${defH || ''}" class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-center outline-none" oninput="runCalc()"></div>
+        </div>
+        <div id="seam-${id}" class="mt-3 text-[9px] font-bold uppercase tracking-widest text-gray-400 text-center bg-gray-50 py-1.5 rounded">Awaiting Dimensions...</div>
+    `;
+    container.appendChild(div);
+    runCalc();
+}
+
+function duplicatePanel(id) {
+    const label = document.getElementById(`lbl-${id}`).value;
+    const mat = document.getElementById(`mat-${id}`).value;
+    const qty = document.getElementById(`p-qty-${id}`).value || 1;
+    const w = document.getElementById(`w-${id}`).value;
+    const h = document.getElementById(`h-${id}`).value;
+    addPanel(label + ' (Copy)', mat, qty, w, h);
+}
+
+function removePanel(id) { document.getElementById(`panel-${id}`).remove(); runCalc(); }
+
+function runCalc() {
+    if(!backendData.Item_Name) return;
+
+    const panels = [];
+    document.querySelectorAll('.panel-row').forEach(row => {
+        const id = row.id.split('-')[1]; // Fixed index
+        const w = parseFloat(document.getElementById(`w-${id}`).value) || 0;
+        const h = parseFloat(document.getElementById(`h-${id}`).value) || 0;
+        const lineQty = parseFloat(document.getElementById(`p-qty-${id}`).value) || 1;
+        const shortEdge = Math.min(w, h);
+        const longEdge = Math.max(w, h);
+        const seamEl = document.getElementById(`seam-${id}`);
+        
+        if (w === 0 || h === 0) { seamEl.innerText = "Awaiting Dimensions..."; seamEl.className = "mt-3 text-[9px] font-bold uppercase tracking-widest text-gray-400 text-center bg-gray-50 py-1.5 rounded border border-transparent"; } 
+        else if (longEdge > 1200) { seamEl.innerText = `⚠️ OVERSIZED: Exceeds 100ft roll length`; seamEl.className = "mt-3 text-[9px] font-bold uppercase tracking-widest text-white text-center bg-red-600 py-1.5 rounded shadow-inner"; } 
+        else if (shortEdge > 52) { const pCount = Math.ceil((shortEdge - 1) / 51) * lineQty; seamEl.innerText = `⚠️ Tiled: Produces ${pCount} Vertical Panels`; seamEl.className = "mt-3 text-[9px] font-bold uppercase tracking-widest text-orange-700 text-center bg-orange-100 py-1.5 rounded border border-orange-200"; } 
+        else { seamEl.innerText = `Produces ${1 * lineQty} Panel(s)`; seamEl.className = "mt-3 text-[9px] font-bold uppercase tracking-widest text-green-700 text-center bg-green-50 py-1.5 rounded border border-green-200"; }
+
+        panels.push({ 
+            label: document.getElementById(`lbl-${id}`).value || 'Unnamed Section', 
+            material: document.getElementById(`mat-${id}`).value, 
+            qty: lineQty,
+            w: w, 
+            h: h 
+        });
+    });
+
+    const inputs = {
+        qty: parseFloat(document.getElementById('qty').value) || 1,
+        panels: panels,
+        lam: document.getElementById('lam-type').value,
+        files: parseFloat(document.getElementById('files').value) || 1,
+        incDesign: document.getElementById('inc-design').checked
+    };
+
+    const result = calculateWall(inputs, backendData);
+    const ret = result.retail;
+    const fmt = (n) => "$" + n.toFixed(2);
+
+    let totalArea = 0;
+    panels.forEach(p => totalArea += ((p.w * p.h) / 144) * p.qty); // Include Line Qty
+    
+    document.getElementById('ui-unit').innerText = fmt(ret.unitPrice);
+    document.getElementById('ui-total').innerText = fmt(ret.grandTotal);
+
+    // --- DYNAMIC LINE ITEMS ---
+    let lineItemsHTML = `<div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 pb-1 border-b border-gray-100">Architectural Sections (<span id="lbl-sqft">${(totalArea * inputs.qty).toFixed(1)}</span> sqft)</div>`;
+    ret.panels.forEach(p => {
+        if(p.w > 0 && p.h > 0) {
+            let matTxt = p.material === 'wall' ? 'Wall Vinyl' : 'Window Perf';
+            lineItemsHTML += `
+            <div class="flex justify-between items-end mb-1.5">
+                <span class="truncate pr-2">
+                    <span class="text-gray-800 font-bold">${p.label} (x${p.qty})</span> 
+                    <span class="text-[9px] text-gray-500 ml-1">(${p.w}"x${p.h}" ${matTxt})</span>
+                </span>
+                <span class="font-bold shrink-0">${fmt(p.retail)}</span>
+            </div>`;
+        }
+    });
+
+    lineItemsHTML += `<div class="flex justify-between items-end text-blue-700 mt-2 pt-2 border-t border-dashed border-gray-200"><span>Installation Labor:</span><span class="font-bold">${fmt(ret.installTotal)}</span></div>`;
+    if (ret.designFee > 0) lineItemsHTML += `<div class="flex justify-between items-end text-purple-700 mt-1"><span>Design Fee:</span><span class="font-bold">${fmt(ret.designFee)}</span></div>`;
+    document.getElementById('dynamic-line-items').innerHTML = lineItemsHTML;
+
+    const minOrder = parseFloat(backendData.Retail_Min_Order || 150);
+    document.getElementById('ui-min-text').innerText = `Shop Minimum: $${minOrder}`;
+    document.getElementById('min-badge').classList.toggle('hidden', !ret.isMinApplied);
+
+    let descLines = [];
+    descLines.push(`(x${inputs.qty}) Location(s) - Architectural Wall Wraps`);
+    panels.forEach(p => {
+        let matTxt = p.material === 'wall' ? 'GF 226 WallMark' : 'Storefront Window Perf';
+        if(p.w > 0 && p.h > 0) descLines.push(` - ${p.label} (x${p.qty}): ${p.w}" x ${p.h}" (${matTxt})`);
+    });
+    descLines.push(`Finish: ${inputs.lam === 'gloss' ? 'Gloss' : 'Matte'} Laminated. Printed and installed.`);
+    document.getElementById('job-desc').value = descLines.join('\n');
+}
+</script>
+</body>
+</html>
