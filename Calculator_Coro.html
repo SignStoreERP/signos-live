@@ -8,8 +8,8 @@
 <script src="signos-core.js"></script>
 
 <!-- DUAL-TRACK LOGIC ENGINES -->
-<script src="retail_coro.js"></script>
-<script src="cost_coro.js"></script>
+<!-- UNIFIED DUAL-TRACK LOGIC ENGINE -->
+<script src="logic_coro.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans flex flex-col">
 
@@ -196,10 +196,15 @@ function runCalc() {
         w: parseFloat(document.getElementById('w').value) || 24,
         h: parseFloat(document.getElementById('h').value) || 18,
         thickness: document.getElementById('thickness').value,
-        sides: parseInt(document.getElementById('sides').value)
+        sides: parseInt(document.getElementById('sides').value),
+        shape: 'Rectangle', // Added to satisfy logic_coro.js
+        incDesign: false,   // Added to satisfy logic_coro.js
+        setupPerFile: false // Added to satisfy logic_coro.js
     };
 
-    const ret = calculateRetail(inputs, backendData);
+    // Route through the unified engine
+    const result = calculateCoro(inputs, backendData);
+    const ret = result.retail;
     const fmt = (n) => "$" + n.toFixed(2);
 
     document.getElementById('ui-unit').innerText = fmt(ret.unitPrice);
