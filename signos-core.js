@@ -1,7 +1,7 @@
 // SignOS Core System v1.8
 // Features: Dual-Bar "ACM Style" Header Injection
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzEEf1lQ4xkXdSqcLgfLJ3FmNbLGUyElTzmac7U-t1msxLvJL8iSZ30R3bm5dCpmlKqPA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1XUqhSSRprGkRq1SYV7BYF30eyTBWfu63sYWRTGNuGVm0m9aZk3g6YsUB9nWyh6VyXw/exec";
 const IS_DEV_ENV = window.location.href.includes('signos-app') || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
 
 let clientIP = "Unknown";

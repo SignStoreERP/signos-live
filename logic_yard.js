@@ -1,103 +1,53 @@
 /**
- * PURE PHYSICS ENGINE: Yard Signs (v2.1)
- * Added support for Labor Attendance Ratio in Sandbox
+ * ULTRA-SIMPLE RETAIL ENGINE: Yard Signs
+ * Pure Fixed-Tier Lookup Math + No Setup or Design Fees
  */
-
 function calculateYardSign(inputs, data) {
-
-    // --- 1. RETAIL ENGINE ---
-    const baseSS = parseFloat(data.Retail_Price_Sign_SS || 15.00);
-    const adderDS = parseFloat(data.Retail_Price_Sign_DS || 3.00);
-    const stakePrice = parseFloat(data.Retail_Price_Stake || 2.50);
-
-    // Tier Logic
-    let appliedBase = baseSS;
-    let i = 1;
-    const tierLog = [];
+    // 1. Base Print Lookup
+    let baseRate = parseFloat(data.Retail_Price_Sign_SS) || 0;
+    const t1Qty = parseFloat(data.Tier_1_Qty) || 10;
     
-    while(data[`Tier_${i}_Qty`]) {
-        const tQty = parseFloat(data[`Tier_${i}_Qty`]);
-        const tPrice = parseFloat(data[`Tier_${i}_Price`] || 0);
-        
-        if (inputs.qty >= tQty) appliedBase = tPrice;
-        
-        const rowUnit = tPrice + (inputs.sides===2?adderDS:0) + (inputs.hasStakes?stakePrice:0);
-        tierLog.push({ q: tQty, base: tPrice, unit: rowUnit });
-        i++;
+    // Apply 10+ Discount if reached
+    if (inputs.qty >= t1Qty) {
+        baseRate = parseFloat(data.Tier_1_Price) || 0;
     }
 
-    const isCustom = (appliedBase === 0);
+    // Double Sided Adder (Not discounted per original logic)
+    let dsAdder = 0;
+    if (inputs.sides === 2) {
+        dsAdder = parseFloat(data.Retail_Price_Sign_DS) || 0;
+    }
 
-    const unitPrint = appliedBase + (inputs.sides === 2 ? adderDS : 0);
-    const totalPrint = unitPrint * inputs.qty;
-    const unitStake = inputs.hasStakes ? stakePrice : 0;
-    const totalStake = unitStake * inputs.qty;
+    const unitPrint = baseRate + dsAdder;
+    const retailPrint = unitPrint * inputs.qty;
 
-    // Fees
-    const feeSetupBase = parseFloat(data.Retail_Fee_Setup || 15.00);
-    const feeDesignBase = parseFloat(data.Retail_Fee_Design || 45.00);
-    
-    const totalSetup = inputs.setupPerFile ? (feeSetupBase * inputs.files) : feeSetupBase;
-    const totalDesign = inputs.incDesign ? (feeDesignBase * inputs.files) : 0;
+    // 2. Hardware (Stakes) Lookup
+    let stakeTotal = 0;
+    if (inputs.stakes) {
+        let stakePrice = parseFloat(data.Retail_Stake_T1_Price) || 0;
+        const t2Qty = parseFloat(data.Retail_Stake_T2_Qty) || 50;
+        const t3Qty = parseFloat(data.Retail_Stake_T3_Qty) || 100;
 
-    const grandTotalRaw = totalPrint + totalStake + totalSetup + totalDesign;
-    const minOrder = parseFloat(data.Retail_Min_Order || 75);
-    const grandTotal = Math.max(grandTotalRaw, minOrder);
-    const isMinApplied = grandTotalRaw < minOrder;
+        // Apply Stake Quantity Breaks
+        if (inputs.qty >= t3Qty) stakePrice = parseFloat(data.Retail_Stake_T3_Price) || 0;
+        else if (inputs.qty >= t2Qty) stakePrice = parseFloat(data.Retail_Stake_T2_Price) || 0;
 
-    // --- 2. COST ENGINE (IN-HOUSE) ---
-    const bulkTrigger = parseFloat(data.Bulk_Qty_Trigger || 1100);
-    let blankCost = parseFloat(data.Cost_Blank_Standard || 0.91);
-    if (inputs.qty >= bulkTrigger) blankCost = parseFloat(data.Cost_Blank_Bulk || 0.79);
+        stakeTotal = stakePrice * inputs.qty;
+    }
 
-    const waste = parseFloat(data.Waste_Factor || 1.05);
-    const totalMat = (blankCost * waste) * inputs.qty;
-
-    const areaSqFt = (24*18)/144;
-    const totalArea = areaSqFt * inputs.sides * inputs.qty;
-    const totalInk = totalArea * parseFloat(data.Cost_Ink_Base || 0.16);
-
-    const costStakeUnit = inputs.hasStakes ? parseFloat(data.Cost_Stake || 0.65) : 0;
-    const totalStakeCost = costStakeUnit * inputs.qty;
-
-    // Production Time & Labor
-    const bedCap = parseFloat(data.Printer_Bed_Capacity || 3);
-    const speed = parseFloat(data.Machine_Speed_LF_Hr || 25);
-    const lfPerSet = 2.0; 
-    
-    const totalRunHrs = ((lfPerSet / bedCap / speed) * inputs.sides) * inputs.qty;
-    
-    // COSTS
-    const costMachine = totalRunHrs * parseFloat(data.Rate_Machine || 45);
-    
-    // NEW: Attendance Ratio Support
-    // If key missing, defaults to 1.0 (100% attendance / constant monitoring)
-    const attnRatio = parseFloat(data.Labor_Attendance_Ratio || 1.0);
-    const costOp = totalRunHrs * parseFloat(data.Rate_Operator || 25) * attnRatio;
-
-    // Setup uses full attention (Ratio 1.0 always)
-    const setupHrs = (parseFloat(data.Time_Setup_Base||15) + (parseFloat(data.Time_Setup_Adder||2) * inputs.files)) / 60;
-    const costSetup = setupHrs * parseFloat(data.Rate_Operator || 25);
-
-    const totalCost = totalMat + totalInk + totalStakeCost + costMachine + costOp + costSetup;
+    // 3. Shop Minimum Guard
+    const minOrder = parseFloat(data.Retail_Min_Order) || 0;
+    let grandTotalRaw = retailPrint + stakeTotal;
+    let grandTotal = Math.max(grandTotalRaw, minOrder);
 
     return {
         retail: {
-            unitPrice: (totalPrint + totalStake) / inputs.qty,
-            printTotal: totalPrint,
-            stakeTotal: totalStake,
-            setupFee: totalSetup,
-            designFee: totalDesign,
+            unitPrice: grandTotal / inputs.qty,
+            printTotal: retailPrint,
+            stakeTotal: stakeTotal,
             grandTotal: grandTotal,
-            isCustom: isCustom,
-            isMinApplied: isMinApplied,
-            tiers: tierLog
+            isMinApplied: grandTotalRaw < minOrder
         },
-        cost: {
-            total: totalCost
-        },
-        metrics: {
-            margin: (grandTotal - totalCost) / grandTotal
-        }
+        cost: { total: 0 } 
     };
 }
