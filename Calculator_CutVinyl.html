@@ -1,322 +1,300 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cut Vinyl Calculator v4.4</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="signos-core.js"></script>
-
-<!-- DUAL-TRACK LOGIC ENGINE -->
-<script src="logic_cut.js"></script>
-
-<style>
-.toggle-checkbox:checked { right: 0; border-color: #2563EB; }
-.toggle-checkbox:checked + .toggle-label { background-color: #2563EB; }
-input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.custom-scroll::-webkit-scrollbar { width: 5px; }
-.custom-scroll::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
-.custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cut Vinyl Lettering Retail</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="signos-core.js"></script>
+    <script src="logic_cut.js"></script>
+    <style>
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .color-scroll::-webkit-scrollbar { width: 6px; }
+        .color-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px;}
+        .color-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans flex flex-col">
+<body class="bg-gray-100 min-h-screen font-sans flex flex-col pb-10">
 
 <!-- Main Card: Island Mode -->
-<div id="main-card" class="max-w-md mx-auto my-4 sm:my-10 w-[calc(100%-2rem)] sm:w-full bg-white shadow-2xl overflow-hidden rounded-xl border border-gray-200">
+<div id="main-card" class="max-w-md mx-auto mt-6 w-[calc(100%-2rem)] sm:w-full bg-white shadow-lg overflow-hidden rounded-xl border border-gray-200">
 
     <!-- INPUTS -->
     <div class="p-6 space-y-4">
         <div class="grid grid-cols-3 gap-3">
-            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty</label><input type="number" id="qty" value="1" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="runCalc()"></div>
-            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Width</label><input type="number" id="w" value="12" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="runCalc()"></div>
-            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Height</label><input type="number" id="h" value="6" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center" oninput="runCalc()"></div>
+            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty</label><input type="number" id="qty" value="1" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center bg-gray-50 focus:border-blue-500 outline-none" oninput="runCalc()"></div>
+            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Width</label><input type="number" id="w" value="24" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center bg-gray-50 focus:border-blue-500 outline-none" oninput="runCalc()"></div>
+            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Height</label><input type="number" id="h" value="12" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center bg-gray-50 focus:border-blue-500 outline-none" oninput="runCalc()"></div>
         </div>
 
-        <!-- SEAM WARNING (Dynamic) -->
-        <div id="seam-warn" class="hidden bg-orange-50 text-orange-800 text-[10px] font-bold px-3 py-2 rounded border border-orange-200 transition-opacity">
-            ⚠️ Panel seaming required. Dimensions exceed maximum roll width (48"). Graphics will be tiled.
+        <div id="sheet-warn" class="hidden bg-yellow-50 text-yellow-700 text-[10px] font-bold px-3 py-1.5 rounded border border-yellow-200 transition-opacity">
+            ⚠️ Max Roll Width (52") reached. Dimensions auto-adjusted.
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 pt-2">
+            <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Material Series</label>
+                <select id="material" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px] focus:border-blue-500 outline-none" onchange="updateSwatches(); runCalc();">
+                    <option value="651">Oracal 651 (Intermediate / Short Term)</option>
+                    <option value="751" selected>Oracal 751 (High Perf / Flat Surfaces)</option>
+                    <option value="951">Oracal 951 (Premium Cast / Vehicles)</option>
+                    <option value="8500">Oracal 8500 (Translucent / Backlit)</option>
+                    <option value="8800">Oracal 8800 (Premium Translucent)</option>
+                    <option value="8510">Oracal 8510 (Etched / Frosted Glass)</option>
+                    <option value="8810">Oracal 8810 (Frosted Cast Glass)</option>
+                    <option value="Specialty">Specialty (Metallic / Fluorescent)</option>
+                </select>
+            </div>
         </div>
         
-        <!-- ROLL WIDTH INDICATOR -->
-        <div id="ui-sheet-indicator" class="text-[9px] font-bold text-gray-400 text-center uppercase tracking-widest bg-gray-50 py-1 rounded border border-gray-100">
-            Producing from: 24" Roll
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Application</label>
-                <select id="material" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px]" onchange="initColors(); runCalc()">
-                    <option value="Flat">Flat Surface (751)</option>
-                    <option value="Vehicle">Vehicle App (951)</option>
-                    <option value="Backlit_8500">Backlit Std (8500)</option>
-                    <option value="Backlit_8800">Backlit Premium (8800)</option>
-                </select>
+        <!-- DYNAMIC COLOR SWATCHES -->
+        <div class="mt-2">
+            <div class="flex justify-between items-end mb-1">
+                <label class="block text-[10px] font-bold text-gray-500 uppercase">Vinyl Color</label>
+                <span id="selected-color-label" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">None Selected</span>
             </div>
-            <div>
-                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Weeding</label>
-                <select id="complexity" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px]" onchange="runCalc()">
-                    <option value="Simple">Simple (Large/Block)</option>
-                    <option value="Complex">Complex (Small/Serif)</option>
-                </select>
+            <div id="color-grid" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto color-scroll p-3 border rounded-lg bg-gray-50 shadow-inner">
+                <div class="text-xs text-gray-400 font-bold italic w-full text-center py-4 animate-pulse">Loading Swatches...</div>
             </div>
         </div>
 
-        <div class="space-y-2 border-t border-gray-100 pt-2">
+        <div class="grid grid-cols-1 gap-4 border-t border-gray-100 pt-4 mt-2">
             <div>
-                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Vinyl Color Selection</label>
-                <div class="flex items-center gap-2 mb-2 bg-gray-50 p-2 rounded border border-gray-200">
-                    <div id="selected-swatch" class="w-6 h-6 rounded border border-gray-300 shadow-inner bg-white"></div>
-                    <input type="text" id="vinyl-color" placeholder="Select a color below or type code..." class="flex-1 bg-transparent text-sm font-bold text-gray-800 outline-none" oninput="runCalc()">
-                </div>
-                <div id="color-grid" class="flex flex-wrap gap-1.5 p-2 max-h-48 overflow-y-auto custom-scroll bg-gray-50 border border-gray-200 rounded shadow-inner"></div>
-            </div>
-
-            <div class="flex justify-between items-center bg-purple-50 border border-purple-200 p-2 rounded mt-2">
-                <label class="flex items-center gap-2 text-[10px] font-bold text-purple-800 cursor-pointer transition"><input type="checkbox" id="inc-design" onchange="runCalc()" class="w-4 h-4 text-purple-600 rounded"> Add Design Fee</label>
-                <div class="flex items-center gap-2"><label class="block text-[10px] font-bold text-gray-400 uppercase">Total Files:</label><input type="number" id="files" value="1" min="1" class="w-16 border border-gray-300 rounded p-1 text-center text-sm font-bold bg-white" oninput="runCalc()"></div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Weeding Complexity</label>
+                <select id="weeding" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px] focus:border-blue-500 outline-none" onchange="runCalc()">
+                    <option value="Standard">Standard (Large Text / Solid Shapes)</option>
+                    <option value="Complex">Complex (Small Text / Intricate Logos)</option>
+                </select>
             </div>
         </div>
     </div>
 
     <!-- RESULTS -->
-    <div class="bg-white p-6 border-t border-gray-200">
-        <div class="flex justify-between items-center mb-1">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">Base Unit Price</span>
-            <span class="text-2xl font-bold text-gray-900" id="ui-unit">---</span>
+    <div class="bg-blue-50 p-6 border-t border-blue-100 shadow-inner">
+        <div class="flex justify-between items-end mb-2">
+            <span class="text-[10px] font-black text-blue-800 uppercase tracking-widest">Unit Price</span>
+            <span id="ui-unit" class="text-2xl font-black text-blue-900 tracking-tight">$0.00</span>
         </div>
-
-        <!-- DISCOUNT TABLE -->
-        <div class="mb-4 text-right">
-            <button onclick="toggleDiscounts()" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wide inline-flex items-center gap-1 ml-auto">
-                Show Volume Discounts
-                <svg id="disc-arrow" class="w-3 h-3 transition-transform duration-200 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
-            <div id="disc-table" class="hidden mt-2 bg-blue-50 rounded p-2 text-xs border border-blue-100">
-                <table class="w-full text-right">
-                    <thead class="text-gray-400 text-[9px] uppercase border-b border-blue-200"><tr><th class="pr-4 pb-1">Qty</th><th class="pr-4 pb-1">Base Graphic</th><th class="pb-1 text-blue-600">You Pay</th></tr></thead>
-                    <tbody id="tier-rows" class="font-bold text-gray-700"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="border-t border-gray-100 my-3"></div>
+        
+        <div class="border-t border-blue-200/50 my-3"></div>
 
         <!-- LINE ITEMS -->
-        <div class="space-y-1 text-xs text-gray-600 border-t border-dashed border-gray-200 pt-3">
-            <div class="flex justify-between"><span>Base Vinyl (<span id="lbl-sqft">0</span> sqft):</span><span id="ui-print" class="font-bold">$0.00</span></div>
-            <div class="flex justify-between text-pink-700 hidden" id="row-weed"><span>Complex Weeding Adder:</span><span id="ui-weed" class="font-bold">$0.00</span></div>
-            <div class="flex justify-between text-purple-700 hidden" id="row-design"><span>Design Fee:</span><span id="ui-design" class="font-bold">$0.00</span></div>
+        <div class="space-y-1 text-xs text-blue-900/70 pt-1">
+            <div class="flex justify-between"><span>Cut Vinyl (<span id="lbl-sqft">0</span> sqft):</span><span id="ui-print" class="font-bold">$0.00</span></div>
         </div>
 
-        <div class="flex justify-between items-end border-t-2 border-gray-800 my-3 pt-2">
+        <div class="flex justify-between items-end border-t-2 border-blue-800 my-3 pt-2">
             <div>
-                <span class="text-xs font-bold text-gray-400 uppercase block">Total Quote</span>
-                <span class="text-[9px] font-bold text-gray-400 uppercase block mt-1" id="ui-min-text">Shop Minimum: $45</span>
-                <div id="min-badge" class="hidden bg-red-100 text-red-600 text-[9px] font-bold px-1 rounded inline-block mt-1">MINIMUM APPLIED</div>
+                <span class="text-xs font-bold text-blue-800 uppercase block">Total Quote</span>
+                <span class="text-[9px] font-bold text-blue-600 uppercase block mt-1" id="ui-min-text">Shop Minimum: $45</span>
+                <div id="min-badge" class="hidden bg-red-100 text-red-600 border border-red-200 text-[9px] font-bold px-1 rounded inline-block mt-1">MINIMUM APPLIED</div>
             </div>
-            <span class="text-3xl font-black text-blue-600" id="ui-total">---</span>
+            <span class="text-3xl font-black text-blue-700" id="ui-total">---</span>
         </div>
     </div>
 
     <!-- DESCRIPTION GENERATOR -->
     <div class="bg-gray-50 p-4 border-t border-gray-200">
         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
-        <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-16 text-gray-600 font-mono outline-none" readonly></textarea>
+        <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-20 text-gray-600 font-mono outline-none" readonly></textarea>
     </div>
+
 </div>
 
 <script>
 let backendData = {};
+let allColors = [];
+let selectedColor = null;
 
-// EXHAUSTIVE MASTER LIST
-const COLORS_STANDARD = [
-    {c:"010", n:"White", h:"#FFFFFF"}, {c:"070", n:"Black", h:"#000000"}, {c:"020", n:"Golden Yellow", h:"#FFC806"},
-    {c:"019", n:"Signal Yellow", h:"#F4A900"}, {c:"021", n:"Yellow", h:"#FED100"}, {c:"022", n:"Light Yellow", h:"#FFEA00"},
-    {c:"025", n:"Brimstone Yellow", h:"#FFF200"}, {c:"219", n:"Cast Yellow", h:"#FFD600"}, {c:"026", n:"Purple Red", h:"#751421"},
-    {c:"312", n:"Burgundy", h:"#681123"}, {c:"030", n:"Dark Red", h:"#82181C"}, {c:"031", n:"Red", h:"#C0142C"},
-    {c:"032", n:"Light Red", h:"#D9282C"}, {c:"305", n:"Geranium Red", h:"#E11C2B"}, {c:"047", n:"Orange Red", h:"#DD331D"},
-    {c:"034", n:"Orange", h:"#E54909"}, {c:"036", n:"Light Orange", h:"#F06105"}, {c:"035", n:"Pastel Orange", h:"#F88636"},
-    {c:"404", n:"Purple", h:"#4F2864"}, {c:"040", n:"Violet", h:"#583375"}, {c:"043", n:"Lavender", h:"#886D9D"},
-    {c:"042", n:"Lilac", h:"#BC9FBF"}, {c:"041", n:"Pink", h:"#CC4F81"}, {c:"045", n:"Soft Pink", h:"#EBB7C4"},
-    {c:"402", n:"Cyclamen", h:"#9E2659"}, {c:"050", n:"Dark Blue", h:"#002D58"}, {c:"049", n:"King Blue", h:"#002359"},
-    {c:"086", n:"Brilliant Blue", h:"#004386"}, {c:"057", n:"Traffic Blue", h:"#005B98"}, {c:"051", n:"Gentian Blue", h:"#00458B"},
-    {c:"098", n:"Gentian", h:"#00548F"}, {c:"052", n:"Azure Blue", h:"#005697"}, {c:"053", n:"Light Blue", h:"#5E94D3"},
-    {c:"056", n:"Ice Blue", h:"#98C4E3"}, {c:"066", n:"Turquoise Blue", h:"#00888F"}, {c:"054", n:"Turquoise", h:"#009E96"},
-    {c:"055", n:"Mint", h:"#64C5B3"}, {c:"060", n:"Dark Green", h:"#00442D"}, {c:"061", n:"Green", h:"#006B3F"},
-    {c:"062", n:"Light Green", h:"#008546"}, {c:"064", n:"Yellow Green", h:"#4CA337"}, {c:"063", n:"Lime-Tree Green", h:"#81B930"},
-    {c:"067", n:"Blue Green", h:"#00685A"}, {c:"080", n:"Brown", h:"#52341C"}, {c:"081", n:"Light Brown", h:"#936B3D"},
-    {c:"082", n:"Beige", h:"#D1B896"}, {c:"083", n:"Nut Brown", h:"#A36437"}, {c:"023", n:"Cream", h:"#F1E5AC"},
-    {c:"073", n:"Dark Grey", h:"#4D5054"}, {c:"071", n:"Grey", h:"#737679"}, {c:"076", n:"Telegrey", h:"#8D9092"},
-    {c:"074", n:"Middle Grey", h:"#9EA2A4"}, {c:"072", n:"Light Grey", h:"#C0C4C6"}, {c:"090", n:"Silver Grey", h:"#8A8D8F"},
-    {c:"091", n:"Gold", h:"#897238"}, {c:"092", n:"Copper", h:"#8C5230"}, {c:"093", n:"Anthracite", h:"#3E4145"},
-    {c:"944", n:"Red Gold", h:"#965A3D"}, {c:"932", n:"Graphite", h:"#363636"}, {c:"369", n:"Red Brown", h:"#5E3128"},
-    {c:"029", n:"Fluorescent Yellow", h:"#E8F416"}, {c:"037", n:"Fluorescent Orange", h:"#FF5E00"}, {c:"038", n:"Fluorescent Red Orange", h:"#FF3300"},
-    {c:"039", n:"Fluorescent Red", h:"#FF0000"}, {c:"046", n:"Fluorescent Pink", h:"#FF007F"}, {c:"069", n:"Fluorescent Green", h:"#00FF00"}
-];
+function enforceLimits(maxShort) {
+    let wEl = document.getElementById('w');
+    let hEl = document.getElementById('h');
+    let warnEl = document.getElementById('sheet-warn');
+    if (!wEl || !hEl) return;
+    
+    let w = parseFloat(wEl.value) || 0;
+    let h = parseFloat(hEl.value) || 0;
+    let didClamp = false;
 
-const COLORS_BACKLIT = [
-    {c:"010", n:"Translucent White", h:"#F5F5F5"}, {c:"070", n:"Translucent Black", h:"#000000"}, {c:"020", n:"Translucent Golden Yellow", h:"#FFC500"},
-    {c:"021", n:"Translucent Yellow", h:"#FFD600"}, {c:"025", n:"Translucent Brimstone", h:"#FFEE00"}, {c:"031", n:"Translucent Red", h:"#BF0D26"},
-    {c:"032", n:"Translucent Light Red", h:"#D62629"}, {c:"034", n:"Translucent Orange", h:"#E34A0A"}, {c:"085", n:"Translucent Pale Pink", h:"#F2C4CE"},
-    {c:"041", n:"Translucent Pink", h:"#CC4F81"}, {c:"053", n:"Translucent Light Blue", h:"#5DA0D9"}, {c:"052", n:"Translucent Azure Blue", h:"#005A9C"},
-    {c:"051", n:"Translucent Gentian Blue", h:"#004B91"}, {c:"057", n:"Translucent Traffic Blue", h:"#0063A5"}, {c:"049", n:"Translucent King Blue", h:"#002D62"},
-    {c:"063", n:"Translucent Lime-Tree", h:"#89C540"}, {c:"061", n:"Translucent Green", h:"#00764A"}, {c:"060", n:"Translucent Dark Green", h:"#004E35"},
-    {c:"079", n:"Translucent Red Brown", h:"#632A1D"}, {c:"074", n:"Translucent Middle Grey", h:"#9EA2A4"}, {c:"073", n:"Translucent Dark Grey", h:"#525559"},
-    {c:"090", n:"Translucent Silver Grey", h:"#96989A"}, {c:"091", n:"Translucent Gold", h:"#9C8346"}
-];
+    if (w > maxShort && h > maxShort) {
+        if (w > h) { h = maxShort; hEl.value = h; } else { w = maxShort; wEl.value = w; }
+        didClamp = true;
+    }
 
-function initColors() {
+    if (warnEl) {
+        if (didClamp) {
+            warnEl.classList.remove('hidden');
+            clearTimeout(warnEl.timeoutId);
+            warnEl.timeoutId = setTimeout(() => warnEl.classList.add('hidden'), 3000);
+        }
+    }
+}
+
+// BUILDS THE COLOR SWATCH GRID DYNAMICALLY
+function updateSwatches() {
+    const series = document.getElementById('material').value;
     const grid = document.getElementById('color-grid');
-    const appType = document.getElementById('material').value; 
-    if (!grid) return;
     grid.innerHTML = '';
+    selectedColor = null;
     
-    const activePalette = (appType.includes('Backlit')) ? COLORS_BACKLIT : COLORS_STANDARD;
+    document.getElementById('selected-color-label').innerText = 'Select from below';
+    document.getElementById('selected-color-label').classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-100');
+    document.getElementById('selected-color-label').classList.add('bg-orange-50', 'text-orange-600', 'border-orange-200');
+
+    // Filter matched series
+    let filtered = allColors.filter(c => {
+        if (!c.Series_ID) return false;
+        const matchesSeries = String(c.Series_ID).includes(String(series));
+        const isInStock = (c.In_Stock === true || String(c.In_Stock).toUpperCase() === 'TRUE');
+        return matchesSeries && isInStock;
+    });
     
-    activePalette.forEach(col => {
-        const div = document.createElement('div');
-        div.className = "w-6 h-6 rounded cursor-pointer border border-gray-300 hover:scale-110 transition shadow-sm shrink-0";
-        div.style.backgroundColor = col.h;
-        div.title = `${col.n} (${col.c})`;
-        div.onclick = () => {
-            document.getElementById('vinyl-color').value = `${col.n} (${col.c})`;
-            document.getElementById('selected-swatch').style.backgroundColor = col.h;
+    // FIX 1: If no swatches exist, provide a fallback "Custom / TBD" button so the user can proceed cleanly
+    if(filtered.length === 0) {
+        const fallbackBtn = document.createElement('button');
+        fallbackBtn.className = "w-full py-2 rounded border-2 border-blue-400 bg-blue-50 text-blue-700 text-xs font-bold shadow-sm hover:bg-blue-100 transition focus:outline-none flex items-center justify-center";
+        fallbackBtn.innerText = "Set Color as Custom / TBD";
+        fallbackBtn.onclick = () => {
+            selectedColor = { Color_Code: 'TBD', Display_Name: 'Custom/Unlisted Color' };
+            const label = document.getElementById('selected-color-label');
+            label.innerText = `Custom Color (TBD)`;
+            label.classList.remove('bg-orange-50', 'text-orange-600', 'border-orange-200');
+            label.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-100');
             runCalc();
         };
-        grid.appendChild(div);
+        grid.appendChild(fallbackBtn);
+        fallbackBtn.click(); // Auto-select it
+        return;
+    }
+
+    filtered.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = "w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm hover:scale-110 transition focus:outline-none flex items-center justify-center relative group overflow-hidden";
+        
+        // Grab Hex Code or URL
+        let hexOrUrl = (c.Hex_Code && c.Hex_Code !== 'N/A' && c.Hex_Code.trim() !== '') ? c.Hex_Code.trim() : '#ffffff';
+        
+        // FIX 2: Better image logic. If the backend cell starts with "http", render as an image.
+        if (hexOrUrl.toLowerCase().startsWith('http')) {
+            btn.style.backgroundImage = `url('${hexOrUrl}')`;
+            btn.style.backgroundSize = 'cover';
+            btn.style.backgroundPosition = 'center';
+            btn.classList.add('border-gray-200');
+        } else {
+            btn.style.backgroundColor = hexOrUrl;
+            if(hexOrUrl.toUpperCase() === '#FFFFFF') {
+                btn.classList.add('border-gray-200');
+                // Only stamp "CLR" if the spreadsheet is actually missing data entirely
+                if(!c.Hex_Code || c.Hex_Code === 'N/A' || c.Hex_Code.trim() === '') {
+                    btn.innerHTML = '<span class="text-[8px] font-black text-gray-400">CLR</span>';
+                }
+            }
+        }
+        
+        btn.title = `${c.Color_Code} - ${c.Display_Name}`;
+        
+        btn.onclick = () => {
+            Array.from(grid.children).forEach(child => {
+                child.classList.remove('ring-2', 'ring-offset-1', 'ring-blue-500', 'border-transparent');
+                child.classList.add('border-gray-300');
+            });
+            
+            btn.classList.add('ring-2', 'ring-offset-1', 'ring-blue-500', 'border-transparent');
+            btn.classList.remove('border-gray-300');
+            
+            selectedColor = c;
+            
+            const label = document.getElementById('selected-color-label');
+            label.innerText = `${c.Color_Code} - ${c.Display_Name}`;
+            label.classList.remove('bg-orange-50', 'text-orange-600', 'border-orange-200');
+            label.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-100');
+            
+            runCalc();
+        };
+        grid.appendChild(btn);
     });
 }
 
-window.onload = async function() {
-    injectHeader("Cut Vinyl");
-    initColors();
-
-    const u = sessionStorage.getItem('signos_user') || 'Guest';
-    const r = sessionStorage.getItem('signos_role') || 'VIEW';
-
-    const statusText = document.getElementById("status-text");
-    const statusDot = document.getElementById("status-dot");
-    const verDisplay = document.getElementById("version-display");
+function runCalc() {
+    if(!backendData.Retail_Min_Order) return;
+    enforceLimits(52); 
 
     try {
-        const res = await fetch(`${SCRIPT_URL}?tab=PROD_Cut_Vinyl&ip=${clientIP}&user=${u}&role=${r}&req=view_module`);
-        const data = await res.json();
+        const inputs = {
+            qty: parseFloat(document.getElementById('qty').value) || 1,
+            w: parseFloat(document.getElementById('w').value) || 24,
+            h: parseFloat(document.getElementById('h').value) || 12,
+            material: document.getElementById('material').value, 
+            weeding: document.getElementById('weeding').value
+        };
 
-        if(data.error) throw new Error(data.error);
-        backendData = data;
+        const result = calculateCutVinyl(inputs, backendData);
+        if (!result || !result.retail) return;
 
+        const ret = result.retail;
+        const fmt = (n) => "$" + (n || 0).toFixed(2);
+        
+        const totalSqFt = ((inputs.w * inputs.h) / 144) * inputs.qty;
+
+        document.getElementById('lbl-sqft').innerText = totalSqFt.toFixed(1);
+        document.getElementById('ui-unit').innerText = fmt(ret.unitPrice);
+        document.getElementById('ui-total').innerText = fmt(ret.grandTotal);
+        document.getElementById('ui-print').innerText = fmt(ret.printTotal);
+
+        const minOrder = parseFloat(backendData.Retail_Min_Order || 45);
+        document.getElementById('ui-min-text').innerText = `Shop Minimum: $${minOrder}`;
+        document.getElementById('min-badge').classList.toggle('hidden', !ret.isMinApplied);
+
+        const matSelect = document.getElementById('material');
+        const matTxt = matSelect.options[matSelect.selectedIndex].text;
+        const weedTxt = inputs.weeding === 'Complex' ? ' (Complex Weeding)' : ' (Standard Weeding)';
+        const colorTxt = selectedColor ? ` Color: [${selectedColor.Color_Code}] ${selectedColor.Display_Name}.` : ' Color: TBD.';
+        
+        document.getElementById('job-desc').value = `(x${inputs.qty}) ${inputs.w}" x ${inputs.h}" Cut Vinyl Lettering.\nMaterial: ${matTxt}.${colorTxt}${weedTxt}. Pre-Masked.`;
+
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+// API FETCH: DUAL REQUEST FOR CONFIG & COLORS
+window.addEventListener('load', async () => {
+    if (typeof injectHeader === 'function') injectHeader("Cut Vinyl Lettering");
+    
+    const statusText = document.getElementById("status-text");
+    const statusDot = document.getElementById("status-dot");
+
+    try {
+        const [configReq, colorReq] = await Promise.all([
+            fetch(`${SCRIPT_URL}?req=view_module&tab=PROD_Cut_Vinyl`),
+            fetch(`${SCRIPT_URL}?req=table&tab=REF_Colors_Vinyl`)
+        ]);
+        
+        backendData = await configReq.json();
+        const rawColors = await colorReq.json();
+
+        if(backendData.error) throw new Error(backendData.error);
+        if(Array.isArray(rawColors)) allColors = rawColors;
+        
         if(statusText) {
             statusText.innerText = "ONLINE";
             statusText.className = "font-bold text-green-500";
-            statusDot.className = "w-2 h-2 rounded-full bg-green-500";
-            statusDot.classList.remove("animate-pulse");
+            if(statusDot) {
+                statusDot.className = "w-2 h-2 rounded-full bg-green-500";
+                statusDot.classList.remove("animate-pulse");
+            }
         }
-
-        if(verDisplay) {
-            verDisplay.innerText = `(v4.4)`;
-            verDisplay.classList.remove('hidden');
-        }
-
-        runCalc();
-
+        
+        updateSwatches();
+        runCalc(); 
     } catch(e) {
         if(statusText) {
             statusText.innerText = "OFFLINE";
             statusText.className = "font-bold text-red-500";
         }
-        console.error(e);
+        console.error("Initialization Failed:", e);
     }
-};
-
-function toggleDiscounts() {
-    const table = document.getElementById('disc-table');
-    const arrow = document.getElementById('disc-arrow');
-    table.classList.toggle('hidden');
-    if (table.classList.contains('hidden')) arrow.classList.add('rotate-90');
-    else arrow.classList.remove('rotate-90');
-}
-
-function runCalc() {
-    if(!backendData.Item_Name) return;
-
-    const w = parseFloat(document.getElementById('w').value) || 12;
-    const h = parseFloat(document.getElementById('h').value) || 6;
-    const minD = Math.min(w, h);
-    
-    // --- DYNAMIC ROLL & SEAM WARNING ---
-    const seamWarnEl = document.getElementById('seam-warn');
-    const indicatorEl = document.getElementById('ui-sheet-indicator');
-    
-    if (minD > 48) {
-        if (seamWarnEl) seamWarnEl.classList.remove('hidden');
-        if (indicatorEl) indicatorEl.innerText = 'Producing from: 48" Roll (Seamed)';
-    } else {
-        if (seamWarnEl) seamWarnEl.classList.add('hidden');
-        if (minD <= 24) {
-            if (indicatorEl) indicatorEl.innerText = 'Producing from: 24" Roll';
-        } else {
-            if (indicatorEl) indicatorEl.innerText = 'Producing from: 48" Roll';
-        }
-    }
-
-    const inputs = {
-        qty: parseFloat(document.getElementById('qty').value) || 1,
-        w: w,
-        h: h,
-        material: document.getElementById('material').value,
-        complexity: document.getElementById('complexity').value,
-        files: parseFloat(document.getElementById('files').value) || 1,
-        incDesign: document.getElementById('inc-design').checked
-    };
-
-    const color = document.getElementById('vinyl-color').value || "Color TBD";
-
-    const result = calculateCutVinyl(inputs, backendData);
-    const ret = result.retail;
-    const fmt = (n) => "$" + n.toFixed(2);
-
-    const totalSqFt = ((inputs.w * inputs.h) / 144) * inputs.qty;
-    document.getElementById('lbl-sqft').innerText = totalSqFt.toFixed(1);
-
-    document.getElementById('ui-unit').innerText = fmt(ret.unitPrice);
-    document.getElementById('ui-total').innerText = fmt(ret.grandTotal);
-    document.getElementById('ui-print').innerText = fmt(ret.printTotal);
-
-    if (ret.weedFee > 0) { 
-        document.getElementById('row-weed').classList.remove('hidden'); 
-        document.getElementById('ui-weed').innerText = fmt(ret.weedFee); 
-    } else {
-        document.getElementById('row-weed').classList.add('hidden');
-    }
-
-    if (ret.designFee > 0) { 
-        document.getElementById('row-design').classList.remove('hidden'); 
-        document.getElementById('ui-design').innerText = fmt(ret.designFee); 
-    } else {
-        document.getElementById('row-design').classList.add('hidden');
-    }
-
-    const minOrder = parseFloat(backendData.Retail_Min_Order || 45);
-    document.getElementById('ui-min-text').innerText = `Shop Minimum: $${minOrder}`;
-    document.getElementById('min-badge').classList.toggle('hidden', !ret.isMinApplied);
-
-    let rowsHtml = "";
-    ret.tiers.forEach(tier => {
-        const trPct = (ret.printTotal / totalSqFt - tier.base) / (ret.printTotal / totalSqFt);
-        const pctDisplay = trPct > 0 ? `<span class="text-[9px] bg-green-100 text-green-700 px-1 rounded ml-1">-${(trPct*100).toFixed(0)}%</span>` : "";
-        rowsHtml += `<tr><td class="pr-4 py-1 text-gray-500">${tier.q}+ ${pctDisplay}</td><td class="pr-4 py-1 text-gray-400">$${(ret.printTotal/inputs.qty).toFixed(2)}</td><td class="py-1 text-blue-600 font-bold">$${tier.unit.toFixed(2)}</td></tr>`;
-    });
-    document.getElementById('tier-rows').innerHTML = rowsHtml;
-
-    let seriesLabel = "";
-    if (inputs.material === 'Flat') seriesLabel = "Oracal 751 (Flat App)";
-    else if (inputs.material === 'Vehicle') seriesLabel = "Oracal 951 (Vehicle App)";
-    else seriesLabel = "Oracal 8500/8800 (Backlit App)";
-
-    const desc = `(x${inputs.qty}) ${inputs.w}" x ${inputs.h}" Cut Vinyl Graphics.\nApplication: ${seriesLabel}. Color: ${color}.\nWeeding: ${inputs.complexity}. App Tape applied.`;
-    document.getElementById('job-desc').value = desc;
-}
+});
 </script>
 </body>
 </html>
