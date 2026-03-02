@@ -30,79 +30,81 @@
             <input type="hidden" id="material" value="Standard">
             
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <button onclick="selectMaterial('Standard')" id="btn-mat-Standard" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1">
-                        <path d="M12.33 4 C10.66 4 8.8 4.7 7.41 5.9 C4.81 8.1 3.5 11.3 3.5 14.8 C3.5 18.3 4.8 21.6 7.41 23.7 C8.8 24.9 10.66 25.5 12.33 25.5 C14 25.5 15.86 24.9 17.26 23.7 C19.86 21.6 21.17 18.3 21.17 14.8 C21.17 11.3 19.86 8.1 17.26 5.9 C15.86 4.7 14 4 12.33 4 Z m5.08 4.5 V18.6 C17.41 20.4 16.01 21.8 14.21 21.8 L12 21.8 V7 L14.21 7 C16.01 7 17.41 8.6 17.41 8.6 Z" stroke-width="2"></path>
-                        <path d="M9 13 H17" stroke-width="2"></path>
-                        <path d="M9 16 H17" stroke-width="2"></path>
-                    </svg>
-                    <span class="text-[9px] font-bold text-center leading-tight">General<br>Purpose</span>
-                </button>
+    <button onclick="selectMaterial('Standard')" id="btn-mat-Standard" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.4 4.6a10 10 0 1 1-14.8 14.8A10 10 0 0 1 15 3.5l-.5 5 5-.5a10 10 0 0 1-.1-3.4z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 3.5c0 2.5 2.5 5 5 5" />
+        </svg>
+        <span class="text-[9px] font-bold text-center leading-tight">General<br>Purpose</span>
+    </button>
 
-                <button onclick="selectMaterial('Cast')" id="btn-mat-Cast" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1">
-                        <path d="M12 21 a3 3 0 1 0 0 -6 a3 3 0 0 0 0 6 Z" stroke-width="2"></path>
-                        <path d="M12 18 a1 1 0 1 0 0 -2 a1 1 0 0 0 0 2 Z" stroke-width="2"></path>
-                        <path d="M4.5 21 a3 3 0 1 0 0 -6 a3 3 0 0 0 0 6 Z" stroke-width="2"></path>
-                        <path d="M4.5 18 a1 1 0 1 0 0 -2 a1 1 0 0 0 0 2 Z" stroke-width="2"></path>
-                        <path d="M7.5 18 L9.1 18 H9.1" stroke-width="2"></path>
-                        <path d="M12.4 12 L14 12" stroke-width="2"></path>
-                        <path d="M1.3 12.8 C1.2 12 1.3 11 1.6 10 C1.9 9 2.4 8.2 3.2 7.6 C4 7 4.8 6.7 5.6 6.7 L11.4 6.7 C13.4 6.7 15.3 7.8 16.6 9.5 L19.4 13.5 a2 2 0 0 1 .4 .6 v4 a1 1 0 0 1 -1 1 L14.9 19" stroke-width="2"></path>
-                        <path d="M3.2 13 L2.3 13 L2.3 15 a1 1 0 0 0 1 1 H3.2" stroke-width="2"></path>
-                        <path d="M14.9 19 H15.1" stroke-width="2"></path>
-                        <path d="M5.6 6.7 v5.3" stroke-width="2"></path>
-                        <path d="M9.1 12 V12 Z" stroke-width="2"></path>
-                        <path d="M14 6.7 v3.7" stroke-width="2"></path>
-                        <path d="M19.4 13.5 H21 a1 1 0 0 1 1 1 L21 16 H19.8" stroke-width="2"></path>
-                        <path d="M11.4 6.7 L13 11.5 H14 a1 1 0 0 1 1 1 v2.5 L13 17 L12 16" stroke-width="2"></path>
-                    </svg>
-                    <span class="text-[9px] font-bold text-center leading-tight">Vehicle<br>Wrap</span>
-                </button>
+    <button onclick="selectMaterial('Cast')" id="btn-mat-Cast" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11h-1.1L16 7a2 2 0 0 0-1.8-1H9.8c-.8 0-1.4.4-1.8 1l-2 4H5a2 2 0 0 0-2 2v3a1 1 0 0 0 1 1h1a2 2 0 0 0 4 0h6a2 2 0 0 0 4 0h1a1 1 0 0 0 1-1v-3a2 2 0 0 0-2-2zM7 17a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm10 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
+        </svg>
+        <span class="text-[9px] font-bold text-center leading-tight">Vehicle<br>Wrap</span>
+    </button>
 
-                <button onclick="selectMaterial('Clear')" id="btn-mat-Clear" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2" stroke-dasharray="4 2"></rect></svg>
-                    <span class="text-[9px] font-bold text-center leading-tight">Clear<br>Vinyl</span>
-                </button>
+    <button onclick="selectMaterial('Clear')" id="btn-mat-Clear" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1">
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="1.5" />
+            <path stroke-dasharray="2 2" d="M4 12h16M12 4v16" stroke-width="1" opacity="0.6" />
+        </svg>
+        <span class="text-[9px] font-bold text-center leading-tight">Clear<br>Vinyl</span>
+    </button>
 
-                <button onclick="selectMaterial('Translucent')" id="btn-mat-Translucent" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
-                    <svg fill="currentColor" fill-opacity="0.3" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"></rect></svg>
-                    <span class="text-[9px] font-bold text-center leading-tight">Translucent<br>Backlit</span>
-                </button>
+    <button onclick="selectMaterial('Translucent')" id="btn-mat-Translucent" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+        <svg fill="currentColor" fill-opacity="0.25" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1">
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="1.5" />
+            <circle cx="12" cy="12" r="3" fill-opacity="0.5" />
+        </svg>
+        <span class="text-[9px] font-bold text-center leading-tight">Translucent<br>Backlit</span>
+    </button>
 
-                <button onclick="selectMaterial('Reflective')" id="btn-mat-Reflective" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 3v18M4 8l8 4-8 4m4-4h4"></path></svg>
-                    <span class="text-[9px] font-bold text-center leading-tight">Reflective<br>Vinyl</span>
-                </button>
+    <button onclick="selectMaterial('Reflective')" id="btn-mat-Reflective" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 4v16M4 8l8 4-8 4" />
+            <path stroke-linecap="round" stroke-width="1.5" d="M8 12h6" opacity="0.7" />
+        </svg>
+        <span class="text-[9px] font-bold text-center leading-tight">Reflective<br>Vinyl</span>
+    </button>
 
-                <button onclick="selectMaterial('Drywall')" id="btn-mat-Drywall" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l9 5 9-5V7l-9-5-9 5v10z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9 5 9-5"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v10"></path></svg>
-                    <span class="text-[9px] font-bold text-center leading-tight">Drywall<br>(Smooth)</span>
-                </button>
+    <button onclick="selectMaterial('Drywall')" id="btn-mat-Drywall" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 17l9 5 9-5V7l-9-5-9 5v10zM3 7l9 5 9-5M12 12v10" />
+        </svg>
+        <span class="text-[9px] font-bold text-center leading-tight">Drywall<br>(Smooth)</span>
+    </button>
 
-                <button onclick="selectMaterial('Textured')" id="btn-mat-Textured" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l9 5 9-5V7l-9-5-9 5v10z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9 5 9-5"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v10"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 9.5l-4.5 2.5m4.5 2.5l-4.5 2.5"></path></svg>
-                    <span class="text-[9px] font-bold text-center leading-tight">Textured<br>Wall</span>
-                </button>
+    <button onclick="selectMaterial('Textured')" id="btn-mat-Textured" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 17l9 5 9-5V7l-9-5-9 5v10zM3 7l9 5 9-5M12 12v10" />
+            <path stroke-linecap="round" d="M16 10l-4 2m8 2l-4 2M8 14l-4 2" opacity="0.6" />
+        </svg>
+        <span class="text-[9px] font-bold text-center leading-tight">Textured<br>Wall</span>
+    </button>
 
-                <button onclick="selectMaterial('Perf')" id="btn-mat-Perf" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"></rect><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m-8-8h16"></path></svg>
-                    <span class="text-[9px] font-bold text-center leading-tight">Window<br>Perf</span>
-                </button>
-            </div>
+    <button onclick="selectMaterial('Perf')" id="btn-mat-Perf" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1">
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="1.5" />
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M8 8h.01M12 8h.01M16 8h.01M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01" />
+        </svg>
+        <span class="text-[9px] font-bold text-center leading-tight">Window<br>Perf</span>
+    </button>
+</div>
         </div>
 
         <!-- DEPENDENT LAMINATE DROPDOWN -->
         <div class="pt-2">
             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Overlaminate Setup</label>
-            <select id="laminate" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px] focus:border-blue-500 outline-none shadow-sm" onchange="runCalc()">
+            <select id="laminate" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px] focus:border-blue-500 outline-none shadow-sm" onchange="updateDescription()">
                 <!-- Populated by JavaScript -->
             </select>
         </div>
 
-        <!-- STATIC REFERENCE NOTICE -->
-        <div class="text-[10px] text-blue-800 bg-blue-50 p-3 rounded border border-blue-200 font-medium leading-tight flex items-center justify-between shadow-sm">
-            <span class="mr-2">The print media and laminate pairings are strictly based on the <b>Print Media and Design / Work Order Description</b> handout.</span>
-            <a href="docs_print_media.html" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded shadow-sm transition shrink-0 uppercase tracking-widest text-[9px]">View Guide</a>
+        <!-- DYNAMIC COMBINATION DESCRIPTION -->
+        <div id="mat-lam-desc" class="text-[10px] text-blue-700 bg-blue-50 p-2.5 rounded border border-blue-200 font-bold leading-tight">
+            <!-- Populated by JavaScript -->
         </div>
 
         <div class="grid grid-cols-2 gap-4 pt-2">
@@ -131,6 +133,7 @@
                 </select>
             </div>
         </div>
+
     </div>
 
     <!-- RESULTS -->
@@ -150,34 +153,79 @@
         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
         <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-20 text-gray-600 font-mono outline-none" readonly></textarea>
     </div>
+
 </div>
 
 <script>
 let backendData = {};
 
-// CLEANED DYNAMIC LAMINATE PAIRING DICTIONARY (Removed descriptions)
+// DYNAMIC LAMINATE PAIRING DICTIONARY 
+// The first item in the 'lams' array automatically becomes the default selection in the UI.
 const matLamMap = {
-    "Standard": { name: "General Purpose (Arlon 4500GLX)", lams: [{val: "Arlon 3210 Gloss", text: "Arlon 3210 Premium Gloss"}] },
-    "Cast": { name: "Vehicle Wrap (3M IJ180)", lams: [{val: "3M 8518 Gloss", text: "3M 8518 Gloss"}, {val: "3M 8519 Luster", text: "3M 8519 Luster"}, {val: "3M 8520 Matte", text: "3M 8520 Matte"}] },
-    "Clear": { name: "Clear (Oracal 3640)", lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}, {val: "None", text: "No Laminate"}] },
-    "Translucent": { name: "Translucent (Oracal 3850)", lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}, {val: "None", text: "No Laminate"}] },
-    "Reflective": { name: "Reflective (Oralite 5400)", lams: [{val: "Arlon 3210 Gloss", text: "Arlon 3210 Premium Gloss"}] },
-    "Drywall": { name: "Drywall (GF226 Smooth)", lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}] },
-    "Textured": { name: "Textured Wall (3M IJ8624)", lams: [{val: "3M 8524 Luster", text: "3M 8524 Textured Luster"}] },
-    "Perf": { name: "Window Perf", lams: [{val: "Optically Clear", text: "Optically Clear Laminate"}, {val: "None", text: "No Laminate"}] }
+    "Standard": {
+        name: "General Purpose (Arlon 4500GLX)",
+        lams: [{val: "Arlon 3210 Gloss", text: "Arlon 3210 Premium Gloss"}],
+        desc: "Digital Print on Arlon 4500GLX w/ Arlon Premium Gloss Laminate."
+    },
+    "Cast": {
+        name: "Vehicle Wrap (3M IJ180)",
+        lams: [
+            {val: "3M 8518 Gloss", text: "3M 8518 Gloss"},
+            {val: "3M 8519 Luster", text: "3M 8519 Luster"},
+            {val: "3M 8520 Matte", text: "3M 8520 Matte"}
+        ],
+        desc: "Digital Print on 3M IJ180 Wrap Vinyl w/ 3M Wrap Laminate."
+    },
+    "Clear": {
+        name: "Clear (Oracal 3640)",
+        lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}, {val: "None", text: "No Laminate"}],
+        desc: "Digital Print on Oracal 3640 Clear Vinyl."
+    },
+    "Translucent": {
+        name: "Translucent (Oracal 3850)",
+        lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}, {val: "None", text: "No Laminate"}],
+        desc: "Digital Print on Oracal 3850 Translucent Vinyl."
+    },
+    "Reflective": {
+        name: "Reflective (Oralite 5400)",
+        lams: [{val: "Arlon 3210 Gloss", text: "Arlon 3210 Premium Gloss"}],
+        desc: "Digital Print on Oracal Reflective Vinyl w/ Arlon Premium Gloss Laminate."
+    },
+    "Drywall": {
+        name: "Drywall (GF226 Smooth)",
+        lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}],
+        desc: "Digital Print on General Formulations Wall Vinyl w/ Arlon Premium Laminate."
+    },
+    "Textured": {
+        name: "Textured Wall (3M IJ8624)",
+        lams: [{val: "3M 8524 Luster", text: "3M 8524 Textured Luster"}],
+        desc: "Digital Print on 3M IJ8624 Textured Wall Vinyl w/ 3M 8524 Textured Luster Laminate."
+    },
+    "Perf": {
+        name: "Window Perf",
+        lams: [{val: "Optically Clear", text: "Optically Clear Laminate"}, {val: "None", text: "No Laminate"}],
+        desc: "Digital Print on Window Perf. Use Optically Clear laminate if requested."
+    }
 };
 
 function selectMaterial(matKey) {
+    // 1. Update the hidden input
     document.getElementById('material').value = matKey;
+
+    // 2. Reset all button styles
     document.querySelectorAll('.mat-btn').forEach(btn => {
         btn.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-700');
         btn.classList.add('border-gray-200', 'bg-white', 'text-gray-500');
     });
+
+    // 3. Highlight the selected button
     const activeBtn = document.getElementById('btn-mat-' + matKey);
     if (activeBtn) {
         activeBtn.classList.remove('border-gray-200', 'bg-white', 'text-gray-500');
         activeBtn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700');
     }
+
+    // 4. Update the child laminate dropdown
     updateLaminates();
 }
 
@@ -185,8 +233,23 @@ function updateLaminates() {
     const matVal = document.getElementById('material').value;
     const lamSelect = document.getElementById('laminate');
     const mapObj = matLamMap[matVal];
+
     lamSelect.innerHTML = '';
-    mapObj.lams.forEach(l => { lamSelect.innerHTML += `<option value="${l.val}">${l.text}</option>`; });
+    
+    // The first item injected here automatically becomes the active/selected option in the UI
+    mapObj.lams.forEach(l => {
+        lamSelect.innerHTML += `<option value="${l.val}">${l.text}</option>`;
+    });
+
+    updateDescription();
+}
+
+function updateDescription() {
+    const matVal = document.getElementById('material').value;
+    const mapObj = matLamMap[matVal];
+    document.getElementById('mat-lam-desc').innerText = mapObj.desc;
+    
+    // Trigger final price calculation
     runCalc();
 }
 
@@ -195,18 +258,23 @@ function enforceLimits(maxShort) {
     if (!wEl || !hEl) return;
     let w = parseFloat(wEl.value) || 0; let h = parseFloat(hEl.value) || 0;
     let didClamp = false;
+
     if (w > maxShort && h > maxShort) {
         if (w > h) { h = maxShort; hEl.value = h; } else { w = maxShort; wEl.value = w; }
         didClamp = true;
     }
     if (warnEl) {
-        if (didClamp) { warnEl.classList.remove('hidden'); clearTimeout(warnEl.timeoutId); warnEl.timeoutId = setTimeout(() => warnEl.classList.add('hidden'), 3000); }
+        if (didClamp) {
+            warnEl.classList.remove('hidden'); clearTimeout(warnEl.timeoutId);
+            warnEl.timeoutId = setTimeout(() => warnEl.classList.add('hidden'), 3000);
+        }
     }
 }
 
 function runCalc() {
     if(!backendData.Retail_Min_Order) return;
     enforceLimits(52);
+
     try {
         const matKey = document.getElementById('material').value;
         const matTxt = matLamMap[matKey].name;
@@ -227,36 +295,53 @@ function runCalc() {
         if (!result || !result.retail) return;
 
         const ret = result.retail; const fmt = (n) => "$" + (n || 0).toFixed(2);
+
         document.getElementById('lbl-sqft').innerText = (((inputs.w * inputs.h) / 144) * inputs.qty).toFixed(1);
         document.getElementById('ui-unit').innerText = fmt(ret.unitPrice);
         document.getElementById('ui-total').innerText = fmt(ret.grandTotal);
         document.getElementById('ui-print').innerText = fmt(ret.printTotal);
+
         document.getElementById('ui-min-text').innerText = `Shop Minimum: $${parseFloat(backendData.Retail_Min_Order || 35)}`;
         document.getElementById('min-badge').classList.toggle('hidden', !ret.isMinApplied);
 
         const cutTxt = inputs.shape === 'Rectangle' ? 'Square Cut' : 'Contour Cut';
         const weedTxt = inputs.weeding === 'Complex' ? ' (Complex Weeding)' : '';
-        const maskTxt = inputs.masking === 'Yes' ? 'Pre-Masked.' : 'No Transfer Tape.';
+        const maskTxt = inputs.masking === 'Yes' ? 'Pre-Masked with Transfer Tape.' : 'No Transfer Tape.';
         const lamTxt = lamVal !== 'None' ? `Laminate: ${lamVal}` : 'No Laminate';
+
         document.getElementById('job-desc').value = `(x${inputs.qty}) ${inputs.w}" x ${inputs.h}" Custom Decals.\nMaterial: ${matTxt}\n${lamTxt}\n${cutTxt}${weedTxt}. ${maskTxt}`;
+
     } catch(e) { console.error(e); }
 }
 
 window.addEventListener('load', async () => {
     if (typeof injectHeader === 'function') injectHeader("Decals & Stickers");
+    
+    // Initialize the button grid (Defaults to Standard)
     selectMaterial('Standard');
+
     const statusText = document.getElementById("status-text");
     const statusDot = document.getElementById("status-dot");
+
     try {
         const req = await fetch(`${SCRIPT_URL}?req=view_module&tab=PROD_Decals`);
         backendData = await req.json();
+
         if(statusText) {
-            statusText.innerText = "ONLINE"; statusText.className = "font-bold text-green-500";
-            if(statusDot) { statusDot.className = "w-2 h-2 rounded-full bg-green-500"; statusDot.classList.remove("animate-pulse"); }
+            statusText.innerText = "ONLINE";
+            statusText.className = "font-bold text-green-500";
+            if(statusDot) {
+                statusDot.className = "w-2 h-2 rounded-full bg-green-500";
+                statusDot.classList.remove("animate-pulse");
+            }
         }
         runCalc();
     } catch(e) {
-        if(statusText) { statusText.innerText = "OFFLINE"; statusText.className = "font-bold text-red-500"; }
+        if(statusText) {
+            statusText.innerText = "OFFLINE";
+            statusText.className = "font-bold text-red-500";
+        }
+        console.error(e);
     }
 });
 </script>
