@@ -11,41 +11,81 @@
 </head>
 <body class="bg-gray-100 min-h-screen font-sans flex flex-col pb-10">
 
-<div id="main-card" class="max-w-md mx-auto mt-6 w-[calc(100%-2rem)] sm:w-full bg-white shadow-lg overflow-hidden rounded-xl border border-gray-200">
+<div id="main-card" class="max-w-xl mx-auto mt-6 w-[calc(100%-2rem)] sm:w-full bg-white shadow-lg overflow-hidden rounded-xl border border-gray-200">
 
     <div class="p-6 space-y-4">
         
         <!-- DIMENSIONS -->
         <div class="grid grid-cols-3 gap-3">
             <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty</label><input type="number" id="qty" value="1" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center bg-gray-50 focus:border-blue-500 outline-none" oninput="runCalc()"></div>
-            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Width</label><input type="number" id="w" value="12" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center bg-gray-50 focus:border-blue-500 outline-none" oninput="runCalc()"></div>
-            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Height</label><input type="number" id="h" value="12" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center bg-gray-50 focus:border-blue-500 outline-none" oninput="runCalc()"></div>
+            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Width (in)</label><input type="number" id="w" value="12" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center bg-gray-50 focus:border-blue-500 outline-none" oninput="runCalc()"></div>
+            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Height (in)</label><input type="number" id="h" value="12" min="1" class="w-full border p-2 rounded font-bold text-gray-800 text-lg text-center bg-gray-50 focus:border-blue-500 outline-none" oninput="runCalc()"></div>
         </div>
         
         <div id="sheet-warn" class="hidden bg-yellow-50 text-yellow-700 text-[10px] font-bold px-3 py-1.5 rounded border border-yellow-200 transition-opacity">⚠️ Max Roll Width (52") reached.</div>
 
-        <!-- DYNAMIC MATERIALS & LAMINATES -->
-        <div class="grid grid-cols-1 gap-4 pt-2">
-            <div>
-                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Print Material</label>
-                <select id="material" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px] focus:border-blue-500 outline-none" onchange="updateLaminates()">
-                    <option value="Standard">General Purpose (Arlon 4500GLX)</option>
-                    <option value="Cast">Vehicle Wrap (3M IJ180)</option>
-                    <option value="Clear">Clear (Oracal 3640)</option>
-                    <option value="Translucent">Translucent (Oracal 3850)</option>
-                    <option value="Reflective">Reflective (Oralite 5400)</option>
-                    <option value="Drywall">Drywall (GF226 Smooth)</option>
-                    <option value="Textured">Textured Wall (3M IJ8624)</option>
-                    <option value="Perf">Window Perf (60/40 or 70/30)</option>
-                </select>
-            </div>
+        <!-- DYNAMIC MATERIALS ICON GRID -->
+        <div class="pt-2">
+            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-2">Print Material Category</label>
+            <input type="hidden" id="material" value="Standard">
             
-            <div>
-                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Overlaminate</label>
-                <select id="laminate" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px] focus:border-blue-500 outline-none" onchange="updateDescription()">
-                    <!-- Populated by JavaScript -->
-                </select>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <!-- Standard / Sticker -->
+                <button onclick="selectMaterial('Standard')" id="btn-mat-Standard" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span class="text-[9px] font-bold text-center leading-tight">General<br>Purpose</span>
+                </button>
+
+                <!-- Vehicle Wrap / Car -->
+                <button onclick="selectMaterial('Cast')" id="btn-mat-Cast" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8l2.5 3.5V15a2 2 0 01-2 2H5.5a2 2 0 01-2-2v-4.5L6 7h2zM5.5 15a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm13 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"></path></svg>
+                    <span class="text-[9px] font-bold text-center leading-tight">Vehicle<br>Wrap</span>
+                </button>
+
+                <!-- Clear / Outline -->
+                <button onclick="selectMaterial('Clear')" id="btn-mat-Clear" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2" stroke-dasharray="4 2"></rect></svg>
+                    <span class="text-[9px] font-bold text-center leading-tight">Clear<br>Vinyl</span>
+                </button>
+
+                <!-- Translucent / Opacity Square -->
+                <button onclick="selectMaterial('Translucent')" id="btn-mat-Translucent" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+                    <svg fill="currentColor" fill-opacity="0.3" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"></rect></svg>
+                    <span class="text-[9px] font-bold text-center leading-tight">Translucent<br>Backlit</span>
+                </button>
+
+                <!-- Reflective / Light Rays -->
+                <button onclick="selectMaterial('Reflective')" id="btn-mat-Reflective" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 3v18M4 8l8 4-8 4m4-4h4"></path></svg>
+                    <span class="text-[9px] font-bold text-center leading-tight">Reflective<br>Vinyl</span>
+                </button>
+
+                <!-- Drywall / Isometric Wall -->
+                <button onclick="selectMaterial('Drywall')" id="btn-mat-Drywall" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l9 5 9-5V7l-9-5-9 5v10z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9 5 9-5"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v10"></path></svg>
+                    <span class="text-[9px] font-bold text-center leading-tight">Drywall<br>(Smooth)</span>
+                </button>
+
+                <!-- Textured Wall / Isometric Brick -->
+                <button onclick="selectMaterial('Textured')" id="btn-mat-Textured" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l9 5 9-5V7l-9-5-9 5v10z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9 5 9-5"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v10"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 9.5l-4.5 2.5m4.5 2.5l-4.5 2.5"></path></svg>
+                    <span class="text-[9px] font-bold text-center leading-tight">Textured<br>Wall</span>
+                </button>
+
+                <!-- Window Perf / Window Pane -->
+                <button onclick="selectMaterial('Perf')" id="btn-mat-Perf" class="mat-btn flex flex-col items-center justify-center p-2 border-2 rounded-lg transition-all focus:outline-none">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-6 h-6 mb-1"><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"></rect><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m-8-8h16"></path></svg>
+                    <span class="text-[9px] font-bold text-center leading-tight">Window<br>Perf</span>
+                </button>
             </div>
+        </div>
+
+        <!-- DEPENDENT LAMINATE DROPDOWN -->
+        <div class="pt-2">
+            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Overlaminate Setup</label>
+            <select id="laminate" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px] focus:border-blue-500 outline-none shadow-sm" onchange="updateDescription()">
+                <!-- Populated by JavaScript -->
+            </select>
         </div>
 
         <!-- DYNAMIC COMBINATION DESCRIPTION -->
@@ -105,13 +145,16 @@
 <script>
 let backendData = {};
 
-// DYNAMIC LAMINATE PAIRING DICTIONARY
+// DYNAMIC LAMINATE PAIRING DICTIONARY 
+// The first item in the 'lams' array automatically becomes the default selection in the UI.
 const matLamMap = {
     "Standard": {
+        name: "General Purpose (Arlon 4500GLX)",
         lams: [{val: "Arlon 3210 Gloss", text: "Arlon 3210 Premium Gloss"}],
         desc: "Digital Print on Arlon 4500GLX w/ Arlon Premium Gloss Laminate."
     },
     "Cast": {
+        name: "Vehicle Wrap (3M IJ180)",
         lams: [
             {val: "3M 8518 Gloss", text: "3M 8518 Gloss"},
             {val: "3M 8519 Luster", text: "3M 8519 Luster"},
@@ -120,30 +163,57 @@ const matLamMap = {
         desc: "Digital Print on 3M IJ180 Wrap Vinyl w/ 3M Wrap Laminate."
     },
     "Clear": {
-        lams: [{val: "None", text: "No Laminate"}, {val: "Arlon Premium", text: "Arlon Premium Laminate"}],
-        desc: "Digital Print on Oracal 3640 Clear Vinyl. (Laminate optional)."
+        name: "Clear (Oracal 3640)",
+        lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}, {val: "None", text: "No Laminate"}],
+        desc: "Digital Print on Oracal 3640 Clear Vinyl."
     },
     "Translucent": {
-        lams: [{val: "None", text: "No Laminate"}, {val: "Arlon Premium", text: "Arlon Premium Laminate"}],
-        desc: "Digital Print on Oracal 3850 Translucent Vinyl. (Laminate optional)."
+        name: "Translucent (Oracal 3850)",
+        lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}, {val: "None", text: "No Laminate"}],
+        desc: "Digital Print on Oracal 3850 Translucent Vinyl."
     },
     "Reflective": {
+        name: "Reflective (Oralite 5400)",
         lams: [{val: "Arlon 3210 Gloss", text: "Arlon 3210 Premium Gloss"}],
         desc: "Digital Print on Oracal Reflective Vinyl w/ Arlon Premium Gloss Laminate."
     },
     "Drywall": {
+        name: "Drywall (GF226 Smooth)",
         lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}],
         desc: "Digital Print on General Formulations Wall Vinyl w/ Arlon Premium Laminate."
     },
     "Textured": {
+        name: "Textured Wall (3M IJ8624)",
         lams: [{val: "3M 8524 Luster", text: "3M 8524 Textured Luster"}],
         desc: "Digital Print on 3M IJ8624 Textured Wall Vinyl w/ 3M 8524 Textured Luster Laminate."
     },
     "Perf": {
-        lams: [{val: "None", text: "No Laminate"}, {val: "Optically Clear", text: "Optically Clear Laminate"}],
+        name: "Window Perf",
+        lams: [{val: "Optically Clear", text: "Optically Clear Laminate"}, {val: "None", text: "No Laminate"}],
         desc: "Digital Print on Window Perf. Use Optically Clear laminate if requested."
     }
 };
+
+function selectMaterial(matKey) {
+    // 1. Update the hidden input
+    document.getElementById('material').value = matKey;
+
+    // 2. Reset all button styles
+    document.querySelectorAll('.mat-btn').forEach(btn => {
+        btn.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-700');
+        btn.classList.add('border-gray-200', 'bg-white', 'text-gray-500');
+    });
+
+    // 3. Highlight the selected button
+    const activeBtn = document.getElementById('btn-mat-' + matKey);
+    if (activeBtn) {
+        activeBtn.classList.remove('border-gray-200', 'bg-white', 'text-gray-500');
+        activeBtn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700');
+    }
+
+    // 4. Update the child laminate dropdown
+    updateLaminates();
+}
 
 function updateLaminates() {
     const matVal = document.getElementById('material').value;
@@ -151,6 +221,8 @@ function updateLaminates() {
     const mapObj = matLamMap[matVal];
 
     lamSelect.innerHTML = '';
+    
+    // The first item injected here automatically becomes the active/selected option in the UI
     mapObj.lams.forEach(l => {
         lamSelect.innerHTML += `<option value="${l.val}">${l.text}</option>`;
     });
@@ -163,7 +235,7 @@ function updateDescription() {
     const mapObj = matLamMap[matVal];
     document.getElementById('mat-lam-desc').innerText = mapObj.desc;
     
-    // Trigger calculation whenever dropdowns change
+    // Trigger final price calculation
     runCalc();
 }
 
@@ -190,19 +262,19 @@ function runCalc() {
     enforceLimits(52);
 
     try {
-        const matEl = document.getElementById('material');
-        const matTxt = matEl.options[matEl.selectedIndex].text;
+        const matKey = document.getElementById('material').value;
+        const matTxt = matLamMap[matKey].name;
         const lamVal = document.getElementById('laminate').value;
 
         const inputs = {
             qty: parseFloat(document.getElementById('qty').value) || 1, 
             w: parseFloat(document.getElementById('w').value) || 12, 
             h: parseFloat(document.getElementById('h').value) || 12,
-            material: matEl.value, 
+            material: matKey, 
             shape: document.getElementById('shape').value, 
             weeding: document.getElementById('weeding').value, 
             masking: document.getElementById('masking').value,
-            lam: lamVal !== 'None' // Sends boolean to logic_decal.js to charge for laminate if required
+            lam: lamVal !== 'None' 
         };
 
         const result = calculateDecal(inputs, backendData);
@@ -231,8 +303,8 @@ function runCalc() {
 window.addEventListener('load', async () => {
     if (typeof injectHeader === 'function') injectHeader("Decals & Stickers");
     
-    // Initialize the laminate dropdown based on the default HTML selection
-    updateLaminates();
+    // Initialize the button grid (Defaults to Standard)
+    selectMaterial('Standard');
 
     const statusText = document.getElementById("status-text");
     const statusDot = document.getElementById("status-dot");
