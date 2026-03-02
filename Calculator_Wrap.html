@@ -75,10 +75,9 @@ function renderPanels() {
             </div>
             <div class="grid grid-cols-2 gap-2 border-t border-gray-100 pt-1.5 mt-1">
                 <select onchange="updatePanel(${p.id}, 'material', this.value)" class="w-full border border-gray-200 p-1 rounded text-xs font-bold ${isPerf ? 'text-indigo-700 bg-indigo-50' : 'text-gray-600 bg-gray-50'} outline-none focus:border-blue-500">
-                    <option value="wrap" ${p.material === 'wrap' ? 'selected' : ''}>3M IJ180 Cast</option>
-                    <option value="perf6040" ${p.material === 'perf6040' ? 'selected' : ''}>Perf (60/40)</option>
-                    <option value="perf7030" ${p.material === 'perf7030' ? 'selected' : ''}>Perf (70/30)</option>
-                    <option value="perfdual" ${p.material === 'perfdual' ? 'selected' : ''}>Dual Black Perf</option>
+                    <option value="wrap" ${p.material === 'wrap' ? 'selected' : ''}>CAST WRAP (3M IJ180)</option>
+                    <option value="perf6040" ${p.material === 'perf6040' ? 'selected' : ''}>Window Perf (60/40)</option>
+                    <option value="perf7030" ${p.material === 'perf7030' ? 'selected' : ''}>Window Perf (70/30)</option>
                 </select>
                 <select onchange="updatePanel(${p.id}, 'laminate', this.value)" class="w-full border border-gray-200 p-1 rounded text-xs font-bold text-gray-600 bg-gray-50 outline-none focus:border-blue-500">
                      ${isPerf ? `
@@ -86,9 +85,9 @@ function renderPanels() {
                      <option value="Spray Lam" ${p.laminate === 'Spray Lam' ? 'selected' : ''}>Spray Lam</option>
                      <option value="No Lam" ${p.laminate === 'No Lam' ? 'selected' : ''}>No Lam</option>
                      ` : `
-                     <option value="Gloss" ${p.laminate === 'Gloss' ? 'selected' : ''}>3M 8518 Gloss</option>
-                     <option value="Luster" ${p.laminate === 'Luster' ? 'selected' : ''}>3M 8519 Luster</option>
-                     <option value="Matte" ${p.laminate === 'Matte' ? 'selected' : ''}>3M 8520 Matte</option>
+                     <option value="Gloss" ${p.laminate === 'Gloss' ? 'selected' : ''}>Gloss 3M 8518</option>
+                     <option value="Luster" ${p.laminate === 'Luster' ? 'selected' : ''}>Luster 3M 8519</option>
+                     <option value="Matte" ${p.laminate === 'Matte' ? 'selected' : ''}>Matte 3M 8520</option>
                      `}
                 </select>
             </div>
