@@ -107,14 +107,15 @@
         <!-- DEPENDENT LAMINATE DROPDOWN -->
         <div class="pt-2">
             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Overlaminate Setup</label>
-            <select id="laminate" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px] focus:border-blue-500 outline-none shadow-sm" onchange="updateDescription()">
+            <select id="laminate" class="w-full border p-2 rounded bg-white font-bold text-sm h-[42px] focus:border-blue-500 outline-none shadow-sm" onchange="runCalc()">
                 <!-- Populated by JavaScript -->
             </select>
         </div>
 
-        <!-- DYNAMIC COMBINATION DESCRIPTION -->
-        <div id="mat-lam-desc" class="text-[10px] text-blue-700 bg-blue-50 p-2.5 rounded border border-blue-200 font-bold leading-tight">
-            <!-- Populated by JavaScript -->
+        <!-- STATIC REFERENCE NOTICE -->
+        <div class="text-[10px] text-blue-800 bg-blue-50 p-3 rounded border border-blue-200 font-medium leading-tight flex items-center justify-between shadow-sm">
+            <span class="mr-2">The print media and laminate pairings are strictly based on the <b>Print Media and Design / Work Order Description</b> handout.</span>
+            <a href="docs_print_media.html" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded shadow-sm transition shrink-0 uppercase tracking-widest text-[9px]">View Guide</a>
         </div>
 
         <div class="grid grid-cols-2 gap-4 pt-2">
@@ -143,7 +144,6 @@
                 </select>
             </div>
         </div>
-
     </div>
 
     <!-- RESULTS -->
@@ -163,79 +163,34 @@
         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
         <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-20 text-gray-600 font-mono outline-none" readonly></textarea>
     </div>
-
 </div>
 
 <script>
 let backendData = {};
 
-// DYNAMIC LAMINATE PAIRING DICTIONARY 
-// The first item in the 'lams' array automatically becomes the default selection in the UI.
+// CLEANED DYNAMIC LAMINATE PAIRING DICTIONARY (Removed descriptions)
 const matLamMap = {
-    "Standard": {
-        name: "General Purpose (Arlon 4500GLX)",
-        lams: [{val: "Arlon 3210 Gloss", text: "Arlon 3210 Premium Gloss"}],
-        desc: "Digital Print on Arlon 4500GLX w/ Arlon Premium Gloss Laminate."
-    },
-    "Cast": {
-        name: "Vehicle Wrap (3M IJ180)",
-        lams: [
-            {val: "3M 8518 Gloss", text: "3M 8518 Gloss"},
-            {val: "3M 8519 Luster", text: "3M 8519 Luster"},
-            {val: "3M 8520 Matte", text: "3M 8520 Matte"}
-        ],
-        desc: "Digital Print on 3M IJ180 Wrap Vinyl w/ 3M Wrap Laminate."
-    },
-    "Clear": {
-        name: "Clear (Oracal 3640)",
-        lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}, {val: "None", text: "No Laminate"}],
-        desc: "Digital Print on Oracal 3640 Clear Vinyl."
-    },
-    "Translucent": {
-        name: "Translucent (Oracal 3850)",
-        lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}, {val: "None", text: "No Laminate"}],
-        desc: "Digital Print on Oracal 3850 Translucent Vinyl."
-    },
-    "Reflective": {
-        name: "Reflective (Oralite 5400)",
-        lams: [{val: "Arlon 3210 Gloss", text: "Arlon 3210 Premium Gloss"}],
-        desc: "Digital Print on Oracal Reflective Vinyl w/ Arlon Premium Gloss Laminate."
-    },
-    "Drywall": {
-        name: "Drywall (GF226 Smooth)",
-        lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}],
-        desc: "Digital Print on General Formulations Wall Vinyl w/ Arlon Premium Laminate."
-    },
-    "Textured": {
-        name: "Textured Wall (3M IJ8624)",
-        lams: [{val: "3M 8524 Luster", text: "3M 8524 Textured Luster"}],
-        desc: "Digital Print on 3M IJ8624 Textured Wall Vinyl w/ 3M 8524 Textured Luster Laminate."
-    },
-    "Perf": {
-        name: "Window Perf",
-        lams: [{val: "Optically Clear", text: "Optically Clear Laminate"}, {val: "None", text: "No Laminate"}],
-        desc: "Digital Print on Window Perf. Use Optically Clear laminate if requested."
-    }
+    "Standard": { name: "General Purpose (Arlon 4500GLX)", lams: [{val: "Arlon 3210 Gloss", text: "Arlon 3210 Premium Gloss"}] },
+    "Cast": { name: "Vehicle Wrap (3M IJ180)", lams: [{val: "3M 8518 Gloss", text: "3M 8518 Gloss"}, {val: "3M 8519 Luster", text: "3M 8519 Luster"}, {val: "3M 8520 Matte", text: "3M 8520 Matte"}] },
+    "Clear": { name: "Clear (Oracal 3640)", lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}, {val: "None", text: "No Laminate"}] },
+    "Translucent": { name: "Translucent (Oracal 3850)", lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}, {val: "None", text: "No Laminate"}] },
+    "Reflective": { name: "Reflective (Oralite 5400)", lams: [{val: "Arlon 3210 Gloss", text: "Arlon 3210 Premium Gloss"}] },
+    "Drywall": { name: "Drywall (GF226 Smooth)", lams: [{val: "Arlon Premium", text: "Arlon Premium Laminate"}] },
+    "Textured": { name: "Textured Wall (3M IJ8624)", lams: [{val: "3M 8524 Luster", text: "3M 8524 Textured Luster"}] },
+    "Perf": { name: "Window Perf", lams: [{val: "Optically Clear", text: "Optically Clear Laminate"}, {val: "None", text: "No Laminate"}] }
 };
 
 function selectMaterial(matKey) {
-    // 1. Update the hidden input
     document.getElementById('material').value = matKey;
-
-    // 2. Reset all button styles
     document.querySelectorAll('.mat-btn').forEach(btn => {
         btn.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-700');
         btn.classList.add('border-gray-200', 'bg-white', 'text-gray-500');
     });
-
-    // 3. Highlight the selected button
     const activeBtn = document.getElementById('btn-mat-' + matKey);
     if (activeBtn) {
         activeBtn.classList.remove('border-gray-200', 'bg-white', 'text-gray-500');
         activeBtn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-700');
     }
-
-    // 4. Update the child laminate dropdown
     updateLaminates();
 }
 
@@ -243,23 +198,8 @@ function updateLaminates() {
     const matVal = document.getElementById('material').value;
     const lamSelect = document.getElementById('laminate');
     const mapObj = matLamMap[matVal];
-
     lamSelect.innerHTML = '';
-    
-    // The first item injected here automatically becomes the active/selected option in the UI
-    mapObj.lams.forEach(l => {
-        lamSelect.innerHTML += `<option value="${l.val}">${l.text}</option>`;
-    });
-
-    updateDescription();
-}
-
-function updateDescription() {
-    const matVal = document.getElementById('material').value;
-    const mapObj = matLamMap[matVal];
-    document.getElementById('mat-lam-desc').innerText = mapObj.desc;
-    
-    // Trigger final price calculation
+    mapObj.lams.forEach(l => { lamSelect.innerHTML += `<option value="${l.val}">${l.text}</option>`; });
     runCalc();
 }
 
@@ -268,23 +208,18 @@ function enforceLimits(maxShort) {
     if (!wEl || !hEl) return;
     let w = parseFloat(wEl.value) || 0; let h = parseFloat(hEl.value) || 0;
     let didClamp = false;
-
     if (w > maxShort && h > maxShort) {
         if (w > h) { h = maxShort; hEl.value = h; } else { w = maxShort; wEl.value = w; }
         didClamp = true;
     }
     if (warnEl) {
-        if (didClamp) {
-            warnEl.classList.remove('hidden'); clearTimeout(warnEl.timeoutId);
-            warnEl.timeoutId = setTimeout(() => warnEl.classList.add('hidden'), 3000);
-        }
+        if (didClamp) { warnEl.classList.remove('hidden'); clearTimeout(warnEl.timeoutId); warnEl.timeoutId = setTimeout(() => warnEl.classList.add('hidden'), 3000); }
     }
 }
 
 function runCalc() {
     if(!backendData.Retail_Min_Order) return;
     enforceLimits(52);
-
     try {
         const matKey = document.getElementById('material').value;
         const matTxt = matLamMap[matKey].name;
@@ -305,53 +240,36 @@ function runCalc() {
         if (!result || !result.retail) return;
 
         const ret = result.retail; const fmt = (n) => "$" + (n || 0).toFixed(2);
-
         document.getElementById('lbl-sqft').innerText = (((inputs.w * inputs.h) / 144) * inputs.qty).toFixed(1);
         document.getElementById('ui-unit').innerText = fmt(ret.unitPrice);
         document.getElementById('ui-total').innerText = fmt(ret.grandTotal);
         document.getElementById('ui-print').innerText = fmt(ret.printTotal);
-
         document.getElementById('ui-min-text').innerText = `Shop Minimum: $${parseFloat(backendData.Retail_Min_Order || 35)}`;
         document.getElementById('min-badge').classList.toggle('hidden', !ret.isMinApplied);
 
         const cutTxt = inputs.shape === 'Rectangle' ? 'Square Cut' : 'Contour Cut';
         const weedTxt = inputs.weeding === 'Complex' ? ' (Complex Weeding)' : '';
-        const maskTxt = inputs.masking === 'Yes' ? 'Pre-Masked with Transfer Tape.' : 'No Transfer Tape.';
+        const maskTxt = inputs.masking === 'Yes' ? 'Pre-Masked.' : 'No Transfer Tape.';
         const lamTxt = lamVal !== 'None' ? `Laminate: ${lamVal}` : 'No Laminate';
-
         document.getElementById('job-desc').value = `(x${inputs.qty}) ${inputs.w}" x ${inputs.h}" Custom Decals.\nMaterial: ${matTxt}\n${lamTxt}\n${cutTxt}${weedTxt}. ${maskTxt}`;
-
     } catch(e) { console.error(e); }
 }
 
 window.addEventListener('load', async () => {
     if (typeof injectHeader === 'function') injectHeader("Decals & Stickers");
-    
-    // Initialize the button grid (Defaults to Standard)
     selectMaterial('Standard');
-
     const statusText = document.getElementById("status-text");
     const statusDot = document.getElementById("status-dot");
-
     try {
         const req = await fetch(`${SCRIPT_URL}?req=view_module&tab=PROD_Decals`);
         backendData = await req.json();
-
         if(statusText) {
-            statusText.innerText = "ONLINE";
-            statusText.className = "font-bold text-green-500";
-            if(statusDot) {
-                statusDot.className = "w-2 h-2 rounded-full bg-green-500";
-                statusDot.classList.remove("animate-pulse");
-            }
+            statusText.innerText = "ONLINE"; statusText.className = "font-bold text-green-500";
+            if(statusDot) { statusDot.className = "w-2 h-2 rounded-full bg-green-500"; statusDot.classList.remove("animate-pulse"); }
         }
         runCalc();
     } catch(e) {
-        if(statusText) {
-            statusText.innerText = "OFFLINE";
-            statusText.className = "font-bold text-red-500";
-        }
-        console.error(e);
+        if(statusText) { statusText.innerText = "OFFLINE"; statusText.className = "font-bold text-red-500"; }
     }
 });
 </script>
