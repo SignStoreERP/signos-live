@@ -1,10 +1,15 @@
 /**
  * ULTRA-SIMPLE RETAIL ENGINE: Vinyl Banners
  * Pure Area-Curve Lookup Math (Strict Blue Sheet 13oz Targets)
+ * UPDATED: Billed Math rounds width and height up to nearest 12" increment
  */
 function calculateBanner(inputs, data) {
-    // "Round up to nearest whole number for sq ft" per Blue Sheet notes
-    const sqft = Math.ceil((inputs.w * inputs.h) / 144); 
+    
+    // Billed Math: Round width and height up to the nearest 12" increment
+    const billedW_ft = Math.ceil(inputs.w / 12);
+    const billedH_ft = Math.ceil(inputs.h / 12);
+    const sqft = billedW_ft * billedH_ft;
+
     let baseRate = 0;
 
     // 1. Blue Sheet Area Curve Logic
@@ -47,6 +52,6 @@ function calculateBanner(inputs, data) {
             grandTotal: grandTotal,
             isMinApplied: retailPrint < minOrder
         },
-        cost: { total: 0 } 
+        cost: { total: 0 }
     };
 }
