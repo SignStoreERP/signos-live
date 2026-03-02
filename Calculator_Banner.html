@@ -69,7 +69,7 @@
             <span class="text-[10px] font-black text-blue-800 uppercase tracking-widest">Unit Price</span>
             <span id="ui-unit" class="text-2xl font-black text-blue-900 tracking-tight">$0.00</span>
         </div>
-        
+
         <div class="border-t border-blue-200/50 my-3"></div>
 
         <!-- LINE ITEMS -->
@@ -92,7 +92,6 @@
         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Job Description</label>
         <textarea id="job-desc" class="w-full text-xs p-2 border rounded bg-white h-20 text-gray-600 font-mono outline-none" readonly></textarea>
     </div>
-
 </div>
 
 <script>
@@ -103,7 +102,7 @@ function enforceSheetLimits(maxShort, maxLong) {
     let hEl = document.getElementById('h');
     let warnEl = document.getElementById('sheet-warn');
     if (!wEl || !hEl) return;
-    
+
     let w = parseFloat(wEl.value) || 0;
     let h = parseFloat(hEl.value) || 0;
     let didClamp = false;
@@ -142,9 +141,11 @@ function runCalc() {
 
         const ret = result.retail;
         const fmt = (n) => "$" + (n || 0).toFixed(2);
-        
-        // Use Math.ceil just like the math engine to display the rounded sqft
-        const totalSqFt = Math.ceil((inputs.w * inputs.h) / 144) * inputs.qty;
+
+        // Display the Billed SqFt based on 12" increments
+        const billedW_ft = Math.ceil(inputs.w / 12);
+        const billedH_ft = Math.ceil(inputs.h / 12);
+        const totalSqFt = (billedW_ft * billedH_ft) * inputs.qty;
 
         document.getElementById('lbl-sqft').innerText = totalSqFt.toFixed(0);
         document.getElementById('ui-unit').innerText = fmt(ret.unitPrice);
@@ -158,7 +159,7 @@ function runCalc() {
         const sideTxt = inputs.sides === 2 ? "Double-Sided" : "Single-Sided";
         const pktTxt = inputs.pockets === 'None' ? 'Hem & Grommets' : `${inputs.pockets} Pole Pockets`;
         const slitTxt = inputs.windSlits === 'Yes' ? ' w/ Wind Slits' : '';
-        
+
         document.getElementById('job-desc').value = `(x${inputs.qty}) ${inputs.w}" x ${inputs.h}" 13oz Vinyl Banners.\n${sideTxt}. ${pktTxt}.${slitTxt}`;
 
     } catch(e) {
@@ -166,19 +167,19 @@ function runCalc() {
     }
 }
 
-// API FETCH & NATIVE STATUS BAR UPDATER
+// API FETCH & NATIVE STATUS BAR UPDATER (LIVE ENVIRONMENT)
 window.addEventListener('load', async () => {
     if (typeof injectHeader === 'function') injectHeader("Vinyl Banners");
-    
+
     const statusText = document.getElementById("status-text");
     const statusDot = document.getElementById("status-dot");
 
     try {
         const req = await fetch(`${SCRIPT_URL}?req=view_module&tab=PROD_Vinyl_Banners`);
         backendData = await req.json();
-        
+
         if(backendData.error) throw new Error(backendData.error);
-        
+
         if(statusText) {
             statusText.innerText = "ONLINE";
             statusText.className = "font-bold text-green-500";
@@ -187,8 +188,8 @@ window.addEventListener('load', async () => {
                 statusDot.classList.remove("animate-pulse");
             }
         }
-        
-        runCalc(); 
+
+        runCalc();
     } catch(e) {
         if(statusText) {
             statusText.innerText = "OFFLINE";
