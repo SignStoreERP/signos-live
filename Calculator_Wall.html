@@ -72,8 +72,8 @@ function renderPanels() {
             </div>
             <div class="grid grid-cols-2 gap-2 border-t border-gray-100 pt-1.5 mt-1">
                 <select onchange="updatePanel(${p.id}, 'material', this.value)" class="w-full border border-gray-200 p-1 rounded text-xs font-bold ${isPerf ? 'text-indigo-700 bg-indigo-50' : 'text-gray-600 bg-gray-50'} outline-none focus:border-blue-500">
-                    <option value="smooth" ${p.material === 'smooth' ? 'selected' : ''}>Smooth (GF 226)</option>
-                    <option value="textured" ${p.material === 'textured' ? 'selected' : ''}>Textured (3M IJ8624)</option>
+                    <option value="smooth" ${p.material === 'smooth' ? 'selected' : ''}>Dry Wall (GF 226)</option>
+                    <option value="textured" ${p.material === 'textured' ? 'selected' : ''}>Textured Wall (3M IJ8624)</option>
                     <option value="perf6040" ${p.material === 'perf6040' ? 'selected' : ''}>Window Perf (60/40)</option>
                     <option value="perf7030" ${p.material === 'perf7030' ? 'selected' : ''}>Window Perf (70/30)</option>
                 </select>
