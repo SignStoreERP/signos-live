@@ -142,10 +142,10 @@ function runCalc() {
         const ret = result.retail;
         const fmt = (n) => "$" + (n || 0).toFixed(2);
 
-        // Display the Billed SqFt based on 12" increments
-        const billedW_ft = Math.ceil(inputs.w / 12);
-        const billedH_ft = Math.ceil(inputs.h / 12);
-        const totalSqFt = (billedW_ft * billedH_ft) * inputs.qty;
+        // Display the Billed SqFt based on the same 12" increment math used in logic_banner.js
+        const minFt = Math.ceil(Math.min(inputs.w, inputs.h) / 12);
+        const maxFt = Math.ceil(Math.max(inputs.w, inputs.h) / 12);
+        const totalSqFt = (minFt * maxFt) * inputs.qty;
 
         document.getElementById('lbl-sqft').innerText = totalSqFt.toFixed(0);
         document.getElementById('ui-unit').innerText = fmt(ret.unitPrice);
