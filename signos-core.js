@@ -150,3 +150,20 @@ async function submitFeedback() {
     } catch(e) { alert("Error: " + e.message); } 
     finally { btn.innerText = "SUBMIT TICKET"; btn.disabled = false; }
 }
+
+// --- CENTRALIZED API LOADER (Phase 3) ---
+window.SignOS = window.SignOS || {};
+
+SignOS.fetchProductData = async function(tabName, refTables = []) {
+    const refs = refTables.join(',');
+    const user = sessionStorage.getItem('signos_user') || 'GUEST';
+    const role = sessionStorage.getItem('signos_role') || 'VIEW';
+    
+    const url = `${SCRIPT_URL}?req=bundle&tab=${tabName}&refs=${refs}&ip=${clientIP}&user=${user}&role=${role}`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.error) throw new Error(data.error);
+    return data;
+};
