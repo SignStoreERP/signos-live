@@ -77,10 +77,20 @@ window.SignOS_UI = {
         Array.from(grid.children).forEach(b => b.classList.remove('ring-2', 'ring-offset-1', ringClass, 'border-transparent'));
     },
 
-   // Global Search Filter for generated grids
+    // --- UTILITIES ---
     filterGrid: function(containerId, searchInputId) {
-        // ... existing filterGrid code ...
-    }, // <-- Make sure there is a comma here!
+        const val = document.getElementById(searchInputId).value.toLowerCase();
+        const grid = document.getElementById(containerId);
+        if (!grid) return;
+        
+        Array.from(grid.children).forEach(btn => {
+            if (btn.dataset.search) {
+                // If the search string is found in the button's data, show it. Otherwise, hide it.
+                btn.style.display = btn.dataset.search.includes(val) ? '' : 'none';
+            }
+        });
+    },
+
 
     // --- GLOBAL LOADER OVERLAYS ---
     showLoader: function(containerId, message = "Connecting to Source Data...") {
