@@ -10,19 +10,12 @@
         body { background-color: #f3f4f6; }
         .update-card { border: 1px solid #e5e7eb; border-radius: 12px; transition: all 0.2s; background: white; cursor: pointer; display: block; text-decoration: none; }
         .update-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        
         .tab-btn.active { border-bottom: 4px solid #3b82f6; color: #3b82f6; font-weight: 900; background: #f8fafc; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
         .feature-tag { font-size: 10px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 4px; }
         
-        /* Overlay Styling */
-        #article-overlay { display: none; position: fixed; inset: 0; background: rgba(17, 24, 39, 0.9); z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
-        #article-overlay.active { display: flex; }
-        
         /* Content Prose */
-        .prose h2 { font-weight: 900; text-transform: uppercase; color: #111827; margin-bottom: 1.25rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; font-size: 1.25rem; letter-spacing: -0.025em; }
         .prose h3 { font-weight: 800; text-transform: uppercase; color: #374151; margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 0.875rem; letter-spacing: 0.05em; }
         .prose p { margin-bottom: 1rem; font-size: 0.9375rem; line-height: 1.6; }
         .prose ul { list-style: none; padding-left: 0; margin-bottom: 1.5rem; }
@@ -68,7 +61,7 @@
     <!-- LATEST FEED CONTENT -->
     <div id="updates" class="tab-content active p-6 bg-gray-50">
         
-        <!-- NEWEST MESSAGE (FULL UI/UX RENDERED) -->
+        <!-- NEWEST MESSAGE (Hardcoded into Hub) -->
         <div class="newsletter-body shadow-sm mb-12">
             <div class="news-header">
                 <h2 class="text-xl font-black text-white tracking-tight uppercase">Smart Production Update</h2>
@@ -82,7 +75,7 @@
                 <h3>🎨 Decals & Stickers</h3>
                 <ul>
                     <li>Replaced the old material dropdown with a fast, visual 8-button grid featuring icons for Vehicle Wraps, Window Perf, Drywall, and more.</li>
-                    <li><strong>Smart Laminate Pairings:</strong> Selecting a print material automatically filters and selects the correct, production-approved overlaminate (e.g., standard vinyl now strictly defaults to Arlon 3210).</li>
+                    <li><strong>Smart Laminate Pairings:</strong> Selecting a print material automatically filters and selects the correct, production-approved overlaminate.</li>
                 </ul>
 
                 <h3>📏 PVC Signs</h3>
@@ -102,31 +95,31 @@
             </div>
         </div>
 
-        <!-- HISTORY SECTION -->
+        <!-- HISTORY SECTION (Links to Separate HTML files) -->
         <div class="space-y-6">
             <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b pb-2 flex items-center justify-between">
                 <span>Communication History</span>
             </h3>
 
-            <!-- Archieved Newsblast -->
-            <div class="update-card p-5" onclick="openArticle('dual_track')">
+            <!-- Link to v4.1 Update -->
+            <a href="news_v41_update.html" class="update-card p-5">
                 <div class="flex justify-between items-start mb-2">
                     <span class="feature-tag">System Release</span>
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">FEB 25</span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">FEB 19</span>
                 </div>
-                <h3 class="text-base font-black text-gray-900 uppercase tracking-tight m-0">The Dual-Track Migration</h3>
-                <p class="text-xs text-gray-500 mt-1">Official shift to Market & Physics pricing engines.</p>
-            </div>
+                <h3 class="text-base font-black text-gray-900 uppercase tracking-tight m-0">v4.1: Cleanup & Beta Prep</h3>
+                <p class="text-xs text-gray-500 mt-1">Backend optimization and roadmap consolidation.</p>
+            </a>
             
-            <!-- Welcome Newsblast -->
-            <div class="update-card p-5 border-l-4 border-l-blue-500" onclick="openArticle('invite_email')">
+            <!-- Link to Welcome Email -->
+            <a href="news_invite_email.html" class="update-card p-5 border-l-4 border-l-blue-500">
                 <div class="flex justify-between items-start mb-2">
                     <span class="feature-tag text-blue-600">Initial Invite</span>
                     <span class="text-[10px] font-bold text-gray-400 uppercase">LAUNCH</span>
                 </div>
                 <h3 class="text-base font-black text-gray-900 uppercase tracking-tight italic m-0">"Welcome to your new digital portal"</h3>
                 <p class="text-xs text-gray-500 mt-1">Original invitation including the Quick Start Guide.</p>
-            </div>
+            </a>
         </div>
 
     </div>
@@ -134,7 +127,6 @@
     <!-- SOP MANUAL CONTENT -->
     <div id="manual" class="tab-content p-8">
         <div class="space-y-4">
-            
             <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded mb-6">
                 <h4 class="text-blue-800 font-black text-xs uppercase tracking-widest">Training & SOP Directory</h4>
                 <p class="text-[11px] text-blue-600/80 mt-1 uppercase font-bold">Standard Operating Procedures</p>
@@ -153,7 +145,6 @@
                 <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mt-1">Mastering the Quoting Flow</h3>
                 <p class="text-xs text-gray-500 mt-2">Step-by-step visual tutorial on generating accurate retail prices.</p>
             </a>
-
         </div>
     </div>
 
@@ -164,55 +155,7 @@
 
 </div>
 
-<!-- FULL UI OVERLAY FOR ARCHIVED MESSAGES -->
-<div id="article-overlay" onclick="closeArticleOnClickAway(event)">
-    <div class="bg-white w-full max-w-[500px] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-        <div class="bg-gray-900 p-6 flex justify-between items-center text-white shrink-0">
-            <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                <h2 id="overlay-title" class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Archived Communication</h2>
-            </div>
-            <button onclick="closeArticle()" class="text-gray-400 hover:text-white text-3xl font-light leading-none focus:outline-none">&times;</button>
-        </div>
-        <div id="article-content" class="p-10 overflow-y-auto prose prose-sm max-w-none text-gray-600 custom-scroll">
-            <!-- Content Injected Here -->
-        </div>
-        <div class="p-6 bg-gray-50 border-t flex justify-end shrink-0">
-            <button onclick="closeArticle()" class="px-10 py-3 bg-gray-900 text-white text-[10px] font-black rounded-lg uppercase tracking-widest hover:bg-black transition-colors focus:outline-none">Return to Feed</button>
-        </div>
-    </div>
-</div>
-
 <script>
-// --- INTERNAL ARTICLE DATABASE ---
-const ARTICLES = {
-    'dual_track': `
-        <h2>The Dual-Track Migration</h2>
-        <p>SignOS has officially migrated to the <strong>Dual-Track Architecture</strong>. Pricing is no longer based on arbitrary markups.</p>
-        <p>Instead, every quote runs through two completely separate engines simultaneously:</p>
-        <ul>
-            <li><strong>The Market Engine:</strong> Prices based strictly on the Master Retail Blue Sheet and standard area curves to ensure 100% price consistency across the sales floor.</li>
-            <li><strong>The Physics Engine:</strong> Calculates real-world costs by tracking actual material yield, flatbed/roll print speeds, CNC router time, and granular labor rates to track true shop margin.</li>
-        </ul>
-    `,
-    'invite_email': `
-        <h2>Welcome to SignOS</h2>
-        <p>SignOS is our digital pricing portal designed to standardize quoting across the shop. This tool digitizes our physical pricing sheets for immediate, accurate retail pricing.</p>
-        <h3>🚀 Quick Start Guide</h3>
-        <ul>
-            <li><strong>Login:</strong> Access the portal via your unique employee PIN.</li>
-            <li><strong>Select:</strong> Use the Dashboard to choose your material category.</li>
-            <li><strong>Quote:</strong> Input dimensions and finishing options for an instant price.</li>
-        </ul>
-        <h3>✨ Core Benefits</h3>
-        <ul>
-            <li>Centralized retail curves.</li>
-            <li>Real-time updates synchronized across all users.</li>
-            <li>Manufacturer compatibility safety rails built into every calculator.</li>
-        </ul>
-    `
-};
-
 function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -220,25 +163,9 @@ function switchTab(tabId) {
     document.getElementById('btn-' + tabId).classList.add('active');
 }
 
-function openArticle(id) {
-    document.getElementById('article-content').innerHTML = ARTICLES[id] || 'Content not found.';
-    document.getElementById('article-overlay').classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeArticle() {
-    document.getElementById('article-overlay').classList.remove('active');
-    document.body.style.overflow = 'auto';
-}
-
-function closeArticleOnClickAway(e) {
-    if (e.target.id === 'article-overlay') closeArticle();
-}
-
 window.onload = function() {
     const u = sessionStorage.getItem('signos_user') || 'GUEST';
     const r = sessionStorage.getItem('signos_role') || 'SALES';
-    
     document.getElementById('auth-user').innerText = u;
     document.getElementById('auth-role').innerText = r;
 };
