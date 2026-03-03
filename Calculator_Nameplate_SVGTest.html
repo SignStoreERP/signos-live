@@ -118,23 +118,31 @@
             <button id="btn-tab-paint" onclick="setReverseTab('paint')" class="flex-1 py-1.5 text-[10px] font-black rounded text-gray-500 hover:text-gray-800 transition border border-transparent uppercase tracking-widest">Step 2: Paint Color</button>
         </div>
 
-        <div id="mat-container" class="space-y-2">
-            <div id="selected-color-label" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100 truncate">Loading...</div>
-            <div id="rowmark-grid" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-2 color-scroll p-3 border rounded-lg bg-gray-50 shadow-inner"></div>
-        </div>
+<div id="mat-container" class="space-y-2">
+    <div id="selected-color-label" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100 truncate">Loading...</div>
+    <!-- Changed max-h-32 to max-h-64 for double height -->
+    <div id="rowmark-grid" class="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-2 color-scroll p-3 border rounded-lg bg-gray-50 shadow-inner"></div>
+</div>
 
-        <div id="paint-container" class="hidden space-y-2 relative z-20">
-            <div class="flex bg-orange-100 p-1 rounded-lg">
-                <button id="btn-pms" onclick="setPaintSystem('PMS')" class="flex-1 py-1.5 text-[10px] font-black rounded bg-white shadow-sm text-orange-700 transition uppercase tracking-widest border border-orange-200">PMS Match</button>
-                <button id="btn-sw" onclick="setPaintSystem('SW')" class="flex-1 py-1.5 text-[10px] font-black rounded text-orange-600 hover:text-orange-800 transition border border-transparent uppercase tracking-widest">Sherwin Williams</button>
-            </div>
-            <input type="text" id="paint-search" placeholder="Search colors..." oninput="SignOS_UI.filterGrid('paint-grid', 'paint-search')" class="w-full bg-white border border-gray-300 rounded p-2 text-xs font-bold text-gray-800 outline-none focus:border-orange-500 shadow-sm transition">
-            <div id="selected-paint-label" class="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded border border-orange-200 truncate">None Selected</div>
-            <div id="paint-grid" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-2 color-scroll p-3 border rounded-lg bg-gray-50 shadow-inner"></div>
-            <div id="custom-pms-wrap" class="hidden bg-gray-50 p-2 rounded-lg border border-gray-200">
-                <input type="text" id="pms-code" placeholder="e.g. Custom Match To Sample" oninput="updateCustomPMS()" class="w-full bg-white border border-gray-300 rounded p-1.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner">
-            </div>
-        </div>
+<div id="paint-container" class="hidden space-y-2 relative z-20">
+    <!-- Severe Blue Styling for the Paint Toggle -->
+    <div class="flex bg-blue-950 p-1 rounded-lg">
+        <button id="btn-pms" onclick="setPaintSystem('PMS')" class="flex-1 py-1.5 text-[10px] font-black rounded bg-blue-700 shadow-sm text-white transition uppercase tracking-widest border border-blue-600">PMS Match</button>
+        <button id="btn-sw" onclick="setPaintSystem('SW')" class="flex-1 py-1.5 text-[10px] font-black rounded text-blue-300 hover:text-white hover:bg-blue-800/50 transition border border-transparent uppercase tracking-widest">Sherwin Williams</button>
+    </div>
+    
+    <input type="text" id="paint-search" placeholder="Search colors..." oninput="SignOS_UI.filterGrid('paint-grid', 'paint-search')" class="w-full bg-white border border-gray-300 rounded p-2 text-xs font-bold text-gray-800 outline-none focus:border-blue-800 shadow-sm transition">
+    
+    <!-- Severe Blue Styling for the Selected Paint Label -->
+    <div id="selected-paint-label" class="text-[10px] font-bold text-white bg-blue-800 px-2 py-1 rounded border border-blue-900 truncate">None Selected</div>
+    
+    <!-- Changed max-h-32 to max-h-64 for double height -->
+    <div id="paint-grid" class="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-2 color-scroll p-3 border rounded-lg bg-gray-50 shadow-inner"></div>
+
+    <div id="custom-pms-wrap" class="hidden bg-gray-50 p-2 rounded-lg border border-gray-200">
+        <input type="text" id="pms-code" placeholder="e.g. Custom Match To Sample" oninput="updateCustomPMS()" class="w-full bg-white border border-gray-300 rounded p-1.5 text-xs font-bold outline-none focus:border-blue-800 shadow-inner">
+    </div>
+</div>
 
     </div>
 
@@ -310,8 +318,13 @@ function setMode(mode) {
 
 function setPaintSystem(sys) {
     activePaintSystem = sys;
-    document.getElementById('btn-pms').className = `flex-1 py-1.5 text-[10px] font-black rounded transition uppercase tracking-widest ${sys === 'PMS' ? 'bg-white shadow-sm text-orange-700 border border-orange-200' : 'text-orange-600 hover:text-orange-800 border border-transparent'}`;
-    document.getElementById('btn-sw').className = `flex-1 py-1.5 text-[10px] font-black rounded transition uppercase tracking-widest ${sys === 'SW' ? 'bg-white shadow-sm text-orange-700 border border-orange-200' : 'text-orange-600 hover:text-orange-800 border border-transparent'}`;
+    
+    const activeClass = "flex-1 py-1.5 text-[10px] font-black rounded bg-blue-700 shadow-sm text-white transition uppercase tracking-widest border border-blue-600";
+    const inactiveClass = "flex-1 py-1.5 text-[10px] font-black rounded text-blue-300 hover:text-white hover:bg-blue-800/50 transition border border-transparent uppercase tracking-widest";
+    
+    document.getElementById('btn-pms').className = sys === 'PMS' ? activeClass : inactiveClass;
+    document.getElementById('btn-sw').className = sys === 'SW' ? activeClass : inactiveClass;
+    
     document.getElementById('paint-search').placeholder = sys === 'PMS' ? "Search PMS Colors..." : "Search SW Colors...";
     document.getElementById('paint-search').value = "";
     buildPaintSwatches();
@@ -362,7 +375,7 @@ function buildPaintSwatches() {
         containerId: 'paint-grid',
         data: activePaintSystem === 'PMS' ? pmsData : swData,
         type: 'paint',
-        activeRingClass: 'ring-orange-500',
+        activeRingClass: 'ring-blue-900', // Changed from orange to dark blue
         showCustom: true,
         onCustom: () => {
             selectedPaint = { Code: 'CUSTOM', Name: 'Custom Manual Color', Hex_Code: '#e2e8f0' };
