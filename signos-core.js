@@ -5,7 +5,7 @@ const IS_DEV_ENV = window.location.href.includes('signos-app') || window.locatio
 
 // --- DUAL-TRACK API ROUTING ---
 const DEV_API = "https://script.google.com/macros/s/AKfycbw1XUqhSSRprGkRq1SYV7BYF30eyTBWfu63sYWRTGNuGVm0m9aZk3g6YsUB9nWyh6VyXw/exec";
-const LIVE_API = "https://script.google.com/macros/s/AKfycbzEEf1lQ4xkXdSqcLgfLJ3FmNbLGUyElTzmac7U-t1msxLvJL8iSZ30R3bm5dCpmlKqPA/exec";
+const LIVE_API = "https://script.google.com/macros/s/AKfycbxwnXJKEMhUsWHWEoOW99axFTWuoZG8ZlrMZMbBE5lyxW7YGER6E0I9feSPlKkKAoO5kA/exec";
 
 const SCRIPT_URL = IS_DEV_ENV ? DEV_API : LIVE_API;
 
