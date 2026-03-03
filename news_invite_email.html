@@ -9,47 +9,93 @@
 </head>
 <body class="bg-gray-100 min-h-screen font-sans flex flex-col pb-10">
 
-<div class="max-w-3xl mx-auto mt-6 w-[calc(100%-2rem)] sm:w-full bg-white shadow-lg overflow-hidden rounded-xl border border-gray-200">
-    <div class="p-6 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-blue-100 text-blue-600 shadow-inner">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-            </div>
-            <div>
-                <h2 class="text-xl font-black text-gray-800 tracking-tight">Welcome to SignOS</h2>
-                <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mt-1">Initial Launch Invitation</p>
-            </div>
-        </div>
-        <a href="docs.html" class="text-[10px] font-bold uppercase tracking-widest text-blue-600 hover:text-blue-800 transition bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">← Back to Hub</a>
+    <!-- Top Navigation -->
+    <div class="max-w-[600px] w-full mx-auto mt-8 mb-3 px-4">
+        <a href="docs.html" class="text-[10px] font-bold text-gray-500 hover:text-blue-600 uppercase tracking-widest transition flex items-center gap-1">
+            ← Back to Hub
+        </a>
     </div>
 
-    <div class="p-10 prose prose-slate prose-sm max-w-none text-gray-600 leading-relaxed">
-        <p class="text-base text-gray-700 font-medium">SignOS is our digital pricing portal designed to standardize quoting across the shop. This tool digitizes our physical pricing sheets for immediate, accurate retail pricing.</p>
+    <!-- Email Card Wrapper -->
+    <div class="max-w-[600px] w-full mx-auto bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden">
         
-        <h3 class="text-lg font-black text-gray-800 uppercase tracking-widest mt-8 mb-4 border-b pb-2 flex items-center gap-2"><span class="text-2xl">🚀</span> Quick Start Guide</h3>
-        <ul class="list-none pl-0 space-y-3">
-            <li class="flex gap-2"><strong class="text-blue-600">1. Login:</strong> <span>Access the portal via your unique employee PIN.</span></li>
-            <li class="flex gap-2"><strong class="text-blue-600">2. Select:</strong> <span>Use the Dashboard to choose your material category.</span></li>
-            <li class="flex gap-2"><strong class="text-blue-600">3. Quote:</strong> <span>Input dimensions and finishing options for an instant price.</span></li>
-        </ul>
-
-        <h3 class="text-lg font-black text-gray-800 uppercase tracking-widest mt-8 mb-4 border-b pb-2 flex items-center gap-2"><span class="text-2xl">✨</span> Core Benefits</h3>
-        <ul class="list-disc pl-5 space-y-2 marker:text-blue-500">
-            <li>Centralized retail curves.</li>
-            <li>Real-time updates synchronized across all users.</li>
-            <li>Manufacturer compatibility safety rails built into every calculator.</li>
-        </ul>
-
-        <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200 mt-12 text-center">
-            <p class="text-gray-500 text-xs font-bold leading-relaxed uppercase tracking-widest">SignOS System Archives</p>
+        <!-- Dark Header -->
+        <div class="bg-gray-900 px-5 py-9 text-center border-b-4 border-blue-500">
+            <h1 class="text-3xl font-black text-white tracking-tight">Sign<span class="text-blue-500">OS</span></h1>
+            <p class="text-gray-400 text-[11px] mt-1 uppercase tracking-[0.2em] font-bold">Production Quoting Portal</p>
         </div>
-    </div>
-</div>
 
-<script>
-    window.addEventListener('load', () => {
-        if (typeof injectHeader === 'function') injectHeader("Archived News", false);
-    });
-</script>
+        <div class="p-8 sm:p-10 space-y-8">
+            
+            <!-- Intro -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Welcome to your new digital pricing portal.</h2>
+                <p class="text-gray-600 mb-4 leading-relaxed">Hello <strong id="dyn-name" class="text-gray-900">Team Member</strong>,</p>
+                <p class="text-gray-600 leading-relaxed">We are excited to invite you to the prototype launch of <strong>SignOS</strong>. SignOS is a complete digital representation of our current printed pricing handouts, giving you instant, standardized retail pricing right at your fingertips.</p>
+            </div>
+
+            <!-- PIN Code Widget -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                <p class="text-blue-900 text-xs font-bold uppercase tracking-widest">Your Unique Access PIN</p>
+                <div class="text-4xl font-black text-blue-600 tracking-[0.2em] mt-2 mb-4 font-mono">******</div>
+                <a href="index.html" class="inline-block bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow border border-blue-700 hover:bg-blue-700 transition">Launch Portal</a>
+            </div>
+
+            <!-- Quick Start Guide -->
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 border-b border-gray-200 p-4">
+                    <h3 class="text-base font-bold text-gray-900 flex items-center gap-2"><span>🚀</span> Quick Start Guide</h3>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div class="flex gap-3"><span class="text-blue-600 font-bold">1.</span><p class="text-gray-600 text-sm"><strong>Login:</strong> Click the launch portal link and enter your PIN.</p></div>
+                    <div class="flex gap-3"><span class="text-blue-600 font-bold">2.</span><p class="text-gray-600 text-sm"><strong>Select:</strong> Choose an active pricing module on your dashboard.</p></div>
+                    <div class="flex gap-3"><span class="text-blue-600 font-bold">3.</span><p class="text-gray-600 text-sm"><strong>Quote:</strong> Input dimensions and options to instantly view calculated price.</p></div>
+                </div>
+                <div class="bg-amber-50 border-t border-amber-200 p-4">
+                    <p class="text-amber-900 text-sm leading-relaxed"><strong>See something, say something:</strong> If you spot a problem like incorrect pricing or a weird layout, please let us know via the <strong>Submit Ticket</strong> button inside the app.</p>
+                </div>
+            </div>
+
+            <!-- Live Modules -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><span>🟢</span> Live Modules</h3>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-5">
+                        <h4 class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Rigid Signs</h4>
+                        <ul class="text-blue-600 font-medium text-sm space-y-2 list-disc pl-4">
+                            <li>Yard Signs / Coroplast</li>
+                            <li>ACM & PVC Signs</li>
+                            <li>Foam Core Boards</li>
+                            <li>Acrylic Signs</li>
+                            <li>ADA Nameplates</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-5">
+                        <h4 class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3">Roll Media</h4>
+                        <ul class="text-blue-600 font-medium text-sm space-y-2 list-disc pl-4">
+                            <li>Cut Vinyl / Decals</li>
+                            <li>Vinyl Banners</li>
+                            <li>Vehicle Wraps</li>
+                            <li>Interior Wall Wraps</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-50 px-8 py-6 border-t border-gray-200 text-center">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">&copy; 2026 SignStoreERP. Authorized Personnel Only.</p>
+        </div>
+
+    </div>
+
+    <script>
+        window.onload = function() {
+            const u = sessionStorage.getItem('signos_user');
+            if(u) document.getElementById('dyn-name').innerText = u;
+        };
+    </script>
 </body>
 </html>
