@@ -3,132 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignOS News & Docs</title>
+    <title>SignOS News & Docs Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
     <style>
-        .feature-card { transition: all 0.2s; border: 1px solid #e5e7eb; background: white; cursor: pointer; }
-        .feature-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .badge-new { background: #ef4444; color: white; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 999; text-transform: uppercase; letter-spacing: 0.05em; }
-        .roadmap-tag { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
-        .tag-done { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-        .tag-sprint { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        body { background-color: #f3f4f6; }
+        .update-card { border: 1px solid #e5e7eb; border-radius: 12px; transition: all 0.2s; background: white; cursor: pointer; display: block; text-decoration: none; }
+        .update-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        .tab-btn.active { border-bottom: 4px solid #3b82f6; color: #3b82f6; font-weight: 900; background: #f8fafc; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .feature-tag { font-size: 10px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 4px; }
+        
+        /* Overlay Styling */
+        #article-overlay { display: none; position: fixed; inset: 0; background: rgba(17, 24, 39, 0.9); z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
+        #article-overlay.active { display: flex; }
+        
+        /* Content Prose */
+        .prose h2 { font-weight: 900; text-transform: uppercase; color: #111827; margin-bottom: 1.25rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; font-size: 1.25rem; letter-spacing: -0.025em; }
+        .prose h3 { font-weight: 800; text-transform: uppercase; color: #374151; margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 0.875rem; letter-spacing: 0.05em; }
+        .prose p { margin-bottom: 1rem; font-size: 0.9375rem; line-height: 1.6; }
+        .prose ul { list-style: none; padding-left: 0; margin-bottom: 1.5rem; }
+        .prose li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .prose li::before { content: '→'; position: absolute; left: 0; color: #3b82f6; font-weight: bold; }
+        
+        /* Email-style Card Inside Feed */
+        .newsletter-body { background: white; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; }
+        .news-header { background: #111827; padding: 2rem; text-align: center; color: white; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans flex flex-col">
+<body class="min-h-screen font-sans">
 
-<!-- STANDARD ERP HEADER -->
-<div class="bg-gray-900 text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
-    <div class="flex flex-col">
-        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest leading-none mb-1">SignOS Knowledge Base</span>
-        <div class="flex items-center gap-2">
-            <h1 class="text-sm font-black leading-tight">News & Docs Hub</h1>
-            <span id="env-badge" class="px-1.5 py-0.5 rounded text-[8px] font-black bg-blue-600 text-white uppercase tracking-tighter">ONLINE</span>
+<div class="max-w-[640px] mx-auto my-8 bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-200">
+    
+    <!-- DARK SYSTEM HEADER -->
+    <div class="bg-gray-900 px-8 py-12 text-center border-b-[4px] border-blue-600">
+        <div class="flex justify-between items-start mb-6 -mt-4">
+            <div class="text-left">
+                <span id="env-badge" class="px-2 py-0.5 rounded bg-green-500/10 text-green-500 text-[9px] font-black uppercase tracking-widest border border-green-500/20">Online</span>
+            </div>
+            <div class="text-right">
+                <a href="#" onclick="goBack()" class="text-[10px] text-gray-500 hover:text-white underline uppercase font-bold tracking-widest">← Menu</a>
+            </div>
+        </div>
+        
+        <h1 class="text-4xl font-black text-white tracking-tighter uppercase">Sign<span class="text-blue-500">OS</span> HUB</h1>
+        <p class="text-[11px] text-gray-400 mt-2 uppercase tracking-[0.3em] font-bold">Newsletters & Training Documents</p>
+        
+        <div class="mt-4 flex items-center justify-center gap-4 text-[10px] font-bold text-gray-600">
+            <span>USER: <span id="auth-user" class="text-gray-300">...</span></span>
+            <span class="w-1 h-1 rounded-full bg-gray-700"></span>
+            <span>ROLE: <span id="auth-role" class="text-blue-400">...</span></span>
         </div>
     </div>
-    <div class="flex items-center gap-4">
-        <div class="hidden md:flex flex-col items-end">
-            <span class="text-[10px] font-bold text-gray-300 uppercase tracking-tight" id="auth-user">---</span>
-            <span class="text-[9px] text-blue-500 font-bold uppercase tracking-tighter" id="auth-role">---</span>
+
+    <!-- NAVIGATION TABS -->
+    <div class="flex border-b border-gray-100 sticky top-0 bg-white z-50">
+        <button onclick="switchTab('updates')" id="btn-updates" class="tab-btn active px-8 py-5 text-[11px] uppercase tracking-widest flex-1 transition-all focus:outline-none">Latest Newsletters</button>
+        <button onclick="switchTab('manual')" id="btn-manual" class="tab-btn px-8 py-5 text-[11px] uppercase tracking-widest flex-1 transition-all focus:outline-none">Training & SOPs</button>
+    </div>
+
+    <!-- LATEST FEED CONTENT -->
+    <div id="updates" class="tab-content active p-6 bg-gray-50">
+        
+        <!-- NEWEST MESSAGE (FULL UI/UX RENDERED) -->
+        <div class="newsletter-body shadow-sm mb-12">
+            <div class="news-header">
+                <h2 class="text-xl font-black text-white tracking-tight uppercase">Smart Production Update</h2>
+                <p class="text-[10px] text-blue-400 font-bold uppercase tracking-[0.2em] mt-1">Released March 2026</p>
+            </div>
+            
+            <div class="p-8 prose prose-sm max-w-none text-gray-600">
+                <p class="text-gray-900 font-bold text-lg mb-6 text-center italic">"Faster quoting, fewer errors."</p>
+                <p>We just pushed a major update to SignOS designed to make quoting faster, more visual, and perfectly aligned with our production standards. Here is what changed today based on your feedback:</p>
+                
+                <h3>🎨 Decals & Stickers</h3>
+                <ul>
+                    <li>Replaced the old material dropdown with a fast, visual 8-button grid featuring icons for Vehicle Wraps, Window Perf, Drywall, and more.</li>
+                    <li><strong>Smart Laminate Pairings:</strong> Selecting a print material automatically filters and selects the correct, production-approved overlaminate (e.g., standard vinyl now strictly defaults to Arlon 3210).</li>
+                </ul>
+
+                <h3>📏 PVC Signs</h3>
+                <ul>
+                    <li>Native support for sheet sizes up to 60" x 120" (5'x10').</li>
+                    <li>Added bidirectional safety limits—the system will automatically adjust if you accidentally type a size larger than our max sheet bounds.</li>
+                </ul>
+
+                <h3>🧮 Banners, Wraps & Walls</h3>
+                <ul>
+                    <li><strong>Banners:</strong> Math has been updated to automatically round the width and height up to the nearest 12" increment before calculating square footage.</li>
+                    <li><strong>Wraps & Walls:</strong> Updated descriptions and names of vinyl/laminate options to be clearer and easier to navigate.</li>
+                </ul>
+            </div>
+            <div class="bg-gray-50 p-4 border-t text-center">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">SignOS Update Archive • Internal Ref: v5.2</p>
+            </div>
         </div>
-        <div class="h-8 w-[1px] bg-gray-700 hidden md:block"></div>
-        <button onclick="goBack()" class="text-gray-300 hover:text-white text-[10px] font-bold border border-gray-600 px-3 py-1.5 rounded transition uppercase tracking-widest">Menu</button>
+
+        <!-- HISTORY SECTION -->
+        <div class="space-y-6">
+            <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b pb-2 flex items-center justify-between">
+                <span>Communication History</span>
+            </h3>
+
+            <!-- Archieved Newsblast -->
+            <div class="update-card p-5" onclick="openArticle('dual_track')">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="feature-tag">System Release</span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">FEB 25</span>
+                </div>
+                <h3 class="text-base font-black text-gray-900 uppercase tracking-tight m-0">The Dual-Track Migration</h3>
+                <p class="text-xs text-gray-500 mt-1">Official shift to Market & Physics pricing engines.</p>
+            </div>
+            
+            <!-- Welcome Newsblast -->
+            <div class="update-card p-5 border-l-4 border-l-blue-500" onclick="openArticle('invite_email')">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="feature-tag text-blue-600">Initial Invite</span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">LAUNCH</span>
+                </div>
+                <h3 class="text-base font-black text-gray-900 uppercase tracking-tight italic m-0">"Welcome to your new digital portal"</h3>
+                <p class="text-xs text-gray-500 mt-1">Original invitation including the Quick Start Guide.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SOP MANUAL CONTENT -->
+    <div id="manual" class="tab-content p-8">
+        <div class="space-y-4">
+            
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded mb-6">
+                <h4 class="text-blue-800 font-black text-xs uppercase tracking-widest">Training & SOP Directory</h4>
+                <p class="text-[11px] text-blue-600/80 mt-1 uppercase font-bold">Standard Operating Procedures</p>
+            </div>
+
+            <!-- Link to existing document -->
+            <a href="docs_print_media.html" class="update-card p-6">
+                <span class="feature-tag">Manufacturing</span>
+                <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mt-1">Print Media & Laminate Guide</h3>
+                <p class="text-xs text-gray-500 mt-2">Required standard operating procedure for approved vinyl and laminate pairings.</p>
+            </a>
+
+            <!-- Link to existing document -->
+            <a href="docs_quoting_guide.html" class="update-card p-6">
+                <span class="feature-tag">Training</span>
+                <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mt-1">Mastering the Quoting Flow</h3>
+                <p class="text-xs text-gray-500 mt-2">Step-by-step visual tutorial on generating accurate retail prices.</p>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="bg-gray-50 px-8 py-8 border-t border-gray-100 text-center">
+        <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">&copy; 2026 SignStoreERP • Internal Documentation</p>
+    </div>
+
+</div>
+
+<!-- FULL UI OVERLAY FOR ARCHIVED MESSAGES -->
+<div id="article-overlay" onclick="closeArticleOnClickAway(event)">
+    <div class="bg-white w-full max-w-[500px] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <div class="bg-gray-900 p-6 flex justify-between items-center text-white shrink-0">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <h2 id="overlay-title" class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Archived Communication</h2>
+            </div>
+            <button onclick="closeArticle()" class="text-gray-400 hover:text-white text-3xl font-light leading-none focus:outline-none">&times;</button>
+        </div>
+        <div id="article-content" class="p-10 overflow-y-auto prose prose-sm max-w-none text-gray-600 custom-scroll">
+            <!-- Content Injected Here -->
+        </div>
+        <div class="p-6 bg-gray-50 border-t flex justify-end shrink-0">
+            <button onclick="closeArticle()" class="px-10 py-3 bg-gray-900 text-white text-[10px] font-black rounded-lg uppercase tracking-widest hover:bg-black transition-colors focus:outline-none">Return to Feed</button>
+        </div>
     </div>
 </div>
 
-<main class="max-w-4xl mx-auto w-full p-4 md:p-12 space-y-16 bg-white shadow-xl my-8 rounded-2xl border border-gray-200">
-    
-    <!-- HEADER SECTION -->
-    <header class="text-center space-y-4">
-        <div class="flex justify-center"><span class="badge-new">Updated: March 2026</span></div>
-        <h2 class="text-4xl font-black text-gray-900 tracking-tighter italic uppercase">The SignOS Dispatch</h2>
-        <div class="h-1 w-24 bg-blue-600 mx-auto rounded-full"></div>
-        <p class="text-gray-500 text-sm max-w-md mx-auto">Modernizing production and quoting for The Sign Store team.</p>
-    </header>
-
-    <!-- TOP STORY -->
-    <section class="relative group overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50">
-        <div class="grid md:grid-cols-2 gap-8 items-center p-8">
-            <div class="space-y-4">
-                <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Grand Release Article</span>
-                <h3 class="text-2xl font-bold text-slate-900 leading-tight">Sales Empowerment: Core Modules Live</h3>
-                <p class="text-slate-600 text-sm leading-relaxed">The Sign Store catalog is now active. Learn how our new retail logic automates pricing across our core product lines.</p>
-                <div class="flex gap-4 pt-2">
-                    <a href="docs_release_v52.html" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition shadow-lg inline-block">Read Release Notes</a>
-                </div>
-            </div>
-            <div class="flex items-center justify-center overflow-hidden rounded-xl border border-slate-200 shadow-inner bg-white max-h-[400px]">
-                <img src="https://i.imgur.com/2XcoCY4.gif" alt="SignOS Release Demo" class="w-full h-auto object-contain transition-transform group-hover:scale-105 duration-700">
-            </div>
-        </div>
-    </section>
-
-    <!-- APPROVED CALCULATORS GRID -->
-    <section class="bg-blue-50/50 rounded-3xl p-8 border border-blue-100">
-        <div class="flex items-center justify-between mb-8">
-            <h3 class="text-[11px] font-black text-blue-900 uppercase tracking-[0.2em]">Retail Ready: Active Modules</h3>
-            <span class="badge-new">LIVE</span>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <a href="Calculator_YardSign.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3"><div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black">YR</div><span class="text-[10px] font-black text-gray-900 uppercase">Yard Signs</span></a>
-            <a href="Calculator_Coro.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3"><div class="w-12 h-12 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-black">CR</div><span class="text-[10px] font-black text-gray-900 uppercase">Coroplast</span></a>
-            <a href="Calculator_PVC.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3"><div class="w-12 h-12 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-black">PV</div><span class="text-[10px] font-black text-gray-900 uppercase">PVC Signs</span></a>
-            <a href="Calculator_Banner.html" class="feature-card p-5 rounded-2xl flex flex-col items-center gap-3"><div class="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-black">BN</div><span class="text-[10px] font-black text-gray-900 uppercase">Banners</span></a>
-        </div>
-    </section>
-
-    <!-- SOP MANUAL DIRECTORY -->
-    <section class="border-top border-gray-200 pt-8 mt-8">
-        <div class="grid md:grid-cols-2 gap-16">
-            <div class="space-y-6">
-                <h3 class="text-xl font-black text-gray-900 uppercase tracking-tighter">SOP Directory</h3>
-                <p class="text-gray-500 text-sm leading-relaxed">Access standard operating procedures and quoting workflows below.</p>
-                <div class="space-y-3">
-                    <a href="docs_quoting_guide.html" class="block p-4 border border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-md transition bg-white">
-                        <h4 class="font-black text-gray-900 text-xs uppercase tracking-widest">Mastering the Quoting Flow</h4>
-                        <p class="text-[10px] text-gray-500 mt-1">Step-by-step tutorial on generating retail prices.</p>
-                    </a>
-                    <a href="docs_print_media.html" class="block p-4 border border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-md transition bg-white">
-                        <h4 class="font-black text-gray-900 text-xs uppercase tracking-widest">Print Media Guidelines</h4>
-                        <p class="text-[10px] text-gray-500 mt-1">SOP for approved vinyl and laminate pairings.</p>
-                    </a>
-                </div>
-            </div>
-            <div class="bg-gray-50 rounded-2xl p-8 border border-dashed border-gray-300">
-                <h3 class="text-xs font-black text-gray-400 uppercase mb-6 tracking-widest">How it Works</h3>
-                <div class="space-y-6">
-                    <div class="flex gap-4 items-start">
-                        <div class="p-2 rounded bg-orange-100 text-orange-600 font-black text-[10px]">SYNC</div>
-                        <div>
-                            <h4 class="text-[10px] font-black text-gray-900 uppercase">Master Data Engine</h4>
-                            <p class="text-[10px] text-gray-500 leading-tight mt-1">A central Master Data sheet feeds all retail pricing curves and estimation costs.</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 items-start">
-                        <div class="p-2 rounded bg-orange-100 text-orange-600 font-black text-[10px]">AUTH</div>
-                        <div>
-                            <h4 class="text-[10px] font-black text-gray-900 uppercase">Permissions Control</h4>
-                            <p class="text-[10px] text-gray-500 leading-tight mt-1">Defined users and roles control what you see via secure session tokens.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</main>
-
 <script>
-    window.onload = function() {
-        document.getElementById('auth-user').innerText = sessionStorage.getItem('signos_user') || 'GUEST';
-        document.getElementById('auth-role').innerText = sessionStorage.getItem('signos_role') || 'SALES';
-        if (window.location.href.includes('signos-app')) {
-            const badge = document.getElementById('env-badge');
-            badge.innerText = "DEV MODE";
-            badge.className = "px-1.5 py-0.5 rounded text-[8px] font-black bg-orange-500 text-white uppercase tracking-tighter";
-        }
-    };
-    function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
-    function goBack() { window.history.back(); }
+// --- INTERNAL ARTICLE DATABASE ---
+const ARTICLES = {
+    'dual_track': `
+        <h2>The Dual-Track Migration</h2>
+        <p>SignOS has officially migrated to the <strong>Dual-Track Architecture</strong>. Pricing is no longer based on arbitrary markups.</p>
+        <p>Instead, every quote runs through two completely separate engines simultaneously:</p>
+        <ul>
+            <li><strong>The Market Engine:</strong> Prices based strictly on the Master Retail Blue Sheet and standard area curves to ensure 100% price consistency across the sales floor.</li>
+            <li><strong>The Physics Engine:</strong> Calculates real-world costs by tracking actual material yield, flatbed/roll print speeds, CNC router time, and granular labor rates to track true shop margin.</li>
+        </ul>
+    `,
+    'invite_email': `
+        <h2>Welcome to SignOS</h2>
+        <p>SignOS is our digital pricing portal designed to standardize quoting across the shop. This tool digitizes our physical pricing sheets for immediate, accurate retail pricing.</p>
+        <h3>🚀 Quick Start Guide</h3>
+        <ul>
+            <li><strong>Login:</strong> Access the portal via your unique employee PIN.</li>
+            <li><strong>Select:</strong> Use the Dashboard to choose your material category.</li>
+            <li><strong>Quote:</strong> Input dimensions and finishing options for an instant price.</li>
+        </ul>
+        <h3>✨ Core Benefits</h3>
+        <ul>
+            <li>Centralized retail curves.</li>
+            <li>Real-time updates synchronized across all users.</li>
+            <li>Manufacturer compatibility safety rails built into every calculator.</li>
+        </ul>
+    `
+};
+
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    document.getElementById('btn-' + tabId).classList.add('active');
+}
+
+function openArticle(id) {
+    document.getElementById('article-content').innerHTML = ARTICLES[id] || 'Content not found.';
+    document.getElementById('article-overlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeArticle() {
+    document.getElementById('article-overlay').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+function closeArticleOnClickAway(e) {
+    if (e.target.id === 'article-overlay') closeArticle();
+}
+
+window.onload = function() {
+    const u = sessionStorage.getItem('signos_user') || 'GUEST';
+    const r = sessionStorage.getItem('signos_role') || 'SALES';
+    
+    document.getElementById('auth-user').innerText = u;
+    document.getElementById('auth-role').innerText = r;
+};
 </script>
+
 </body>
 </html>
