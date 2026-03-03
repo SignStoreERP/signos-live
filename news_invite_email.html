@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignOS News: Welcome to SignOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="signos-core.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans flex flex-col pb-10">
+
+<div class="max-w-3xl mx-auto mt-6 w-[calc(100%-2rem)] sm:w-full bg-white shadow-lg overflow-hidden rounded-xl border border-gray-200">
+    <div class="p-6 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-blue-100 text-blue-600 shadow-inner">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            </div>
+            <div>
+                <h2 class="text-xl font-black text-gray-800 tracking-tight">Welcome to SignOS</h2>
+                <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mt-1">Initial Launch Invitation</p>
+            </div>
+        </div>
+        <a href="docs.html" class="text-[10px] font-bold uppercase tracking-widest text-blue-600 hover:text-blue-800 transition bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">← Back to Hub</a>
+    </div>
+
+    <div class="p-10 prose prose-slate prose-sm max-w-none text-gray-600 leading-relaxed">
+        <p class="text-base text-gray-700 font-medium">SignOS is our digital pricing portal designed to standardize quoting across the shop. This tool digitizes our physical pricing sheets for immediate, accurate retail pricing.</p>
+        
+        <h3 class="text-lg font-black text-gray-800 uppercase tracking-widest mt-8 mb-4 border-b pb-2 flex items-center gap-2"><span class="text-2xl">🚀</span> Quick Start Guide</h3>
+        <ul class="list-none pl-0 space-y-3">
+            <li class="flex gap-2"><strong class="text-blue-600">1. Login:</strong> <span>Access the portal via your unique employee PIN.</span></li>
+            <li class="flex gap-2"><strong class="text-blue-600">2. Select:</strong> <span>Use the Dashboard to choose your material category.</span></li>
+            <li class="flex gap-2"><strong class="text-blue-600">3. Quote:</strong> <span>Input dimensions and finishing options for an instant price.</span></li>
+        </ul>
+
+        <h3 class="text-lg font-black text-gray-800 uppercase tracking-widest mt-8 mb-4 border-b pb-2 flex items-center gap-2"><span class="text-2xl">✨</span> Core Benefits</h3>
+        <ul class="list-disc pl-5 space-y-2 marker:text-blue-500">
+            <li>Centralized retail curves.</li>
+            <li>Real-time updates synchronized across all users.</li>
+            <li>Manufacturer compatibility safety rails built into every calculator.</li>
+        </ul>
+
+        <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200 mt-12 text-center">
+            <p class="text-gray-500 text-xs font-bold leading-relaxed uppercase tracking-widest">SignOS System Archives</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener('load', () => {
+        if (typeof injectHeader === 'function') injectHeader("Archived News", false);
+    });
+</script>
+</body>
+</html>
