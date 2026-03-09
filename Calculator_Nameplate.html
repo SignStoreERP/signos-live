@@ -363,10 +363,9 @@ function buildPaintSwatches() {
             }
         }
 
-        // --- MAIN ENGINE ---
+        // --- CALCULATION ENGINE ---
         function runCalc() {
-        // FIXED: Safely check for either ADA minimum variable before aborting
-        if(!backendData || (!backendData.Retail_Min_Order && !backendData.Retail_Min_Order_Etch)) return;
+            if(!backendData.Retail_Min_Order || !selectedMat) return;
 
             SignOS_Canvas.enforceSheetLimits('w', 'h', 'sheet-warn', 24, 48);
 
