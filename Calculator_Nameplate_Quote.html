@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nameplate Quoter</title>
+    <title>Nameplates & Sliders</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
     <script src="signos-ui.js"></script>
@@ -94,7 +94,9 @@
 
             <!-- PRIMARY BUILDER -->
             <div class="p-5 bg-white shadow-sm z-10 relative space-y-5">
-                
+                <div id="sheet-warn" class="hidden mb-3 bg-yellow-50 text-yellow-700 text-[10px] font-bold px-3 py-1.5 rounded border border-yellow-200 transition-opacity">
+                   ⚠️ Max Parent Sheet Limit (24" x 48") Reached. Dimensions auto-adjusted.
+                </div>
                 <div class="grid grid-cols-3 gap-3 border-b border-gray-200 pb-4">
                     <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty</label><input type="number" id="qty" value="1" min="1" class="w-full border border-gray-300 p-2 rounded font-black text-blue-800 text-lg text-center bg-gray-50 focus:border-blue-500 outline-none shadow-inner" oninput="runCalc()"></div>
                     <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Width (in)</label><input type="number" id="w" value="10" min="1" step="0.5" class="w-full border border-gray-300 p-2 rounded font-black text-gray-800 text-lg text-center bg-white focus:border-blue-500 outline-none shadow-inner" oninput="runCalc()"></div>
@@ -546,9 +548,45 @@
         mEl.className = margin >= 50 ? 'text-2xl font-black text-green-600 tracking-tight leading-none' : (margin > 0 ? 'text-2xl font-black text-yellow-600 tracking-tight leading-none' : 'text-2xl font-black text-red-600 tracking-tight leading-none');
     }
 
+function enforceSheetLimits(maxShort, maxLong) {
+    let wEl = document.getElementById('w');
+    let hEl = document.getElementById('h');
+    let warnEl = document.getElementById('sheet-warn');
+    if (!wEl || !hEl) return;
+
+    let w = parseFloat(wEl.value) || 0;
+    let h = parseFloat(hEl.value) || 0;
+    let didClamp = false;
+
+    // 1. Clamp absolute maximum length
+    if (Math.max(w, h) > maxLong) {
+        if (w >= h) w = maxLong; else h = maxLong;
+        didClamp = true;
+    }
+
+    // 2. Clamp maximum short length
+    if (Math.min(w, h) > maxShort) {
+        if (w <= h) w = maxShort; else h = maxShort;
+        didClamp = true;
+    }
+
+    if (didClamp) {
+        wEl.value = w;
+        hEl.value = h;
+        if (warnEl) {
+            warnEl.classList.remove('hidden');
+            clearTimeout(warnEl.timeoutId);
+            warnEl.timeoutId = setTimeout(() => warnEl.classList.add('hidden'), 3000);
+        }
+    }
+}
+
     // --- MAIN ENGINE ---
     function runCalc() {
-        if(!backendData.Retail_Min_Order || !selectedMat) return;
+    if(!backendData || (!backendData.Retail_Min_Order && !backendData.Retail_Min_Order_Etch)) return;
+
+    // NEW: Enforce Max Sheet Sizes (24x48 or 48x24)
+    enforceSheetLimits(24, 48);
 
         const inputs = {
             qty: parseFloat(document.getElementById('qty').value) || 1,
