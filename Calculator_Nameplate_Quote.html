@@ -625,8 +625,11 @@
                 Code: p['Color Code'] || p['Code'] || 'UNK', Name: p['Color Name'] || p['Name'] || 'Unknown', Hex_Code: p['HEX Code'] || p['Hex_Code'] || '#ffffff'
             }));
             
+            // FIXED: Correctly mapped the literal column headers from the Google Sheet
             pmsColors = (payload.tables['REF_Colors_PMS'] || []).map(p => ({
-                Code: p.PMS_Code || p.Code || 'UNK', Name: `PMS ${p.PMS_Code || p.Code}`, Hex_Code: p.HEX || p.Hex_Code || '#ffffff'
+                Code: p['PMS Name / Code'] || 'UNK', 
+                Name: p['PMS Name / Code'] || 'Unknown', 
+                Hex_Code: p['HEX Code'] || '#ffffff'
             }));
 
             if(statusText) { statusText.innerText = "ONLINE"; statusText.className = "font-bold text-green-500"; if(statusDot) { statusDot.className = "w-2 h-2 rounded-full bg-green-500"; statusDot.classList.remove("animate-pulse"); } }
