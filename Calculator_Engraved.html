@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADA Quoter v1.3</title>
+    <title>ADA Quoter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="signos-core.js"></script>
     <script src="signos-ui.js"></script>
@@ -279,7 +279,7 @@
             baseLayers.push({ id: generateId(), role: '1/8" ADA Core', colorHex: '#000000', colorName: 'Black', type: '1/8' });
         } else if (activeProduct === 'BasicB') {
             baseLayers.push({ id: generateId(), role: '1/16" ADA Core', colorHex: '#000000', colorName: 'Black', type: '1/16' });
-            baseLayers.push({ id: generateId(), role: '3mm PVC Backer', colorHex: '#111827', colorName: 'Black', type: '3mm' });
+            baseLayers.push({ id: generateId(), role: '3mm PVC Backer', colorHex: '#000000', colorName: 'Black', type: '3mm' });
         } else if (activeProduct === 'BasicClear') {
             baseLayers.push({ id: generateId(), role: '1/16" ADA Core', colorHex: '#000000', colorName: 'Black', type: '1/16' });
             baseLayers.push({ id: generateId(), role: '3/16" Clear Acrylic', colorHex: 'rgba(255,255,255,0.4)', colorName: 'Clear', type: '3/16' });
@@ -299,7 +299,7 @@
             a.type = val;
             if (val === '1/32') { a.colorHex = '#FFFFFF'; a.colorName = 'White'; }
             else if (val === '1/16' || val === '1/8') { a.colorHex = '#000000'; a.colorName = 'Black'; }
-            else if (val === '3mm') { a.colorHex = '#111827'; a.colorName = 'Black'; }
+            else if (val === '3mm') { a.colorHex = '#000000'; a.colorName = 'Black'; }
             else if (val === '3/16') { a.colorHex = 'rgba(255,255,255,0.4)'; a.colorName = 'Clear'; }
             renderLayers();
             runCalc();
@@ -386,7 +386,7 @@
         let data = [];
         if (layer.type === '1/32') data = tactileColors;
         else if (layer.type === '1/16' || layer.type === '1/8') data = coreColors;
-        else if (layer.type === '3mm') data = [ {Name:'Black', Hex_Code:'#111827', Code:'PVC-BLK'}, {Name:'White', Hex_Code:'#ffffff', Code:'PVC-WHT'} ];
+        else if (layer.type === '3mm') data = [ {Name:'Black', Hex_Code:'#000000', Code:'PVC-BLK'}, {Name:'White', Hex_Code:'#ffffff', Code:'PVC-WHT'} ];
         else return;
 
         document.getElementById('modal-title').innerText = `Select ${layer.type} Color`;
